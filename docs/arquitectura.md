@@ -39,7 +39,7 @@ flowchart TD
 - `db`: persistencia y modelos de base de datos.
 - `schemas`: estructuras de entrada y salida.
 - `services`: lógica de aplicación e integraciones.
-- `llmops`: instrumentación y observabilidad.
+- `llm`: comunicación con Ollama y los modelos de lenguaje.
 - `mcp`: definición de herramientas mediante MCP.
 
 ## Principios de diseño
@@ -51,3 +51,4 @@ flowchart TD
 - Pruebas unitarias y de integración.
 - Reproducibilidad mediante contenedores.
 - Desarrollo incremental gestionado con Scrum.
+
