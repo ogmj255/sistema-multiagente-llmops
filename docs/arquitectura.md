@@ -52,3 +52,43 @@ flowchart TD
 - Reproducibilidad mediante contenedores.
 - Desarrollo incremental gestionado con Scrum.
 
+
+## Estado al finalizar el Sprint 1
+
+Al finalizar el Sprint 1 se encuentra implementada y validada la estructura base del sistema. Esta base permite ejecutar el back-end, enrutar solicitudes y establecer comunicación con la base de datos.
+
+### Componentes implementados
+
+| Componente | Estado | Evidencia |
+|---|---|---|
+| FastAPI | Implementado | Endpoints `/` y `/health` disponibles |
+| PostgreSQL | Implementado | Contenedor saludable y conexión verificada |
+| SQLAlchemy | Implementado | Consulta de comprobación ejecutada correctamente |
+| Docker Compose | Implementado | Servicios ejecutados de manera conjunta |
+| Traefik | Implementado | Enrutamiento HTTP mediante el puerto 80 |
+| pytest | Implementado | Dos pruebas unitarias aprobadas |
+| Ruff | Implementado | Código revisado sin errores |
+
+### Flujo implementado
+
+~~~mermaid
+flowchart LR
+    U[Usuario] --> T[Traefik]
+    T --> A[FastAPI]
+    A --> S[SQLAlchemy]
+    S --> P[PostgreSQL]
+~~~
+
+La solicitud ingresa por Traefik en el puerto 80 y es dirigida hacia FastAPI en el puerto interno 8000. Cuando el sistema requiera almacenar o consultar información, FastAPI utilizará SQLAlchemy para comunicarse con PostgreSQL.
+
+### Endpoints disponibles
+
+| Método | Ruta | Propósito |
+|---|---|---|
+| GET | `/` | Presentar el nombre y la versión del sistema |
+| GET | `/health` | Comprobar el funcionamiento del back-end |
+| GET | `/docs` | Consultar la documentación Swagger de la API |
+
+### Componentes pendientes
+
+Streamlit, LangGraph, los agentes especializados, MCP, Ollama y Langfuse forman parte de la arquitectura planificada, pero su integración con el back-end se realizará gradualmente en los siguientes sprints.
