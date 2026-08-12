@@ -36,7 +36,7 @@ def parse_static_html(
     soup = BeautifulSoup(html, "html.parser")
 
     for element in soup.find_all(
-        ["script", "style", "noscript", "nav", "footer", "form", "button"]
+        ["script", "style", "noscript"]
     ):
         element.decompose()
 
@@ -46,19 +46,10 @@ def parse_static_html(
     if soup.html and soup.html.get("lang"):
         language = str(soup.html.get("lang")).split("-")[0]
 
-    content_candidates = soup.find_all(["main", "article"])
-
-    if content_candidates:
-        main_content = max(
-            content_candidates,
-            key=lambda element: len(element.get_text(" ", strip=True)),
-        )
-    else:
-        main_content = soup.body
+    main_content = soup.body
 
     if main_content is None:
         raise ValueError("No se encontró contenido HTML para procesar.")
-
     sections: list[ContractSection] = []
     current_heading: str | None = None
 

@@ -41,7 +41,7 @@ El agente deberá:
 6. Registrar la URL de origen.
 7. Registrar la fecha y hora de extracción.
 8. Identificar el método utilizado para la extracción.
-9. Eliminar scripts, estilos, menús y elementos que no pertenezcan al contrato.
+9. Excluir únicamente elementos técnicos no visibles, como scripts y estilos, conservando el texto visible para su posterior preprocesamiento.
 10. Informar de manera comprensible cuando la extracción no pueda realizarse.
 
 ## Métodos de extracción

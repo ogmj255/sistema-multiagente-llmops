@@ -14,7 +14,9 @@ SAMPLE_HTML = """
         <script>contenido_no_permitido()</script>
     </head>
     <body>
-        <nav>Menú principal</nav>
+        <nav>
+            <p>Menú principal</p>
+        </nav>
         <main>
             <h1>Términos de servicio</h1>
             <p>El usuario deberá respetar las condiciones del servicio.</p>
@@ -25,24 +27,29 @@ SAMPLE_HTML = """
                 <li>No se permite contenido ilegal.</li>
             </ul>
         </main>
-        <footer>Información del pie de página</footer>
+        <footer>
+            <p>Información del pie de página</p>
+        </footer>
     </body>
 </html>
 """
 
 
 def test_parse_static_html() -> None:
-    title, language, sections, full_text = parse_static_html(SAMPLE_HTML)
+    """Comprueba que el scraper conserve el texto visible."""
+
+    title, language, sections, full_text = parse_static_html(
+        SAMPLE_HTML
+    )
 
     assert title == "Contrato de prueba"
     assert language == "es"
-    assert len(sections) == 3
-    assert sections[0].heading == "Términos de servicio"
-    assert sections[1].heading == "Contenido del usuario"
-    assert sections[2].order == 3
-    assert "Menú principal" not in full_text
+    assert len(sections) == 5
+    assert sections[1].heading == "Términos de servicio"
+    assert sections[2].heading == "Contenido del usuario"
+    assert "Menú principal" in full_text
+    assert "pie de página" in full_text
     assert "contenido_no_permitido" not in full_text
-    assert "pie de página" not in full_text
 
 
 def test_reject_html_without_contract_content() -> None:
@@ -125,8 +132,8 @@ def test_avoid_duplicate_nested_paragraphs() -> None:
     ) == 1
 
 
-def test_select_main_with_most_content() -> None:
-    """Comprueba la selección del contenedor principal con más texto."""
+def test_extract_content_from_entire_body() -> None:
+    """Comprueba la extracción desde todo el cuerpo HTML."""
 
     html = """
     <html lang="es">
@@ -135,7 +142,7 @@ def test_select_main_with_most_content() -> None:
         </head>
         <body>
             <main>
-                <div>Menú de navegación</div>
+                <p>Menú de navegación</p>
             </main>
 
             <main>
@@ -147,11 +154,12 @@ def test_select_main_with_most_content() -> None:
     </html>
     """
 
-    title, language, sections, full_text = parse_static_html(html)
+    title, language, sections, full_text = parse_static_html(
+        html
+    )
 
     assert title == "Contrato con varios contenedores"
     assert language == "es"
-    assert len(sections) == 2
-    assert sections[0].heading == "Términos de servicio"
+    assert len(sections) == 3
+    assert "Menú de navegación" in full_text
     assert "contenido principal del contrato" in full_text
-    assert "Menú de navegación" not in full_text

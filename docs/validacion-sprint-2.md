@@ -28,7 +28,7 @@ El agente procesa una URL pública proporcionada por el usuario y devuelve el te
 
 1. El usuario proporciona una URL pública.
 2. El agente intenta la extracción mediante Beautiful Soup.
-3. Si la extracción estática falla, el agente utiliza Playwright.
+3. Si la extracción estática falla o resulta insuficiente, el agente utiliza Playwright.
 4. El contenido se organiza en secciones.
 5. Se devuelven el texto y los metadatos del contrato.
 6. Si ambos métodos fallan, se devuelve un mensaje de error.
@@ -37,11 +37,11 @@ El agente procesa una URL pública proporcionada por el usuario y devuelve el te
 
 | Plataforma | Estado | Método | Secciones | Caracteres |
 |---|---|---|---:|---:|
-| GitHub | Correcto | Beautiful Soup | 146 | 41483 |
-| Slack | Correcto | Beautiful Soup | 26 | 12522 |
-| Dropbox | Correcto | Beautiful Soup | 96 | 25318 |
-| Atlassian | Correcto | Beautiful Soup | 139 | 45593 |
-| HubSpot | Correcto | Beautiful Soup | 218 | 61794 |
+| GitHub | Correcto | Beautiful Soup | 237 | 44199 |
+| Slack | Correcto | Beautiful Soup | 265 | 17999 |
+| Dropbox | Correcto | Beautiful Soup | 220 | 27496 |
+| Atlassian | Correcto | Beautiful Soup | 206 | 47887 |
+| HubSpot | Correcto | Beautiful Soup | 447 | 69264 |
 
 Resultado general: cinco de cinco extracciones completadas correctamente.
 
@@ -54,37 +54,38 @@ La extracción mediante Playwright se comprobó utilizando los términos de serv
 | Plataforma | Slack |
 | Estado | Correcto |
 | Método | Playwright |
-| Secciones | 26 |
-| Caracteres | 12522 |
-| Primer encabezado | User Terms of Service |
-| Primer contenido | Effective Date: February 17, 2023 |
+| Secciones | 270 |
+| Caracteres | 18694 |
+| Primer encabezado | Sin encabezado inicial |
+| Primer contenido  | Channels Organize teams and work   |
 
 ## Pruebas complementarias
 
-Durante el desarrollo también se realizaron pruebas con Zoom y Netflix. Ambas páginas pudieron procesarse correctamente después de mejorar la selección del contenido principal.
+Durante el desarrollo también se realizaron pruebas con Zoom y Netflix. Ambas páginas pudieron procesarse correctamente al extraer el contenido visible desde el cuerpo completo del documento HTML.
 
 | Plataforma | Estado | Método |
 |---|---|---|
 | Zoom | Correcto | Beautiful Soup |
 | Netflix | Correcto | Beautiful Soup |
 
-En el caso de Zoom, la página contenía tres elementos `main`. El contrato estaba ubicado en el tercer elemento. El parser fue modificado para seleccionar el contenedor con mayor cantidad de texto.
+Las pruebas complementarias demostraron que la estructura HTML varía entre plataformas. Por este motivo, el scraper conserva el texto visible del cuerpo completo y delega la limpieza al agente preprocesador del Sprint 3.
 
 ## Pruebas automatizadas
 
-Se ejecutaron trece pruebas unitarias relacionadas con:
+Se ejecutaron catorce pruebas unitarias relacionadas con:
 
 - Validación de los esquemas del contrato.
 - Endpoints principales de FastAPI.
 - Extracción de HTML estático.
 - Verificación de contenido suficiente.
 - Eliminación de duplicados.
-- Selección del contenedor principal.
+- Extracción del texto visible desde el cuerpo completo del documento.
 - Cambio automático hacia Playwright.
 - Manejo controlado cuando ambos métodos de extracción fallan.
+- Rechazo de extracciones con contenido insuficiente.
 - Exposición de la herramienta mediante MCP.
 
-Resultado: trece pruebas aprobadas.
+Resultado: catorce pruebas aprobadas.
 
 Se presentó una advertencia de deprecación generada por una dependencia de `TestClient`. Esta advertencia no afectó la ejecución ni el resultado de las pruebas.
 
