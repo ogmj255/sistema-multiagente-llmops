@@ -1,4 +1,4 @@
-﻿from datetime import UTC, datetime
+from datetime import UTC, datetime
 
 from app.agents import web_scraper_agent
 from app.schemas.contract import (
@@ -112,53 +112,54 @@ def test_agent_returns_error_when_both_methods_fail(
 def test_agent_rejects_insufficient_content(
     monkeypatch,
 ) -> None:
-    """Rechaza contenido insuficiente en ambos métodos."""
-
+    """Rechaza contenido exclusivamente estructural."""
     request = ExtractionRequest(
         url="https://example.com/terms",
         platform="Example",
     )
 
-    incomplete_contract = ExtractedContract(
+    navigation_contract = ExtractedContract(
         source_url=request.url,
         platform="Example",
-        title="Página incompleta",
+        title="Pagina de navegacion",
         retrieved_at=datetime.now(UTC),
         extraction_method="beautiful_soup",
         language="es",
         sections=[
             ContractSection(
                 order=1,
-                heading="Aviso",
-                content="Contenido parcial.",
+                heading=None,
+                content="Abrir menu principal.",
+                html_tag="li",
+                source_area="navigation",
+                is_link_only=True,
+                link_count=1,
             )
         ],
-        full_text="Contenido parcial.",
+        full_text="Abrir menu principal.",
     )
 
-    def return_incomplete_contract(
+    def return_navigation_contract(
         _request: ExtractionRequest,
     ) -> ExtractedContract:
-        return incomplete_contract
+        return navigation_contract
 
     monkeypatch.setattr(
         web_scraper_agent,
         "extract_static_contract",
-        return_incomplete_contract,
+        return_navigation_contract,
     )
     monkeypatch.setattr(
         web_scraper_agent,
         "extract_dynamic_contract",
-        return_incomplete_contract,
+        return_navigation_contract,
     )
 
-    response = web_scraper_agent.run_web_scraper_agent(
-        request
-    )
+    response = web_scraper_agent.run_web_scraper_agent(request)
 
     assert response.status == "error"
     assert response.contract is None
     assert response.error is not None
-    assert "contenido dinámico es insuficiente" in (
+    assert "es insuficiente" in (
         response.error.lower()
     )
