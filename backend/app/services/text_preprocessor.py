@@ -1,8 +1,19 @@
-﻿from app.schemas.contract import ContractSection
+import unicodedata
+
+from app.schemas.contract import ContractSection
 from app.schemas.preprocessing import (
     ProcessedClause,
     RemovedBlock,
 )
+
+SPECIAL_SPACE_TRANSLATION = str.maketrans(
+    {
+        "\u00a0": " ",
+        "\u2007": " ",
+        "\u202f": " ",
+    }
+)
+
 
 STRUCTURAL_NOISE_AREAS = frozenset(
     {
@@ -16,11 +27,13 @@ STRUCTURAL_NOISE_AREAS = frozenset(
 
 
 def normalize_text(text: str) -> str:
-    """Normaliza espacios sin cambiar el significado."""
-
-    normal_space = text.replace("\u00a0", " ")
-    return " ".join(normal_space.split())
-
+    """Normaliza Unicode y espacios sin alterar el significado."""
+    normalized = unicodedata.normalize("NFC", text)
+    normalized = normalized.replace("\ufeff", "")
+    normalized = normalized.translate(
+        SPECIAL_SPACE_TRANSLATION
+    )
+    return " ".join(normalized.split())
 
 def get_noise_reason(
     section: ContractSection,

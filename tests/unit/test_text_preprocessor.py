@@ -1,4 +1,4 @@
-﻿from app.schemas.contract import ContractSection
+from app.schemas.contract import ContractSection
 from app.services.text_preprocessor import (
     build_cleaned_text,
     clean_contract_sections,
@@ -8,11 +8,68 @@ from app.services.text_preprocessor import (
 
 
 def test_normalize_text() -> None:
-    """Comprueba la normalización de espacios."""
+    """Normaliza espacios especiales y saltos de linea."""
+    text = (
+        "Texto\u00a0con\t espacios\r\n"
+        "\u202frepetidos."
+    )
 
-    text = "Texto\u00a0con   espacios\n\nrepetidos."
+    assert normalize_text(text) == (
+        "Texto con espacios repetidos."
+    )
 
-    assert normalize_text(text) == "Texto con espacios repetidos."
+
+def test_normalize_unicode_composition() -> None:
+    """Convierte caracteres descompuestos a Unicode NFC."""
+    text = "Cafe\u0301, informacio\u0301n y nin\u0303o."
+
+    assert normalize_text(text) == (
+        "Caf\u00e9, informaci\u00f3n y ni\u00f1o."
+    )
+
+
+def test_remove_byte_order_mark() -> None:
+    """Elimina marcas BOM incorporadas al texto."""
+    text = "\ufeffTerms of Service\ufeff"
+
+    assert normalize_text(text) == "Terms of Service"
+
+
+def test_preserve_legal_characters() -> None:
+    """Conserva simbolos, cantidades, comillas y enlaces."""
+    text = (
+        "\u201cUser\u201d agrees to \u00a7 5, "
+        "pays \u20ac10.00 and visits "
+        "https://example.com/terms?id=1."
+    )
+
+    assert normalize_text(text) == text
+
+
+def test_clean_sections_normalizes_heading_and_content() -> None:
+    """Aplica la normalizacion dentro del pipeline de limpieza."""
+    sections = [
+        ContractSection(
+            order=1,
+            heading="Informacio\u0301n de la cuenta",
+            content=(
+                "\ufeffEl\u00a0usuario debe\r\n"
+                "proteger su cuenta."
+            ),
+            source_area="content",
+        )
+    ]
+
+    cleaned, removed = clean_contract_sections(sections)
+
+    assert len(cleaned) == 1
+    assert removed == []
+    assert cleaned[0].heading == (
+        "Informaci\u00f3n de la cuenta"
+    )
+    assert cleaned[0].content == (
+        "El usuario debe proteger su cuenta."
+    )
 
 
 def test_remove_structural_noise() -> None:
