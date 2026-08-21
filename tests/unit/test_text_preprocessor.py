@@ -1,3 +1,4 @@
+import pytest
 from app.schemas.contract import ContractSection
 from app.services.text_preprocessor import (
     build_cleaned_text,
@@ -251,3 +252,77 @@ def test_use_default_document_heading() -> None:
 
     assert clauses[0].heading == "Terms of Service"
     assert clauses[0].heading_level == 1
+def test_reject_empty_segmentation_input() -> None:
+    """Rechaza una entrada sin secciones contractuales."""
+
+    with pytest.raises(
+        ValueError,
+        match="No existen secciones contractuales",
+    ):
+        segment_contract_sections([])
+
+
+def test_reject_sections_with_inconsistent_order() -> None:
+    """Rechaza secciones cuyo orden original no es ascendente."""
+
+    sections = [
+        ContractSection(
+            order=2,
+            heading="Condiciones",
+            content="Segunda condición.",
+            html_tag="p",
+            source_area="content",
+        ),
+        ContractSection(
+            order=1,
+            heading="Condiciones",
+            content="Primera condición.",
+            html_tag="p",
+            source_area="content",
+        ),
+    ]
+
+    with pytest.raises(
+        ValueError,
+        match="orden original ascendente",
+    ):
+        segment_contract_sections(sections)
+
+
+def test_segment_list_and_table_row_as_complete_clauses() -> None:
+    """Conserva listas y filas de tabla como cláusulas completas."""
+
+    sections = [
+        ContractSection(
+            order=10,
+            heading="2. Condiciones de pago",
+            heading_level=2,
+            content="2.1 El cliente deberá pagar la tarifa acordada.",
+            html_tag="li",
+            source_area="content",
+        ),
+        ContractSection(
+            order=11,
+            heading="2. Condiciones de pago",
+            heading_level=2,
+            content="Plan anual | USD 100",
+            html_tag="tr",
+            source_area="content",
+        ),
+    ]
+
+    clauses = segment_contract_sections(sections)
+
+    assert len(clauses) == 2
+    assert clauses[0].order == 1
+    assert clauses[0].original_order == 10
+    assert clauses[0].content == (
+        "2.1 El cliente deberá pagar la tarifa acordada."
+    )
+    assert clauses[1].order == 2
+    assert clauses[1].original_order == 11
+    assert clauses[1].content == "Plan anual | USD 100"
+    assert all(
+        clause.heading == "2. Condiciones de pago"
+        for clause in clauses
+    )

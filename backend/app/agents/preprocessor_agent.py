@@ -28,11 +28,6 @@ def run_preprocessor_agent(
             default_heading_level=1,
         )
 
-        if not clauses:
-            raise ValueError(
-                "No se encontraron cláusulas contractuales."
-            )
-
         cleaned_text = build_cleaned_text(clauses)
 
         result = PreprocessedContract(

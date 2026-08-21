@@ -137,11 +137,23 @@ def segment_contract_sections(
     default_heading: str | None = None,
     default_heading_level: int | None = None,
 ) -> list[ProcessedClause]:
-    """Segmenta usando bloques y encabezados del documento."""
+    """Convierte bloques contractuales ordenados en cláusulas."""
+
+    if not sections:
+        raise ValueError(
+            "No existen secciones contractuales para segmentar."
+        )
 
     clauses: list[ProcessedClause] = []
+    previous_original_order = 0
 
     for section in sections:
+        if section.order <= previous_original_order:
+            raise ValueError(
+                "Las secciones deben conservar un orden "
+                "original ascendente."
+            )
+
         heading = section.heading
         heading_level = section.heading_level
 
@@ -158,6 +170,8 @@ def segment_contract_sections(
                 content=section.content,
             )
         )
+
+        previous_original_order = section.order
 
     return clauses
 

@@ -132,3 +132,30 @@ def test_preprocessor_returns_error_without_contract_content() -> None:
     assert response.result is None
     assert response.error is not None
     assert "No se encontró contenido contractual" in response.error
+
+def test_preprocessor_controls_inconsistent_section_order() -> None:
+    """Devuelve un error controlado cuando el orden es inconsistente."""
+
+    contract = create_contract(
+        [
+            ContractSection(
+                order=2,
+                heading="Second section",
+                content="Second contractual condition.",
+                source_area="content",
+            ),
+            ContractSection(
+                order=1,
+                heading="First section",
+                content="First contractual condition.",
+                source_area="content",
+            ),
+        ]
+    )
+
+    response = run_preprocessor_agent(contract)
+
+    assert response.status == "error"
+    assert response.result is None
+    assert response.error is not None
+    assert "orden original ascendente" in response.error
