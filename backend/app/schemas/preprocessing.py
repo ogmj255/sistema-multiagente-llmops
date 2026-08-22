@@ -1,6 +1,11 @@
-﻿from typing import Literal
+﻿from typing import Literal, Self
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import (
+    BaseModel,
+    Field,
+    HttpUrl,
+    model_validator,
+)
 
 
 class ProcessedClause(BaseModel):
@@ -8,7 +13,10 @@ class ProcessedClause(BaseModel):
 
     order: int = Field(ge=1)
     original_order: int = Field(ge=1)
-    heading: str | None = None
+    heading: str | None = Field(
+        default=None,
+        min_length=1,
+    )
     heading_level: int | None = Field(
         default=None,
         ge=1,
@@ -29,11 +37,13 @@ class PreprocessedContract(BaseModel):
     """Representa el contrato limpio y segmentado."""
 
     source_url: HttpUrl
-    platform: str
-    title: str
-    language: str
-    cleaned_text: str
-    clauses: list[ProcessedClause]
+    platform: str = Field(min_length=1)
+    title: str = Field(min_length=1)
+    language: str = Field(min_length=1)
+    cleaned_text: str = Field(min_length=1)
+    clauses: list[ProcessedClause] = Field(
+        min_length=1,
+    )
     removed_blocks: list[RemovedBlock]
 
 
@@ -42,4 +52,33 @@ class PreprocessingResponse(BaseModel):
 
     status: Literal["success", "error"]
     result: PreprocessedContract | None = None
-    error: str | None = None
+    error: str | None = Field(
+        default=None,
+        min_length=1,
+    )
+
+    @model_validator(mode="after")
+    def validate_status_content(self) -> Self:
+        """Comprueba la coherencia entre estado, resultado y error."""
+
+        if self.status == "success":
+            if self.result is None:
+                raise ValueError(
+                    "Una respuesta exitosa debe contener un resultado."
+                )
+            if self.error is not None:
+                raise ValueError(
+                    "Una respuesta exitosa no puede contener un error."
+                )
+
+        if self.status == "error":
+            if self.result is not None:
+                raise ValueError(
+                    "Una respuesta de error no puede contener un resultado."
+                )
+            if self.error is None:
+                raise ValueError(
+                    "Una respuesta de error debe contener un mensaje."
+                )
+
+        return self
