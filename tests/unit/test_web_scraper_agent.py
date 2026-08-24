@@ -160,6 +160,6 @@ def test_agent_rejects_insufficient_content(
     assert response.status == "error"
     assert response.contract is None
     assert response.error is not None
-    assert "es insuficiente" in (
+    assert "contenido contractual utilizable" in (
         response.error.lower()
     )

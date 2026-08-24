@@ -1,4 +1,6 @@
-﻿from mcp.server.fastmcp import FastMCP
+﻿from asyncio import to_thread
+
+from mcp.server.fastmcp import FastMCP
 
 from app.agents.web_scraper_agent import run_web_scraper_agent
 from app.schemas.contract import ExtractionRequest
@@ -7,7 +9,7 @@ mcp = FastMCP("Agente Web Scraper")
 
 
 @mcp.tool()
-def extract_saas_terms(
+async def extract_saas_terms(
     url: str,
     platform: str | None = None,
 ) -> dict[str, object]:
@@ -18,7 +20,10 @@ def extract_saas_terms(
         platform=platform,
     )
 
-    response = run_web_scraper_agent(request)
+    response = await to_thread(
+    run_web_scraper_agent,
+    request,
+)
 
     return response.model_dump(mode="json")
 

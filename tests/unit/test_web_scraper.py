@@ -42,9 +42,7 @@ SAMPLE_HTML = """
 def test_parse_static_html() -> None:
     """Comprueba que el scraper conserve el texto visible."""
 
-    title, language, sections, full_text = parse_static_html(
-        SAMPLE_HTML
-    )
+    title, language, sections, full_text = parse_static_html(SAMPLE_HTML)
 
     assert title == "Contrato de prueba"
     assert language == "es"
@@ -64,6 +62,8 @@ def test_reject_html_without_contract_content() -> None:
         match="No se encontraron bloques de texto",
     ):
         parse_static_html(html)
+
+
 def create_test_contract(
     section_count: int,
     character_count: int,
@@ -93,6 +93,7 @@ def create_test_contract(
         full_text="A" * character_count,
     )
 
+
 def test_accept_sufficient_contract_content() -> None:
     """Acepta un contrato corto ubicado en una zona de contenido."""
     contract = create_test_contract(
@@ -103,6 +104,7 @@ def test_accept_sufficient_contract_content() -> None:
 
     assert has_sufficient_contract_content(contract) is True
 
+
 def test_reject_insufficient_contract_content() -> None:
     """Rechaza texto que procede ?nicamente de navegaci?n."""
     contract = create_test_contract(
@@ -112,6 +114,7 @@ def test_reject_insufficient_contract_content() -> None:
     )
 
     assert has_sufficient_contract_content(contract) is False
+
 
 def test_avoid_duplicate_nested_paragraphs() -> None:
     """Evita duplicar un párrafo contenido dentro de una lista."""
@@ -134,9 +137,7 @@ def test_avoid_duplicate_nested_paragraphs() -> None:
     _, _, sections, full_text = parse_static_html(html)
 
     assert len(sections) == 1
-    assert full_text.count(
-        "Este contenido debe aparecer una sola vez."
-    ) == 1
+    assert full_text.count("Este contenido debe aparecer una sola vez.") == 1
 
 
 def test_extract_content_from_entire_body() -> None:
@@ -161,16 +162,13 @@ def test_extract_content_from_entire_body() -> None:
     </html>
     """
 
-    title, language, sections, full_text = parse_static_html(
-        html
-    )
+    title, language, sections, full_text = parse_static_html(html)
 
     assert title == "Contrato con varios contenedores"
     assert language == "es"
     assert len(sections) == 3
     assert "Menú de navegación" in full_text
     assert "contenido principal del contrato" in full_text
-
 
 
 def test_extract_extended_html_elements() -> None:
@@ -216,8 +214,10 @@ def test_extract_extended_html_elements() -> None:
     assert sections[3].content == "Plan | Professional subscription"
     assert "Payments are non-refundable." in full_text
 
-def test_ignore_aria_role_as_heading() -> None:
-    """No interpreta un rol ARIA como encabezado del contrato."""
+
+def test_preserve_aria_text_without_using_it_as_heading() -> None:
+    """Conserva el texto ARIA sin convertirlo en encabezado."""
+
     html = """
     <html>
         <body>
@@ -233,12 +233,12 @@ def test_ignore_aria_role_as_heading() -> None:
 
     _, _, sections, full_text = parse_static_html(html)
 
-    assert len(sections) == 1
+    assert len(sections) == 2
+    assert sections[0].content == "Account security"
     assert sections[0].heading is None
-    assert sections[0].content == (
-        "The user must protect the account."
-    )
-    assert "Account security" not in full_text
+    assert sections[0].heading_level is None
+    assert sections[1].content == ("The user must protect the account.")
+    assert "Account security" in full_text
 
 
 def test_use_generic_fallback_without_semantic_content() -> None:
@@ -266,14 +266,13 @@ def test_use_generic_fallback_without_semantic_content() -> None:
     _, _, sections, full_text = parse_static_html(html)
 
     content_sections = [
-        section
-        for section in sections
-        if section.source_area == "content"
+        section for section in sections if section.source_area == "content"
     ]
 
     assert len(content_sections) == 1
     assert content_sections[0].html_tag == "div"
     assert "comply with these terms" in full_text
+
 
 def test_ignore_link_collection_heading() -> None:
     """No asigna un encabezado perteneciente a un índice de enlaces."""
@@ -326,3 +325,97 @@ def test_ignore_hidden_html_content() -> None:
     assert sections[0].content == "Visible contractual condition."
     assert "Hidden condition" not in full_text
     assert "Invisible condition" not in full_text
+
+
+def test_preserve_standard_heading_behavior() -> None:
+    """Mantiene un encabezado normal como contexto."""
+
+    html = """
+    <html>
+        <body>
+            <main>
+                <h2>Account terms</h2>
+                <h3>Account security</h3>
+                <p>
+                    The user must protect the account
+                    and its authentication credentials.
+                </p>
+            </main>
+        </body>
+    </html>
+    """
+
+    _, _, sections, _ = parse_static_html(html)
+
+    assert len(sections) == 1
+    assert sections[0].heading == "Account security"
+    assert sections[0].heading_level == 3
+    assert sections[0].html_tag == "p"
+
+
+def test_preserve_headings_used_as_paragraphs() -> None:
+    """Conserva un nivel de encabezado usado como contenido."""
+
+    html = """
+    <html>
+        <body>
+            <main>
+                <h1>Terms of Service</h1>
+                <h2>Account terms</h2>
+
+                <h3>
+                    The user must provide accurate account
+                    information when registering.
+                </h3>
+
+                <h3>
+                    The user is responsible for protecting
+                    the account credentials.
+                </h3>
+
+                <li>Additional condition.</li>
+            </main>
+        </body>
+    </html>
+    """
+
+    _, _, sections, full_text = parse_static_html(html)
+
+    assert len(sections) == 3
+    assert sections[0].html_tag == "h3"
+    assert sections[0].heading == "Account terms"
+    assert sections[0].heading_level == 2
+    assert "accurate account information" in full_text
+    assert "protecting the account credentials" in full_text
+
+
+def test_extract_semantic_and_generic_content_together() -> None:
+    """Conserva contenido semántico y genérico en el mismo documento."""
+
+    html = """
+    <html>
+        <body>
+            <main>
+                <h1>Terms of Service</h1>
+
+                <p>
+                    This paragraph uses semantic HTML.
+                </p>
+
+                <div>
+                    <span>
+                        This condition uses a generic container.
+                    </span>
+                </div>
+            </main>
+        </body>
+    </html>
+    """
+
+    _, _, sections, full_text = parse_static_html(html)
+
+    assert len(sections) == 2
+    assert sections[0].html_tag == "p"
+    assert sections[1].html_tag == "div"
+    assert "semantic HTML" in full_text
+    assert "generic container" in full_text

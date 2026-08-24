@@ -1,8 +1,10 @@
-﻿from app.mcp import tools
+﻿import pytest
+from app.mcp import tools
 from app.schemas.contract import ExtractionRequest, ExtractionResponse
 
 
-def test_extract_saas_terms_tool(monkeypatch) -> None:
+@pytest.mark.asyncio
+async def test_extract_saas_terms_tool(monkeypatch) -> None:
     """Comprueba que la herramienta MCP llama al agente Web Scraper."""
 
     def fake_agent(
@@ -22,7 +24,7 @@ def test_extract_saas_terms_tool(monkeypatch) -> None:
         fake_agent,
     )
 
-    result = tools.extract_saas_terms(
+    result = await tools.extract_saas_terms(
         url="https://example.com/terms",
         platform="Example",
     )

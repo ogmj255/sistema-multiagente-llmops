@@ -3,7 +3,12 @@ from datetime import UTC, datetime
 import httpx
 from bs4 import BeautifulSoup
 from bs4.element import Tag
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import (
+    TimeoutError as PlaywrightTimeoutError,
+)
+from playwright.sync_api import (
+    sync_playwright,
+)
 
 from app.schemas.contract import (
     ContractSection,
@@ -29,22 +34,23 @@ def normalize_html_text(text: str) -> str:
     """Normaliza espacios del texto extraído del HTML."""
     return " ".join(text.replace("\u00a0", " ").split())
 
+def get_usable_content_length(
+    contract: ExtractedContract,
+) -> int:
+    """Calcula el contenido extraído fuera de áreas de ruido."""
 
-def has_sufficient_contract_content(contract: ExtractedContract) -> bool:
-    """Comprueba estructuralmente si hay contenido contractual utilizable.
-
-    No se usa un mínimo arbitrario de secciones o caracteres: un ToS corto
-    y legítimo debe aceptarse. Basta con que exista al menos una sección
-    en una zona de contenido real (no navegación/interfaz) y texto no vacío.
-    """
-    if not contract.sections:
-        return False
-    if not contract.full_text.strip():
-        return False
-    return any(
-        section.source_area in {"content", "body"}
+    return sum(
+        len(section.content.strip())
         for section in contract.sections
+        if section.source_area in {"content", "body"}
     )
+
+def has_sufficient_contract_content(
+    contract: ExtractedContract,
+) -> bool:
+    """Comprueba si existe contenido contractual utilizable."""
+
+    return get_usable_content_length(contract) > 0
 
 
 def is_heading(element: Tag) -> bool:
@@ -68,8 +74,6 @@ def contains_only_links(element: Tag) -> bool:
         " ".join(link.get_text(" ", strip=True) for link in links)
     )
     return element_text == links_text
-
-
 
 def belongs_to_link_collection(element: Tag) -> bool:
     """Detecta ?ndices o men?s mediante su proporci?n de enlaces."""
@@ -106,10 +110,16 @@ def belongs_to_link_collection(element: Tag) -> bool:
 
 def identify_source_area(element: Tag) -> SourceArea:
     """Identifica el área estructural de un elemento HTML."""
+
     if element.find_parent("nav") is not None:
         return "navigation"
     if element.find_parent("aside") is not None:
         return "aside"
+    if element.find_parent("header") is not None:
+        return "header"
+    if element.find_parent("footer") is not None:
+        return "footer"
+
     if (
         element.name in INTERACTIVE_TAGS
         or element.find_parent(list(INTERACTIVE_TAGS)) is not None
@@ -128,10 +138,6 @@ def identify_source_area(element: Tag) -> SourceArea:
 
     if element.find_parent(["main", "article"]) is not None:
         return "content"
-    if element.find_parent("header") is not None:
-        return "header"
-    if element.find_parent("footer") is not None:
-        return "footer"
 
     return "body"
 
@@ -229,16 +235,6 @@ def is_text_candidate(element: Tag) -> bool:
         or is_generic_text_container(element)
     )
 
-
-def has_content_sections(
-    sections: list[ContractSection],
-) -> bool:
-    """Comprueba si existen bloques en una zona de contenido."""
-    return any(
-        section.source_area in {"content", "body"}
-        for section in sections
-    )
-
 def remove_non_visible_elements(soup: BeautifulSoup) -> None:
     """Elimina elementos técnicos y ocultos."""
     for element in soup.find_all(["script", "style", "noscript", "template"]):
@@ -279,7 +275,10 @@ def build_section(
     )
 
 
-def extract_sections(candidates: list[Tag]) -> list[ContractSection]:
+def extract_sections(
+    candidates: list[Tag],
+    content_heading_levels: frozenset[int],
+) -> list[ContractSection]:
     """Recorre los elementos candidatos y construye las secciones."""
     sections: list[ContractSection] = []
     headings_by_area: dict[SourceArea, tuple[str, int]] = {}
@@ -297,7 +296,17 @@ def extract_sections(candidates: list[Tag]) -> list[ContractSection]:
 
         source_area = identify_source_area(element)
 
-        if not is_row and is_heading(element):
+        is_content_heading = (
+            is_heading(element)
+            and get_heading_level(element)
+            in content_heading_levels
+        )
+
+        if (
+            not is_row
+            and is_heading(element)
+            and not is_content_heading
+        ):
             heading_data = (text, get_heading_level(element))
             headings_by_area[source_area] = heading_data
             if source_area in {"content", "body"}:
@@ -316,10 +325,51 @@ def extract_sections(candidates: list[Tag]) -> list[ContractSection]:
                 element, len(sections) + 1, heading, heading_level, text
             )
         )
-
     return sections
 
+def detect_content_heading_levels(
+    candidates: list[Tag],
+) -> frozenset[int]:
+    """Detecta niveles de encabezado utilizados como contenido."""
 
+    heading_lengths: dict[int, int] = {}
+    content_length = 0
+
+    for element in candidates:
+        if identify_source_area(element) not in {
+            "content",
+            "body",
+        }:
+            continue
+
+        text = normalize_html_text(
+            element.get_text(" ", strip=True)
+        )
+        if not text:
+            continue
+
+        if is_heading(element):
+            level = get_heading_level(element)
+            heading_lengths[level] = (
+                heading_lengths.get(level, 0)
+                + len(text)
+            )
+        else:
+            content_length += len(text)
+
+    if not heading_lengths:
+        return frozenset()
+
+    shallowest_level = min(heading_lengths)
+
+    return frozenset(
+        level
+        for level, text_length in heading_lengths.items()
+        if (
+            level > shallowest_level
+            and text_length > content_length
+        )
+    )
 
 def parse_static_html(
     html: str,
@@ -344,16 +394,16 @@ def parse_static_html(
             "No se encontro contenido HTML para procesar."
         )
 
-    semantic_candidates = document_body.find_all(
-        is_semantic_candidate
+    candidates = document_body.find_all(
+        is_text_candidate
     )
-    sections = extract_sections(semantic_candidates)
-
-    if not has_content_sections(sections):
-        fallback_candidates = document_body.find_all(
-            is_text_candidate
-        )
-        sections = extract_sections(fallback_candidates)
+    content_heading_levels = detect_content_heading_levels(
+        candidates
+    )
+    sections = extract_sections(
+        candidates,
+        content_heading_levels,
+    )
 
     if not sections:
         raise ValueError(
@@ -394,12 +444,29 @@ def extract_static_contract(request: ExtractionRequest) -> ExtractedContract:
     )
 
 
-def extract_dynamic_contract(request: ExtractionRequest) -> ExtractedContract:
+def extract_dynamic_contract(
+    request: ExtractionRequest,
+) -> ExtractedContract:
     """Descarga un contrato publicado en una página dinámica."""
+
     with sync_playwright() as playwright:
         browser = playwright.chromium.launch()
-        page = browser.new_page(user_agent=USER_AGENT)
-        page.goto(str(request.url), timeout=30_000)
+        page = browser.new_page()
+
+        page.goto(
+            str(request.url),
+            wait_until="domcontentloaded",
+            timeout=30_000,
+        )
+
+        try:
+            page.wait_for_load_state(
+                "networkidle",
+                timeout=10_000,
+            )
+        except PlaywrightTimeoutError:
+            pass
+
         html = page.content()
         browser.close()
 
