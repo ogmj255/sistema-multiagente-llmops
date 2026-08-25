@@ -1,0 +1,893 @@
+[
+  {
+    "document_id": "ec_constitucion_2008",
+    "title": "Constitución de la República del Ecuador",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Asamblea Constituyente del Ecuador",
+    "document_type": "constitution",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "es",
+    "source_url": "https://www.defensa.gob.ec/wp-content/uploads/downloads/2021/02/Constitucion-de-la-Republica-del-Ecuador_act_ene-2021.pdf",
+    "topics": [
+      "derechos fundamentales",
+      "protección de datos",
+      "consumidores"
+    ],
+    "official_citation": "Registro Oficial 449, 20-10-2008",
+    "publication_date": "2008-10-20",
+    "effective_date": "2008-10-20"
+  },
+  {
+    "document_id": "ec_lopdp_2021",
+    "title": "Ley Orgánica de Protección de Datos Personales",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Asamblea Nacional del Ecuador",
+    "document_type": "law",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "es",
+    "source_url": "https://www.asambleanacional.gob.ec/sites/default/files/private/asambleanacional/filesasambleanacionalnameuid-29/Leyes%202013-2017/920-lmoreno/ro-459-5to-sup-26-05-2021.pdf",
+    "topics": [
+      "protección de datos",
+      "privacidad",
+      "derechos del titular"
+    ],
+    "official_citation": "Quinto Suplemento del Registro Oficial 459, 26-05-2021",
+    "publication_date": "2021-05-26",
+    "effective_date": "2021-05-26"
+  },
+  {
+    "document_id": "ec_reglamento_lopdp_2023",
+    "title": "Reglamento General de la Ley Orgánica de Protección de Datos Personales",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Presidencia de la República del Ecuador",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://www.cosede.gob.ec/wp-content/uploads/2023/12/REGLAMENTO-GENERAL-A-LA-LEY-ORG%C3%81NICA-DE-PROTECCION-DE-DATOS-PERSONALES_compressed-1.pdf",
+    "topics": [
+      "protección de datos",
+      "responsables",
+      "encargados"
+    ],
+    "official_citation": "Decreto Ejecutivo 904, Tercer Suplemento del Registro Oficial 435",
+    "publication_date": "2023-11-13",
+    "effective_date": "2023-11-13"
+  },
+  {
+    "document_id": "ec_defensa_consumidor_2000",
+    "title": "Ley Orgánica de Defensa del Consumidor",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Congreso Nacional del Ecuador",
+    "document_type": "law",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "es",
+    "source_url": "https://www.dpe.gob.ec/wp-content/dpetransparencia2014/literala/BaseLegalQueRigeLaInstitucion/LeyDefensaConsumidor.pdf",
+    "topics": [
+      "consumidores",
+      "contratos",
+      "cláusulas abusivas"
+    ],
+    "official_citation": "Suplemento del Registro Oficial 116, 10-07-2000",
+    "publication_date": "2000-07-10",
+    "effective_date": "2000-07-10"
+  },
+  {
+    "document_id": "ec_comercio_electronico_2002",
+    "title": "Ley de Comercio Electrónico, Firmas Electrónicas y Mensajes de Datos",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Congreso Nacional del Ecuador",
+    "document_type": "law",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "es",
+    "source_url": "https://www.consejodecomunicacion.gob.ec/wp-content/uploads/downloads/2023/10/lotaip/LEY%20DE%20COMERCIO%20ELECTR%C3%93NICO%2C%20FIRMAS%20ELECTR%C3%93NICAS%20Y%20MENSAJES%20DE%20DATOS.pdf",
+    "topics": [
+      "comercio electrónico",
+      "contratación electrónica",
+      "firmas electrónicas"
+    ],
+    "official_citation": "Suplemento del Registro Oficial 557, 17-04-2002",
+    "publication_date": "2002-04-17",
+    "effective_date": "2002-04-17"
+  },
+  {
+    "document_id": "ec_identidad_datos_civiles_2016",
+    "title": "Ley Orgánica de Gestión de la Identidad y Datos Civiles",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Asamblea Nacional del Ecuador",
+    "document_type": "law",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "es",
+    "source_url": "https://www.asambleanacional.gob.ec/es/system/files/ro_ley_organica_de_gestion_de_la_identidad_y_datos_civiles_ro_684_2do_supl_04-02-2015.pdf",
+    "topics": [
+      "identidad",
+      "datos civiles",
+      "datos personales"
+    ],
+    "official_citation": "Segundo Suplemento del Registro Oficial 684, 04-02-2016",
+    "publication_date": "2016-02-04",
+    "effective_date": "2016-02-04"
+  },
+  {
+    "document_id": "ec_sinardap_2010",
+    "title": "Ley del Sistema Nacional de Registro de Datos Públicos",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Asamblea Nacional del Ecuador",
+    "document_type": "law",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "es",
+    "source_url": "https://www.asambleanacional.gob.ec/es/system/files/ley_del_sistema_nacional_de_datos_publicos_de_los_registros_de_la_propiedad_mercantiles_y_de_prendas_especiales_de_comercio-1.pdf",
+    "topics": [
+      "registros públicos",
+      "interoperabilidad",
+      "datos personales"
+    ],
+    "official_citation": "Suplemento del Registro Oficial 162, 31-03-2010",
+    "publication_date": "2010-03-31",
+    "effective_date": "2010-03-31"
+  },
+  {
+    "document_id": "ec_ciberseguridad_2026",
+    "title": "Ley Orgánica para el Fortalecimiento de la Ciberseguridad",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Asamblea Nacional del Ecuador",
+    "document_type": "law",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://www.asambleanacional.gob.ec/es/system/files/ro_29.pdf",
+    "topics": [
+      "ciberseguridad",
+      "incidentes",
+      "protección de datos"
+    ],
+    "official_citation": "Quinto Suplemento del Registro Oficial 290, 22-05-2026",
+    "publication_date": "2026-05-22",
+    "effective_date": "2026-05-22"
+  },
+  {
+    "document_id": "ec_comunicacion_2013",
+    "title": "Ley Orgánica de Comunicación",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Asamblea Nacional del Ecuador",
+    "document_type": "law",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "es",
+    "source_url": "https://www.arcotel.gob.ec/wp-content/uploads/2022/04/Ley_Organica_Comunicacion_reformada_2019.pdf",
+    "topics": [
+      "comunicación",
+      "contenido digital",
+      "derechos de usuarios"
+    ],
+    "official_citation": "Suplemento del Registro Oficial 22, 25-06-2013",
+    "publication_date": "2013-06-25",
+    "effective_date": "2013-06-25"
+  },
+  {
+    "document_id": "ec_reglamento_conocimientos_2017",
+    "title": "Reglamento General al Código Orgánico de la Economía Social de los Conocimientos, Creatividad e Innovación",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Presidencia de la República del Ecuador",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "es",
+    "source_url": "https://www.derechosintelectuales.gob.ec/wp-content/uploads/downloads/2020/enero/a_2_30_reglamento_general_al_codigo_organico_de_la_economia_enero_2020.pdf",
+    "topics": [
+      "propiedad intelectual",
+      "software",
+      "contenidos digitales"
+    ],
+    "official_citation": "Decreto Ejecutivo 1435, Registro Oficial 9, 07-06-2017",
+    "publication_date": "2017-06-07",
+    "effective_date": "2017-06-07"
+  },
+  {
+    "document_id": "ec_reglamento_telecomunicaciones_2016",
+    "title": "Reglamento General a la Ley Orgánica de Telecomunicaciones",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Presidencia de la República del Ecuador",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "es",
+    "source_url": "https://www.telecomunicaciones.gob.ec/wp-content/uploads/2024/04/CompletosSinConcordanciaspdf1085906_-_REGLAMENTO_GENERAL_A_LA_LEY_ORGANICA_DE_-1.pdf",
+    "topics": [
+      "telecomunicaciones",
+      "servicios digitales",
+      "usuarios"
+    ],
+    "official_citation": "Suplemento del Registro Oficial 676, 25-01-2016",
+    "publication_date": "2016-01-25",
+    "effective_date": "2016-01-25"
+  },
+  {
+    "document_id": "ec_egsi_2024",
+    "title": "Esquema Gubernamental de Seguridad de la Información",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Ministerio de Telecomunicaciones y de la Sociedad de la Información",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://www.telecomunicaciones.gob.ec/wp-content/uploads/2024/07/Acuerdo-Ministerial-MINTEL-MINTEL-2024-0014.pdf",
+    "topics": [
+      "seguridad de la información",
+      "ciberseguridad",
+      "gestión de riesgos"
+    ],
+    "official_citation": "Acuerdo MINTEL-MINTEL-2024-0014",
+    "publication_date": "2024-07-01"
+  },
+  {
+    "document_id": "ec_spdp_2024_0012",
+    "title": "Procedimiento para la atención de consultas formuladas a la SPDP",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2024/12/16.pdf.pdf",
+    "topics": [
+      "consultas",
+      "protección de datos",
+      "procedimiento administrativo"
+    ],
+    "official_citation": "Resolución SPDP-SPDP-2024-0012-R"
+  },
+  {
+    "document_id": "ec_spdp_2024_0013",
+    "title": "Reglamento para la presentación, recepción y trámite de denuncias y solicitudes",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2024/11/13-SPDP-SPDP-2024-0013-R-Reglamento-de-Denuncias-y-Solicitudes-1.pdf",
+    "topics": [
+      "denuncias",
+      "solicitudes",
+      "tutela de derechos"
+    ],
+    "official_citation": "Resolución SPDP-SPDP-2024-0013-R"
+  },
+  {
+    "document_id": "ec_spdp_2024_0019",
+    "title": "Lineamientos y directrices de la política de privacidad y protección de datos personales",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2024/12/19.pdf",
+    "topics": [
+      "política de privacidad",
+      "transparencia",
+      "protección de datos"
+    ],
+    "official_citation": "Resolución SPDP-SPDP-2024-0019-R",
+    "publication_date": "2024-12-09"
+  },
+  {
+    "document_id": "ec_spdp_2025_0003",
+    "title": "Reglamento que aprueba la guía de gestión de riesgos y evaluación de impacto",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/05/03.01.01-SPDP-SPD-2025-0003-R-Guia-Gest-de-Riesg-y-Ev-Imp-signed.pdf",
+    "topics": [
+      "gestión de riesgos",
+      "evaluación de impacto",
+      "protección de datos"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2025-0003-R"
+  },
+  {
+    "document_id": "ec_spdp_2025_0004",
+    "title": "Reglamento del programa profesionalizante de delegados de protección de datos",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/05/04.01.01-SPDP-SPD-2025-0004-R-Reglamento-prof-DPD-signed.pdf",
+    "topics": [
+      "delegado de protección de datos",
+      "formación",
+      "cumplimiento"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2025-0004-R"
+  },
+  {
+    "document_id": "ec_spdp_2025_0006",
+    "title": "Obligación de incorporar cláusulas de protección de datos en contratos celebrados en Ecuador",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/05/06.01.01-SPDP-SPD-2025-0006-R-clausulas-para-contratos-en-Ecuador-signed.pdf",
+    "topics": [
+      "contratos",
+      "cláusulas",
+      "protección de datos"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2025-0006-R"
+  },
+  {
+    "document_id": "ec_spdp_2025_0028",
+    "title": "Reglamento del delegado de protección de datos personales",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/07/028-R.pdf",
+    "topics": [
+      "delegado de protección de datos",
+      "responsables",
+      "cumplimiento"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2025-0028-R"
+  },
+  {
+    "document_id": "ec_spdp_2025_0030",
+    "title": "Reglamento para la seudonimización, anonimización, bloqueo y eliminación de datos personales",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/08/0030-R.pdf",
+    "topics": [
+      "seudonimización",
+      "anonimización",
+      "eliminación de datos"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2025-0030-R"
+  },
+  {
+    "document_id": "ec_spdp_2025_0034",
+    "title": "Procedimiento de evaluación y revisión de la Ley Orgánica de Protección de Datos Personales",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/09/SPDP-SPD-2025-0034-R-Reglamento-del-Procedimiento.pdf",
+    "topics": [
+      "evaluación normativa",
+      "revisión",
+      "protección de datos"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2025-0034-R"
+  },
+  {
+    "document_id": "ec_spdp_2025_0041",
+    "title": "Normativa general para la aplicación del interés legítimo",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/11/41.01.01-SPSP-SPD-2025-0041-R-Normativa-general-para-la-aplicacion-del-interes-legitimo-y-su-anexo.pdf",
+    "topics": [
+      "interés legítimo",
+      "bases de legitimación",
+      "protección de datos"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2025-0041-R"
+  },
+  {
+    "document_id": "ec_spdp_2026_0003",
+    "title": "Norma general para el tratamiento de datos personales en actividades familiares o domésticas",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2026/01/03.01.01-SPSP-SPD-2026-0003-R-Norma-general-para-el-tratamiento-en-actividades-familiares-o-domesticas-signed.pdf",
+    "topics": [
+      "actividades domésticas",
+      "excepciones",
+      "protección de datos"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2026-0003-R"
+  },
+  {
+    "document_id": "ec_spdp_2026_0004",
+    "title": "Norma general de transferencias o comunicaciones nacionales e internacionales de datos personales",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2026/01/04.01.01-SPSP-SPD-2026-0004-R-Norma-general-de-transferencias-signed.pdf",
+    "topics": [
+      "transferencias internacionales",
+      "comunicación de datos",
+      "garantías"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2026-0004-R"
+  },
+  {
+    "document_id": "ec_spdp_2026_0005",
+    "title": "Norma general sobre el tratamiento de datos personales a gran escala",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2026/02/Resolucion0005.pdf",
+    "topics": [
+      "tratamiento a gran escala",
+      "riesgo",
+      "protección de datos"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2026-0005-R"
+  },
+  {
+    "document_id": "ec_spdp_2026_0009",
+    "title": "Norma general para la garantía del derecho de protección de datos personales en sistemas de inteligencia artificial",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2026/02/ResolIA.pdf",
+    "topics": [
+      "inteligencia artificial",
+      "decisiones automatizadas",
+      "protección de datos"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2026-0009-R"
+  },
+  {
+    "document_id": "ec_spdp_2026_0022",
+    "title": "Norma para la presentación y trámite de denuncias del delegado de protección de datos",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "resolution",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2026/05/22.01.01-SPSP-SPD-2026-0022-R-Norma-para-la-presentacion-y-tramite-de-denuncias-del-DPD-signed.pdf",
+    "topics": [
+      "denuncias",
+      "delegado de protección de datos",
+      "procedimiento"
+    ],
+    "official_citation": "Resolución SPDP-SPD-2026-0022-R"
+  },
+  {
+    "document_id": "ec_spdp_guia_riesgos_v2",
+    "title": "Guía de gestión de riesgos y evaluación de impacto del tratamiento de datos personales, versión 2",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "guideline",
+    "binding_level": "reference",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2026/06/guia_v2_vfinal.pdf",
+    "topics": [
+      "gestión de riesgos",
+      "evaluación de impacto",
+      "seguridad"
+    ]
+  },
+  {
+    "document_id": "ec_spdp_privacidad_diseno",
+    "title": "Guía de protección de datos personales desde el diseño y por defecto",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "guideline",
+    "binding_level": "reference",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/10/40.02-Guia-de-Proteccion-de-Datos-desde-el-Diseno-y-por-Defecto.pdf",
+    "topics": [
+      "privacidad desde el diseño",
+      "privacidad por defecto",
+      "medidas técnicas"
+    ]
+  },
+  {
+    "document_id": "ec_spdp_politica_ia_2026",
+    "title": "Política para el desarrollo y uso de inteligencia artificial en procesos administrativos de la SPDP",
+    "jurisdiction": "ecuador",
+    "issuing_body": "Superintendencia de Protección de Datos Personales",
+    "document_type": "guideline",
+    "binding_level": "reference",
+    "status": "in_force",
+    "language": "es",
+    "source_url": "https://spdp.gob.ec/wp-content/uploads/2026/05/07.01.02.-Anexo-Politica-de-uso-IA-SPDP-signed.pdf",
+    "topics": [
+      "inteligencia artificial",
+      "gobernanza",
+      "gestión de riesgos"
+    ],
+    "official_citation": "Anexo de la Resolución SPDP-SPD-2026-0007-R"
+  },
+  {
+    "document_id": "eu_gdpr_2016_679",
+    "title": "General Data Protection Regulation",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32016R0679",
+    "topics": [
+      "data protection",
+      "privacy",
+      "data subjects"
+    ],
+    "official_citation": "Regulation (EU) 2016/679",
+    "publication_date": "2016-05-04",
+    "effective_date": "2018-05-25"
+  },
+  {
+    "document_id": "eu_digital_services_2022_2065",
+    "title": "Digital Services Act",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32022R2065",
+    "topics": [
+      "online platforms",
+      "intermediary services",
+      "transparency"
+    ],
+    "official_citation": "Regulation (EU) 2022/2065"
+  },
+  {
+    "document_id": "eu_digital_markets_2022_1925",
+    "title": "Digital Markets Act",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32022R1925",
+    "topics": [
+      "digital markets",
+      "gatekeepers",
+      "platform obligations"
+    ],
+    "official_citation": "Regulation (EU) 2022/1925"
+  },
+  {
+    "document_id": "eu_ai_act_2024_1689",
+    "title": "Artificial Intelligence Act",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32024R1689",
+    "topics": [
+      "artificial intelligence",
+      "automated decisions",
+      "risk management"
+    ],
+    "official_citation": "Regulation (EU) 2024/1689"
+  },
+  {
+    "document_id": "eu_data_act_2023_2854",
+    "title": "Data Act",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32023R2854",
+    "topics": [
+      "data access",
+      "cloud switching",
+      "unfair contract terms"
+    ],
+    "official_citation": "Regulation (EU) 2023/2854"
+  },
+  {
+    "document_id": "eu_data_governance_2022_868",
+    "title": "Data Governance Act",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32022R0868",
+    "topics": [
+      "data governance",
+      "data intermediaries",
+      "data sharing"
+    ],
+    "official_citation": "Regulation (EU) 2022/868"
+  },
+  {
+    "document_id": "eu_digital_content_2019_770",
+    "title": "Directive on contracts for the supply of digital content and digital services",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "directive",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32019L0770",
+    "topics": [
+      "digital services",
+      "contracts",
+      "consumer remedies"
+    ],
+    "official_citation": "Directive (EU) 2019/770"
+  },
+  {
+    "document_id": "eu_consumer_rights_2011_83",
+    "title": "Consumer Rights Directive",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "directive",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32011L0083",
+    "topics": [
+      "consumer rights",
+      "distance contracts",
+      "information duties"
+    ],
+    "official_citation": "Directive 2011/83/EU"
+  },
+  {
+    "document_id": "eu_unfair_terms_1993_13",
+    "title": "Directive on unfair terms in consumer contracts",
+    "jurisdiction": "european_union",
+    "issuing_body": "Council of the European Communities",
+    "document_type": "directive",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/31993L0013",
+    "topics": [
+      "unfair terms",
+      "consumer contracts",
+      "contract transparency"
+    ],
+    "official_citation": "Council Directive 93/13/EEC"
+  },
+  {
+    "document_id": "eu_ecommerce_2000_31",
+    "title": "Directive on electronic commerce",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "directive",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32000L0031",
+    "topics": [
+      "electronic commerce",
+      "intermediaries",
+      "online contracts"
+    ],
+    "official_citation": "Directive 2000/31/EC"
+  },
+  {
+    "document_id": "eu_eprivacy_2002_58",
+    "title": "Directive on privacy and electronic communications",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "directive",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32002L0058",
+    "topics": [
+      "electronic communications",
+      "cookies",
+      "confidentiality"
+    ],
+    "official_citation": "Directive 2002/58/EC"
+  },
+  {
+    "document_id": "eu_unfair_commercial_2005_29",
+    "title": "Unfair Commercial Practices Directive",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "directive",
+    "binding_level": "binding",
+    "status": "amended",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32005L0029",
+    "topics": [
+      "unfair commercial practices",
+      "consumers",
+      "misleading practices"
+    ],
+    "official_citation": "Directive 2005/29/EC"
+  },
+  {
+    "document_id": "eu_representative_actions_2020_1828",
+    "title": "Directive on representative actions for the protection of consumers",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "directive",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32020L1828",
+    "topics": [
+      "consumer protection",
+      "collective actions",
+      "remedies"
+    ],
+    "official_citation": "Directive (EU) 2020/1828"
+  },
+  {
+    "document_id": "eu_platform_business_2019_1150",
+    "title": "Regulation on fairness and transparency for business users of online intermediation services",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32019R1150",
+    "topics": [
+      "online platforms",
+      "terms and conditions",
+      "business users"
+    ],
+    "official_citation": "Regulation (EU) 2019/1150"
+  },
+  {
+    "document_id": "eu_nis2_2022_2555",
+    "title": "NIS2 Directive",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "directive",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32022L2555",
+    "topics": [
+      "cybersecurity",
+      "incident reporting",
+      "risk management"
+    ],
+    "official_citation": "Directive (EU) 2022/2555"
+  },
+  {
+    "document_id": "eu_accessibility_2019_882",
+    "title": "European Accessibility Act",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "directive",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32019L0882",
+    "topics": [
+      "accessibility",
+      "digital services",
+      "consumer services"
+    ],
+    "official_citation": "Directive (EU) 2019/882"
+  },
+  {
+    "document_id": "eu_rome_i_2008_593",
+    "title": "Rome I Regulation on the law applicable to contractual obligations",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32008R0593",
+    "topics": [
+      "applicable law",
+      "contracts",
+      "consumer contracts"
+    ],
+    "official_citation": "Regulation (EC) 593/2008"
+  },
+  {
+    "document_id": "eu_brussels_i_2012_1215",
+    "title": "Brussels I bis Regulation on jurisdiction and recognition of judgments",
+    "jurisdiction": "european_union",
+    "issuing_body": "European Parliament and Council of the European Union",
+    "document_type": "regulation",
+    "binding_level": "binding",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "http://publications.europa.eu/resource/celex/32012R1215",
+    "topics": [
+      "jurisdiction",
+      "consumer contracts",
+      "judgments"
+    ],
+    "official_citation": "Regulation (EU) 1215/2012"
+  },
+  {
+    "document_id": "int_un_consumer_guidelines_2015",
+    "title": "United Nations Guidelines for Consumer Protection",
+    "jurisdiction": "international",
+    "issuing_body": "United Nations Conference on Trade and Development",
+    "document_type": "guideline",
+    "binding_level": "reference",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "https://unctad.org/system/files/official-document/ditccplpmisc2016d1_en.pdf",
+    "topics": [
+      "consumer protection",
+      "electronic commerce",
+      "dispute resolution"
+    ],
+    "official_citation": "United Nations General Assembly Resolution 70/186"
+  },
+  {
+    "document_id": "int_oecd_privacy_2013",
+    "title": "OECD Guidelines on the Protection of Privacy and Transborder Flows of Personal Data",
+    "jurisdiction": "international",
+    "issuing_body": "Organisation for Economic Co-operation and Development",
+    "document_type": "guideline",
+    "binding_level": "reference",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "https://legalinstruments.oecd.org/public/doc/114/114.en.pdf",
+    "topics": [
+      "privacy",
+      "transborder data flows",
+      "accountability"
+    ],
+    "official_citation": "OECD/LEGAL/0188"
+  },
+  {
+    "document_id": "int_oecd_ecommerce_2016",
+    "title": "OECD Recommendation on Consumer Protection in E-commerce",
+    "jurisdiction": "international",
+    "issuing_body": "Organisation for Economic Co-operation and Development",
+    "document_type": "guideline",
+    "binding_level": "reference",
+    "status": "in_force",
+    "language": "en",
+    "source_url": "https://legalinstruments.oecd.org/public/doc/336/336.en.pdf",
+    "topics": [
+      "consumer protection",
+      "electronic commerce",
+      "online disclosures"
+    ],
+    "official_citation": "OECD/LEGAL/0422"
+  }
+]
