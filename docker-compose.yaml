@@ -14,6 +14,15 @@
       timeout: 5s
       retries: 5
 
+  chroma:
+    image: chromadb/chroma:1.5.9
+    container_name: clausulas-chroma
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/data
+
   backend:
     build:
       context: ./backend
@@ -24,11 +33,16 @@
       - ./backend/.env
     environment:
       DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
+      CHROMA_HOST: chroma
+      CHROMA_PORT: 8000
+      CHROMA_COLLECTION: legal_knowledge
     expose:
       - "8000"
     depends_on:
       postgres:
         condition: service_healthy
+      chroma:
+        condition: service_started
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.backend.rule=PathPrefix(`/`)"
@@ -47,3 +61,4 @@
 
 volumes:
   postgres_data:
+  chroma_data:

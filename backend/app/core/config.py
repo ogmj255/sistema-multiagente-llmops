@@ -16,6 +16,10 @@ class Settings(BaseSettings):
         "postgresql+psycopg://tesis_user:change_me@localhost:5432/clausulas_db"
     )
 
+    chroma_host: str = "localhost"
+    chroma_port: int = 8001
+    chroma_collection: str = "legal_knowledge"
+
     model_config = SettingsConfigDict(
         env_file=ENV_FILE,
         env_file_encoding="utf-8",

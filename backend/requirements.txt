@@ -16,3 +16,4 @@ beautifulsoup4==4.15.0
 playwright==1.62.0
 mcp[cli]==1.28.1
 pypdf==6.16.2
+chromadb-client==1.5.9
