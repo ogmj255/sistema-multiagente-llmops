@@ -37,37 +37,6 @@ El sistema adopta una arquitectura de monolito modular contenedorizado, separada
 
 El desarrollo se gestiona mediante Scrum, utilizando Jira para la planificación de sprints y GitHub para el control de versiones.
 
-## Estado
-
-Sprint 1 completado — estructura base del sistema implementada y validada.
-
-## Ejecución de la estructura base
-
-1. Crear el archivo local de variables:
-
-~~~powershell
-Copy-Item "backend\.env.example" "backend\.env"
-~~~
-
-2. Iniciar los servicios:
-
-~~~powershell
-docker compose --env-file "backend\.env" up -d --build
-~~~
-
-3. Comprobar el funcionamiento:
-
-- API: `http://localhost/`
-- Estado: `http://localhost/health`
-- Swagger: `http://localhost/docs`
-- Traefik: `http://localhost:8080/dashboard/`
-
-Para detener los servicios:
-
-~~~powershell
-docker compose --env-file "backend\.env" down
-~~~
-
 ## Autor
 
 Omar Moscoso
