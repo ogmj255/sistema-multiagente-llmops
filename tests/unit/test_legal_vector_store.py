@@ -21,9 +21,7 @@ class FakeCollection:
         ids: list[str],
         embeddings: list[list[float]],
         documents: list[str],
-        metadatas: list[
-            dict[str, str | int | float | bool]
-        ],
+        metadatas: list[dict[str, str | int | float | bool]],
     ) -> None:
         self.calls.append(
             {
@@ -39,9 +37,7 @@ def create_chunk(index: int) -> LegalChunk:
     """Crea un segmento jurídico para pruebas."""
 
     return LegalChunk(
-        chunk_id=(
-            f"ec_test_law_chunk_{index:04d}"
-        ),
+        chunk_id=(f"ec_test_law_chunk_{index:04d}"),
         document_id="ec_test_law",
         chunk_index=index,
         content=f"Contenido jurídico {index}.",
@@ -61,15 +57,9 @@ def create_chunk(index: int) -> LegalChunk:
 def test_build_chunk_metadata() -> None:
     """Convierte metadatos y excluye contenido y nulos."""
 
-    metadata = (
-        legal_vector_store.build_chunk_metadata(
-            create_chunk(0)
-        )
-    )
+    metadata = legal_vector_store.build_chunk_metadata(create_chunk(0))
 
-    assert metadata["chunk_id"] == (
-        "ec_test_law_chunk_0000"
-    )
+    assert metadata["chunk_id"] == ("ec_test_law_chunk_0000")
     assert metadata["chunk_index"] == 0
     assert metadata["jurisdiction"] == "ecuador"
     assert "content" not in metadata
@@ -82,18 +72,12 @@ def test_index_legal_chunks_in_batches(
     """Indexa todos los segmentos en lotes reproducibles."""
 
     collection = FakeCollection()
-    chunks = [
-        create_chunk(index)
-        for index in range(3)
-    ]
+    chunks = [create_chunk(index) for index in range(3)]
 
     def fake_embeddings(
         texts: list[str],
     ) -> list[list[float]]:
-        return [
-            [float(index), 0.0, 1.0]
-            for index, _ in enumerate(texts)
-        ]
+        return [[float(index), 0.0, 1.0] for index, _ in enumerate(texts)]
 
     monkeypatch.setattr(
         legal_vector_store,
@@ -101,12 +85,10 @@ def test_index_legal_chunks_in_batches(
         fake_embeddings,
     )
 
-    result = (
-        legal_vector_store.index_legal_chunks(
-            chunks,
-            batch_size=2,
-            collection=collection,
-        )
+    result = legal_vector_store.index_legal_chunks(
+        chunks,
+        batch_size=2,
+        collection=collection,
     )
 
     assert result.status == "success"
@@ -135,9 +117,7 @@ def test_index_continues_after_batch_error(
         calls += 1
 
         if calls == 1:
-            raise EmbeddingServiceError(
-                "Fallo controlado."
-            )
+            raise EmbeddingServiceError("Fallo controlado.")
 
         return [[0.0, 1.0, 0.0]]
 
@@ -147,16 +127,14 @@ def test_index_continues_after_batch_error(
         fail_first_batch,
     )
 
-    result = (
-        legal_vector_store.index_legal_chunks(
-            [
-                create_chunk(0),
-                create_chunk(1),
-                create_chunk(2),
-            ],
-            batch_size=2,
-            collection=collection,
-        )
+    result = legal_vector_store.index_legal_chunks(
+        [
+            create_chunk(0),
+            create_chunk(1),
+            create_chunk(2),
+        ],
+        batch_size=2,
+        collection=collection,
     )
 
     assert result.status == "partial"
@@ -169,14 +147,14 @@ def test_index_continues_after_batch_error(
 def test_reject_empty_index() -> None:
     """Devuelve error controlado sin segmentos."""
 
-    result = (
-        legal_vector_store.index_legal_chunks([])
-    )
+    result = legal_vector_store.index_legal_chunks([])
 
     assert result.status == "error"
     assert result.documents == 0
     assert result.chunks == 0
     assert result.errors
+
+
 class FakeSearchCollection:
     """Simula una colección con resultados jurídicos."""
 
@@ -196,10 +174,8 @@ class FakeSearchCollection:
     ) -> dict[str, object]:
         self.where = where
 
-        assert query_embeddings == [
-            [0.1, 0.2, 0.3]
-        ]
-        assert n_results == 3
+        assert query_embeddings == [[0.1, 0.2, 0.3]]
+        assert n_results == 1
         assert include == [
             "documents",
             "metadatas",
@@ -207,30 +183,26 @@ class FakeSearchCollection:
         ]
 
         return {
-            "ids": [[
-                "ec_test_law_chunk_0000"
-            ]],
-            "documents": [[
-                "La ley protege los datos personales."
-            ]],
-            "metadatas": [[{
-                "document_id": "ec_test_law",
-                "chunk_index": 0,
-                "title": "Ley de prueba",
-                "jurisdiction": "ecuador",
-                "issuing_body": (
-                    "Asamblea Nacional"
-                ),
-                "document_type": "law",
-                "binding_level": "binding",
-                "status": "in_force",
-                "language": "es",
-                "source_url": (
-                    "https://example.com/law"
-                ),
-                "topics": "protección de datos",
-                "checksum": "a" * 64,
-            }]],
+            "ids": [["ec_test_law_chunk_0000"]],
+            "documents": [["La ley protege los datos personales."]],
+            "metadatas": [
+                [
+                    {
+                        "document_id": "ec_test_law",
+                        "chunk_index": 0,
+                        "title": "Ley de prueba",
+                        "jurisdiction": "ecuador",
+                        "issuing_body": ("Asamblea Nacional"),
+                        "document_type": "law",
+                        "binding_level": "binding",
+                        "status": "in_force",
+                        "language": "es",
+                        "source_url": ("https://example.com/law"),
+                        "topics": "protección de datos",
+                        "checksum": "a" * 64,
+                    }
+                ]
+            ],
             "distances": [[0.12]],
         }
 
@@ -254,18 +226,14 @@ def test_search_legal_chunks_with_filters(
         document_type="law",
     )
 
-    matches = (
-        legal_vector_store.search_legal_chunks(
-            [0.1, 0.2, 0.3],
-            request,
-            collection=collection,
-        )
+    matches = legal_vector_store.search_legal_chunks(
+        [0.1, 0.2, 0.3],
+        request,
+        collection=collection,
     )
 
     assert len(matches) == 1
-    assert matches[0].document_id == (
-        "ec_test_law"
-    )
+    assert matches[0].document_id == ("ec_test_law")
     assert matches[0].distance == 0.12
     assert collection.where == {
         "$and": [
@@ -273,6 +241,113 @@ def test_search_legal_chunks_with_filters(
             {"document_type": "law"},
         ]
     }
+
+
+def test_search_removes_exact_duplicates(
+    monkeypatch,
+) -> None:
+    """Descarta contenido repetido del mismo documento."""
+
+    monkeypatch.setattr(
+        legal_vector_store.settings,
+        "ollama_embedding_dimensions",
+        3,
+    )
+
+    collection = FakeSearchCollection()
+    collection.count = lambda: 3
+
+    def duplicate_query(
+        *,
+        query_embeddings: list[list[float]],
+        n_results: int,
+        where: dict[str, object] | None,
+        include: list[str],
+    ) -> dict[str, object]:
+        assert query_embeddings == [[0.1, 0.2, 0.3]]
+        assert n_results == 3
+        assert where is None
+        assert include == [
+            "documents",
+            "metadatas",
+            "distances",
+        ]
+
+        metadata = {
+            "document_id": "ec_test_law",
+            "chunk_index": 0,
+            "title": "Ley de prueba",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Asamblea Nacional",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "in_force",
+            "language": "es",
+            "source_url": "https://example.com/law",
+            "topics": "protección de datos",
+            "checksum": "a" * 64,
+        }
+        duplicate_metadata = {
+            **metadata,
+            "chunk_index": 1,
+        }
+        other_metadata = {
+            **metadata,
+            "document_id": "ec_other_law",
+            "title": "Otra ley",
+        }
+
+        return {
+            "ids": [
+                [
+                    "ec_test_law_chunk_0000",
+                    "ec_test_law_chunk_0001",
+                    "ec_other_law_chunk_0000",
+                ]
+            ],
+            "documents": [
+                [
+                    "Contenido jurídico repetido.",
+                    "Contenido jurídico repetido.",
+                    "Contenido jurídico diferente.",
+                ]
+            ],
+            "metadatas": [
+                [
+                    metadata,
+                    duplicate_metadata,
+                    other_metadata,
+                ]
+            ],
+            "distances": [
+                [
+                    0.10,
+                    0.11,
+                    0.12,
+                ]
+            ],
+        }
+
+    monkeypatch.setattr(
+        collection,
+        "query",
+        duplicate_query,
+    )
+
+    matches = legal_vector_store.search_legal_chunks(
+        [0.1, 0.2, 0.3],
+        KnowledgeQuery(
+            query="cláusulas abusivas",
+            top_k=2,
+        ),
+        collection=collection,
+    )
+
+    assert len(matches) == 2
+    assert [match.document_id for match in matches] == [
+        "ec_test_law",
+        "ec_other_law",
+    ]
 
 
 def test_search_rejects_empty_collection(
@@ -295,8 +370,6 @@ def test_search_rejects_empty_collection(
     ):
         legal_vector_store.search_legal_chunks(
             [0.1, 0.2, 0.3],
-            KnowledgeQuery(
-                query="protección de datos"
-            ),
+            KnowledgeQuery(query="protección de datos"),
             collection=collection,
         )

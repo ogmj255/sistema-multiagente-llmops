@@ -65,9 +65,9 @@ Resultado:
 
 ```text
 Documentos preparados: 51
-Segmentos generados: 6543
-Identificadores únicos: 6543
-Longitud máxima: 1199
+Segmentos generados: 7238
+Identificadores únicos: 7238
+Longitud máxima: 1200
 Errores: 0
 ```
 
@@ -101,9 +101,9 @@ Resultado registrado:
 ```text
 Estado: success
 Documentos indexados: 51
-Segmentos indexados: 6543
-Registros en ChromaDB: 6543
-Tiempo: 1208.58 segundos
+Segmentos indexados: 7238
+Registros en ChromaDB: 7238
+Tiempo: 1271.93 segundos
 Errores: 0
 ```
 
@@ -180,4 +180,4 @@ Se controlan:
 
 ## Resultado
 
-El Agente de Conocimiento Jurídico quedó operativo sobre una base vectorial persistente de 6543 segmentos procedentes de 51 documentos jurídicos. Las respuestas incluyen contenido original, metadatos y fuentes oficiales para mantener la trazabilidad.
+El Agente de Conocimiento Jurídico quedó operativo sobre una base vectorial persistente de 7238 segmentos procedentes de 51 documentos jurídicos. Las respuestas incluyen contenido original, metadatos y fuentes oficiales para mantener la trazabilidad.

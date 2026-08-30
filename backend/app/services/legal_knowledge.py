@@ -1,4 +1,5 @@
 import json
+import re
 from pathlib import Path
 
 from pydantic import ValidationError
@@ -9,13 +10,138 @@ from app.schemas.legal_corpus import LegalDocument
 MAX_CHUNK_LENGTH = 1200
 CHUNK_OVERLAP = 200
 
+LEGAL_START_PATTERN = re.compile(
+    (
+        r"^(?=(?:"
+        r"Art(?:ículo)?\.?\s+\d+|"
+        r"(?:CAP[IÍ]TULO|T[IÍ]TULO|"
+        r"SECCI[ÓO]N)\b|"
+        r"(?:\d+|[a-z])\.[ \t]"
+        r"))"
+    ),
+    re.MULTILINE | re.IGNORECASE,
+)
+
+SENTENCE_END_PATTERN = re.compile(
+    r"(?:[;:!?]|(?<!\d)(?<!Art)\.)(?=\s|$)",
+    re.IGNORECASE,
+)
+
+def find_semantic_end(
+    text: str,
+    start: int,
+    maximum_end: int,
+    max_length: int,
+) -> int:
+    """Localiza el mejor final para un segmento."""
+
+    minimum_end = start + max_length // 2
+
+    legal_boundaries = [
+        match.start()
+        for match in LEGAL_START_PATTERN.finditer(
+            text,
+            minimum_end,
+            maximum_end,
+        )
+        if match.start() > start
+    ]
+
+    if legal_boundaries:
+        return legal_boundaries[-1]
+
+    sentence_boundaries = [
+        match.end()
+        for match in SENTENCE_END_PATTERN.finditer(
+            text,
+            minimum_end,
+            maximum_end,
+        )
+    ]
+
+    if sentence_boundaries:
+        return sentence_boundaries[-1]
+
+    word_boundary = text.rfind(
+        " ",
+        minimum_end,
+        maximum_end,
+    )
+
+    if word_boundary > start:
+        return word_boundary
+
+    return maximum_end
+
+
+def find_semantic_start(
+    text: str,
+    start: int,
+    end: int,
+    overlap: int,
+) -> int:
+    """Inicia el solapamiento en una unidad completa."""
+
+    target = max(
+        start + 1,
+        end - overlap,
+    )
+    lower_bound = max(
+        start + 1,
+        target - overlap,
+    )
+    candidates = [
+        match.start()
+        for match in LEGAL_START_PATTERN.finditer(
+            text,
+            lower_bound,
+            end,
+        )
+        if start < match.start() < end
+    ]
+
+    for match in SENTENCE_END_PATTERN.finditer(
+        text,
+        lower_bound,
+        end,
+    ):
+        candidate = match.end()
+
+        while (
+            candidate < end
+            and text[candidate].isspace()
+        ):
+            candidate += 1
+
+        if start < candidate < end:
+            candidates.append(candidate)
+
+    if candidates:
+        return min(
+            set(candidates),
+            key=lambda candidate: (
+                abs(candidate - target),
+                candidate,
+            ),
+        )
+
+    next_start = target
+
+    while (
+        next_start < end
+        and next_start > 0
+        and not text[next_start - 1].isspace()
+    ):
+        next_start += 1
+
+    return next_start
 
 def split_legal_text(
     text: str,
     max_length: int = MAX_CHUNK_LENGTH,
     overlap: int = CHUNK_OVERLAP,
 ) -> list[str]:
-    """Divide texto jurídico priorizando límites naturales."""
+    """Divide texto jurídico por unidades semánticas."""
 
     if max_length < 1:
         raise ValueError(
@@ -49,21 +175,12 @@ def split_legal_text(
         end = maximum_end
 
         if maximum_end < len(normalized):
-            boundary = normalized.rfind(
-                "\n",
-                start + 1,
+            end = find_semantic_end(
+                normalized,
+                start,
                 maximum_end,
+                max_length,
             )
-
-            if boundary <= start + max_length // 2:
-                boundary = normalized.rfind(
-                    " ",
-                    start + 1,
-                    maximum_end,
-                )
-
-            if boundary > start:
-                end = boundary
 
         chunk = normalized[start:end].strip()
 
@@ -75,22 +192,18 @@ def split_legal_text(
         if end >= len(normalized):
             break
 
-        next_start = max(
-            end - overlap,
+        next_start = find_semantic_start(
+            normalized,
+            start,
+            end,
+            overlap,
+        )
+        start = max(
+            next_start,
             start + 1,
         )
 
-        while (
-            next_start < end
-            and next_start > 0
-            and not normalized[next_start - 1].isspace()
-        ):
-            next_start += 1
-
-        start = next_start
-
     return chunks
-
 
 def prepare_legal_document(
     document: LegalDocument,

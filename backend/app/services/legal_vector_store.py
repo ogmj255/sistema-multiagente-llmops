@@ -263,14 +263,21 @@ def search_legal_chunks(
         collection or get_legal_collection()
     )
 
-    if active_collection.count() == 0:
+    collection_size = active_collection.count()
+
+    if collection_size == 0:
         raise ValueError(
             "La base jurídica no contiene segmentos."
         )
 
+    candidate_count = min(
+        collection_size,
+        request.top_k * 2,
+    )
+
     result = active_collection.query(
         query_embeddings=[query_embedding],
-        n_results=request.top_k,
+        n_results=candidate_count,
         where=build_query_filter(request),
         include=[
             "documents",
@@ -296,6 +303,7 @@ def search_legal_chunks(
         )
 
     matches: list[LegalKnowledgeMatch] = []
+    seen_contents: set[tuple[str, str]] = set()
 
     for (
         chunk_id,
@@ -327,10 +335,21 @@ def search_legal_chunks(
             }
         )
 
-        matches.append(
-            LegalKnowledgeMatch.model_validate(
-                payload
-            )
+        match = LegalKnowledgeMatch.model_validate(
+            payload
         )
+        content_key = (
+            match.document_id,
+            match.content,
+        )
+
+        if content_key in seen_contents:
+            continue
+
+        seen_contents.add(content_key)
+        matches.append(match)
+
+        if len(matches) == request.top_k:
+            break
 
     return matches
