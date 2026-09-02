@@ -1,4 +1,4 @@
-from typing import Literal, Self
+from typing import Annotated, Literal, Self
 
 from pydantic import (
     BaseModel,
@@ -56,6 +56,10 @@ RISK_BY_CLASSIFICATION: dict[
     "abusive": "high",
 }
 
+EvidenceIndex = Annotated[
+    int,
+    Field(ge=0),
+]
 
 class ClauseAnalysisRequest(BaseModel):
     """Entrada para analizar una cláusula contractual."""
@@ -70,6 +74,75 @@ class ClauseAnalysisRequest(BaseModel):
     jurisdiction: Jurisdiction = "ecuador"
     clause: ProcessedClause
 
+class ClauseAnalysisDecision(BaseModel):
+    """Decisión estructurada generada por el LLM."""
+
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        extra="forbid",
+    )
+
+    category: ClauseCategory
+    classification: ClauseClassification | None
+    analysis_status: AnalysisStatus
+    relevant_fragment: str = Field(min_length=1)
+    justification: str = Field(min_length=1)
+    recommendation: str = Field(min_length=1)
+    evidence_sufficiency: EvidenceSufficiency
+    legal_basis_indices: list[EvidenceIndex]
+
+    @model_validator(mode="after")
+    def validate_decision(self) -> Self:
+        """Comprueba la coherencia de la decisión del modelo."""
+
+        if self.analysis_status == "requires_review":
+            if self.classification is not None:
+                raise ValueError(
+                    "Una decisión inconclusa no puede "
+                    "contener clasificación."
+                )
+
+            if self.evidence_sufficiency != "insufficient":
+                raise ValueError(
+                    "La revisión requiere evidencia "
+                    "insuficiente."
+                )
+
+            if self.legal_basis_indices:
+                raise ValueError(
+                    "Una decisión inconclusa no puede "
+                    "seleccionar fundamentos jurídicos."
+                )
+
+            return self
+
+        if self.classification is None:
+            raise ValueError(
+                "Una decisión clasificada debe contener "
+                "una clasificación."
+            )
+
+        if self.evidence_sufficiency == "insufficient":
+            raise ValueError(
+                "No se puede clasificar con evidencia "
+                "insuficiente."
+            )
+
+        if not self.legal_basis_indices:
+            raise ValueError(
+                "Una decisión clasificada debe seleccionar "
+                "fundamento jurídico."
+            )
+
+        if (
+            self.classification == "abusive"
+            and self.evidence_sufficiency != "sufficient"
+        ):
+            raise ValueError(
+                "Una clasificación abusiva requiere "
+                "evidencia suficiente."
+            )
+        return self
 
 class ClauseAssessment(BaseModel):
     """Valoración jurídica automatizada de una cláusula."""
