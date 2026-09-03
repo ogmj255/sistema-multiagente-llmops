@@ -17,12 +17,15 @@ from app.schemas.knowledge import LegalKnowledgeMatch
 from app.schemas.legal_analysis import (
     ClauseAnalysisDecision,
     ClauseAnalysisRequest,
+    ClauseAssessment,
 )
 
 
 class ClauseClassificationError(RuntimeError):
     """Indica que una cláusula no pudo clasificarse."""
 
+class LegalGroundingError(RuntimeError):
+    """Indica que una justificación no pudo respaldarse."""
 
 @dataclass(frozen=True, slots=True)
 class ClassificationExecution:
@@ -131,3 +134,57 @@ def classify_clause(
         decision=decision,
         model_response=model_response,
     )
+def build_grounded_assessment(
+    execution: ClassificationExecution,
+    legal_context: list[LegalKnowledgeMatch],
+) -> ClauseAssessment:
+    """Vincula la decisión con evidencias jurídicas reales."""
+
+    decision = execution.decision
+    selected_indices = decision.legal_basis_indices
+
+    if len(selected_indices) != len(
+        set(selected_indices)
+    ):
+        raise LegalGroundingError(
+            "La justificación contiene fundamentos "
+            "jurídicos duplicados."
+        )
+
+    invalid_indices = [
+        index
+        for index in selected_indices
+        if index >= len(legal_context)
+    ]
+
+    if invalid_indices:
+        raise LegalGroundingError(
+            "La justificación referencia un fundamento "
+            "jurídico inexistente."
+        )
+
+    legal_basis = [
+        legal_context[index]
+        for index in selected_indices
+    ]
+
+    try:
+        return ClauseAssessment(
+            category=decision.category,
+            classification=decision.classification,
+            analysis_status=decision.analysis_status,
+            relevant_fragment=(
+                decision.relevant_fragment
+            ),
+            justification=decision.justification,
+            recommendation=decision.recommendation,
+            evidence_sufficiency=(
+                decision.evidence_sufficiency
+            ),
+            legal_basis=legal_basis,
+        )
+    except ValidationError as error:
+        raise LegalGroundingError(
+            "No se pudo construir una valoración "
+            f"jurídica coherente: {error}"
+        ) from error
