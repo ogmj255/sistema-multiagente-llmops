@@ -1,0 +1,184 @@
+{
+  "dataset_id": "tit48_legal_analysis_v1",
+  "description": "Conjunto controlado para validar funcionalmente el Agente Analizador Legal.",
+  "jurisdiction": "ecuador",
+  "label_status": "technical_validation_pending_expert_review",
+  "cases": [
+    {
+      "case_id": "TIT48-001",
+      "origin": "controlled",
+      "heading": "Modificación de condiciones",
+      "content": "El proveedor podrá modificar unilateralmente el precio y cualquier condición del servicio en cualquier momento, sin notificación previa ni consentimiento del usuario.",
+      "expected": {
+        "category": "unilateral_modification",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      }
+    },
+    {
+      "case_id": "TIT48-002",
+      "origin": "controlled",
+      "heading": "Terminación del servicio",
+      "content": "El proveedor podrá cancelar definitivamente la cuenta del usuario en cualquier momento, sin expresar una causa, sin notificación previa y sin devolver los valores pagados.",
+      "expected": {
+        "category": "unilateral_termination",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      }
+    },
+    {
+      "case_id": "TIT48-003",
+      "origin": "controlled",
+      "heading": "Responsabilidad",
+      "content": "El proveedor no será responsable bajo ninguna circunstancia por defectos, interrupciones o daños ocasionados por el servicio, incluso cuando sean atribuibles directamente al proveedor.",
+      "expected": {
+        "category": "limitation_of_liability",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      }
+    },
+    {
+      "case_id": "TIT48-004",
+      "origin": "controlled",
+      "heading": "Solución de controversias",
+      "content": "Toda controversia deberá resolverse obligatoriamente mediante arbitraje, aunque el consumidor no haya manifestado expresamente su consentimiento para utilizar este mecanismo.",
+      "expected": {
+        "category": "dispute_resolution",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      }
+    },
+    {
+      "case_id": "TIT48-005",
+      "origin": "controlled",
+      "heading": "Transferencia de información",
+      "content": "El proveedor podrá vender o transferir los datos personales del usuario a cualquier tercero con fines comerciales, sin solicitar su consentimiento.",
+      "expected": {
+        "category": "data_transfer_to_third_parties",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_lopdp_2021"
+        ]
+      }
+    },
+    {
+      "case_id": "TIT48-006",
+      "origin": "controlled",
+      "heading": "Tratamiento de datos",
+      "content": "La plataforma podrá recopilar información sobre el comportamiento del usuario y conservarla durante el tiempo que considere necesario para finalidades relacionadas con su actividad.",
+      "expected": {
+        "category": "privacy_and_data_processing",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_lopdp_2021"
+        ]
+      }
+    },
+    {
+      "case_id": "TIT48-007",
+      "origin": "controlled",
+      "heading": "Contenido del usuario",
+      "content": "Al publicar contenido, el usuario concede al proveedor una licencia mundial, perpetua, irrevocable y sublicenciable para utilizarlo con cualquier finalidad presente o futura.",
+      "expected": {
+        "category": "user_content_and_intellectual_property",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "document_ids": []
+      }
+    },
+    {
+      "case_id": "TIT48-008",
+      "origin": "controlled",
+      "heading": "Cargos adicionales",
+      "content": "El proveedor podrá aplicar cargos operativos adicionales cuando lo considere necesario. El valor y las condiciones de estos cargos serán determinados posteriormente.",
+      "expected": {
+        "category": "other_contractual_risk",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      }
+    },
+    {
+      "case_id": "TIT48-009",
+      "origin": "controlled",
+      "heading": "Consentimiento y derechos",
+      "content": "Los datos personales serán utilizados únicamente para prestar el servicio solicitado. El usuario podrá retirar su consentimiento y solicitar el acceso, rectificación o eliminación de sus datos.",
+      "expected": {
+        "category": "privacy_and_data_processing",
+        "classification": "fair",
+        "risk_level": "low",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_lopdp_2021"
+        ]
+      }
+    },
+    {
+      "case_id": "TIT48-010",
+      "origin": "controlled",
+      "heading": "Cancelación por el usuario",
+      "content": "El usuario podrá terminar el servicio en cualquier momento mediante una notificación, sin multas, sanciones ni recargos por terminación anticipada.",
+      "expected": {
+        "category": "unilateral_termination",
+        "classification": "fair",
+        "risk_level": "low",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      }
+    },
+    {
+      "case_id": "TIT48-011",
+      "origin": "controlled",
+      "heading": "Actualización de condiciones",
+      "content": "Toda modificación del precio o de las condiciones será comunicada al usuario con treinta días de anticipación y requerirá su aceptación. Si no acepta, podrá terminar el servicio sin penalización.",
+      "expected": {
+        "category": "unilateral_modification",
+        "classification": "fair",
+        "risk_level": "low",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      }
+    },
+    {
+      "case_id": "TIT48-012",
+      "origin": "controlled",
+      "heading": "Otras medidas",
+      "content": "El proveedor podrá adoptar otras medidas cuando resulte necesario.",
+      "expected": {
+        "category": "other_contractual_risk",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "document_ids": []
+      }
+    }
+  ]
+}

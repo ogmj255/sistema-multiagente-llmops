@@ -1,0 +1,864 @@
+{
+  "dataset_id": "tit48_legal_analysis_v1",
+  "executed_at": "2026-09-05T16:00:10.593711+00:00",
+  "provider": "ollama",
+  "model": "qwen3:4b",
+  "summary": {
+    "cases": 12,
+    "successful_executions": 12,
+    "execution_errors": 0,
+    "exact_matches": 8,
+    "category_matches": 11,
+    "classification_matches": 9,
+    "risk_matches": 9,
+    "status_matches": 11,
+    "legal_basis_matches": 11,
+    "grounded_results": 12,
+    "total_seconds": 579.283,
+    "average_seconds": 48.274,
+    "median_seconds": 46.366,
+    "p95_seconds": 67.295
+  },
+  "results": [
+    {
+      "case_id": "TIT48-001",
+      "duration_seconds": 45.775,
+      "execution_success": true,
+      "overall_match": true,
+      "expected": {
+        "category": "unilateral_modification",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      },
+      "actual": {
+        "category": "unilateral_modification",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "relevant_fragment": "El proveedor podrá modificar unilateralmente el precio y cualquier condición del servicio en cualquier momento, sin notificación previa ni consentimiento del usuario.",
+        "justification": "La cláusula contradice directamente el Art. 43, inciso 5 de la Ley Orgánica de Defensa del Consumidor (evidence_index: 0), que prohíbe la variación unilateral del precio o condiciones del contrato sin consentimiento del consumidor. La distancia semántica es 0.45313925, confirmando una coincidencia clara con la norma vinculante.",
+        "recommendation": "Incluir notificación previa y consentimiento explícito del usuario antes de cualquier modificación unilateral de precios o condiciones.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_defensa_consumidor_2000_chunk_0048",
+            "document_id": "ec_defensa_consumidor_2000",
+            "chunk_index": 48,
+            "content": "Concordancias:\nCODIGO CIVIL (LIBRO IV), Arts. 1499, 1505, 1561\nArt. 43.- Cláusulas Prohibidas.- Son nulas de pleno derecho y no producirán efecto alguno las\ncláusulas o estipulaciones contractuales que:\n1. Eximan, atenúen o limiten la responsabilidad de los proveedores por vicios de cualquier naturaleza\nde los bienes o servicios prestados;\n2. Impliquen renuncia a los derechos que esta ley reconoce a los consumidores o de alguna manera\nlimiten su ejercicio;\n3. Inviertan la carga de la prueba en perjuicio del consumidor;\n4. Impongan la utilización obligatoria de un arbitraje o mediación, salvo que el consumidor manifieste\nde manera expresa su consentimiento;\n5. Permitan al proveedor la variación unilateral del precio o de cualquier condición del contrato;\n6. Autoricen exclusivamente al proveedor a resolver unilateralmente el contrato, suspender su\nejecución o revocar cualquier derecho del consumidor nacido del contrato, excepto cuando tal\nresolución o modificación esté condicionada al incumplimiento imputable al consumidor;\n7. Incluyan espacios en blanco, que no hayan sido llenados o utilizados antes de que se suscriba el\ncontrato, o sean ilegibles;",
+            "title": "Ley Orgánica de Defensa del Consumidor",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Congreso Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2018-09/Documento_Ley-Org%C3%A1nica-Defensa-Consumidor.pdf",
+            "official_citation": "Suplemento del Registro Oficial 116, 10-07-2000",
+            "publication_date": "2000-07-10",
+            "effective_date": "2000-07-10",
+            "topics": "consumidores|contratos|cláusulas abusivas",
+            "checksum": "f9fb0a29b61e36a981c6fd6fdc9d5dcc26dde421c020d8964be78305876f97d2",
+            "distance": 0.45313925
+          }
+        ]
+      },
+      "checks": {
+        "category": true,
+        "classification": true,
+        "risk_level": true,
+        "analysis_status": true,
+        "legal_basis": true,
+        "grounded": true
+      },
+      "error": null
+    },
+    {
+      "case_id": "TIT48-002",
+      "duration_seconds": 39.382,
+      "execution_success": true,
+      "overall_match": true,
+      "expected": {
+        "category": "unilateral_termination",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      },
+      "actual": {
+        "category": "unilateral_termination",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "relevant_fragment": "El proveedor podrá cancelar definitivamente la cuenta del usuario en cualquier momento, sin expresar una causa, sin notificación previa y sin devolver los valores pagados.",
+        "justification": "La cláusula permite al proveedor cancelar la cuenta sin causa, notificación previa ni devolución de pagos, contradiciendo el Art. 44 de la Ley Orgánica de Defensa del Consumidor que exige notificación por escrito con quince días de anticipación para terminación anticipada en contratos de adhesión.",
+        "recommendation": "Incluir notificación previa de quince días y devolución de valores pagados en caso de terminación anticipada.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_defensa_consumidor_2000_chunk_0050",
+            "document_id": "ec_defensa_consumidor_2000",
+            "chunk_index": 50,
+            "content": "LEY ORGANICA DE DEFENSA DEL CONSUMIDOR  - Página 12\neSilec Profesional - www.lexis.com.ec\nConcordancias:\nCONSTITUCION DE LA REPUBLICA DEL ECUADOR, Arts. 11\nCODIGO DE PROCEDIMIENTO CIVIL, Arts. 113, 171\nCODIGO CIVIL (LIBRO IV), Arts. 1561, 1576, 1698\nArt. 44.- Terminación Anticipada.- En los contratos de adhesión referentes a la prestación de\nservicios tales como, telefonía celular, medicina prepagada, televisión satelital o por cable u otros\nsimilares, el consumidor podrá dar por terminado unilateralmente el contrato en cualquier tiempo,\nprevia notificación por escrito con al menos quince días de anticipación a la finalización del período\nen curso. En estos casos, en el contrato de adhesión no se podrá incluir cláusulas ni disposición\nalguna que impongan al consumidor multas, sanciones o recargos de ninguna naturaleza, atribuida a\nla terminación anticipada de dicho contrato y de incluirlas no tendrán ningún efecto jurídico.",
+            "title": "Ley Orgánica de Defensa del Consumidor",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Congreso Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2018-09/Documento_Ley-Org%C3%A1nica-Defensa-Consumidor.pdf",
+            "official_citation": "Suplemento del Registro Oficial 116, 10-07-2000",
+            "publication_date": "2000-07-10",
+            "effective_date": "2000-07-10",
+            "topics": "consumidores|contratos|cláusulas abusivas",
+            "checksum": "f9fb0a29b61e36a981c6fd6fdc9d5dcc26dde421c020d8964be78305876f97d2",
+            "distance": 0.4119297
+          }
+        ]
+      },
+      "checks": {
+        "category": true,
+        "classification": true,
+        "risk_level": true,
+        "analysis_status": true,
+        "legal_basis": true,
+        "grounded": true
+      },
+      "error": null
+    },
+    {
+      "case_id": "TIT48-003",
+      "duration_seconds": 43.51,
+      "execution_success": true,
+      "overall_match": true,
+      "expected": {
+        "category": "limitation_of_liability",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      },
+      "actual": {
+        "category": "limitation_of_liability",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "relevant_fragment": "El proveedor no será responsable bajo ninguna circunstancia por defectos, interrupciones o daños ocasionados por el servicio, incluso cuando sean atribuibles directamente al proveedor.",
+        "justification": "La cláusula excluye la responsabilidad del proveedor por daños, incluso cuando sean atribuibles directamente al proveedor, contradiciendo el Art. 75 de la Ley Orgánica de Defensa del Consumidor que establece que los proveedores deben indemnizar los daños causados por servicios defectuosos.",
+        "recommendation": "Incluir indemnización por daños y perjuicios en caso de servicios defectuosos según Art. 75 de la Ley Orgánica de Defensa del Consumidor.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_defensa_consumidor_2000_chunk_0084",
+            "document_id": "ec_defensa_consumidor_2000",
+            "chunk_index": 84,
+            "content": "Art. 73.- El proveedor que incurra en lo establecido en el artículo 23 de la presente Ley, e incumpla\nlas obligaciones allí establecidas, será sancionado con la clausura temporal o definitiva del\nestablecimiento.\nArt. 74.- En caso de incumplimiento a lo dispuesto en el artículo 58 de la presente Ley, el infractor\nserá sancionado con multa de mil a cinco mil dólares de los Estados Unidos de América o su\nequivalente en moneda de curso legal.\nArt. 75.- Servicios Defectuosos.- Cuando los servicios prestados sean manifiestamente defectuosos,\nineficaces, causen daño o no se ajusten a lo expresamente acordado, los consumidores tendrán\nderecho, además de la correspondiente indemnización por daños y perjuicios, a que le sea restituido\nel valor cancelado. Además, el proveedor de tales servicios, será sancionado con una multa de\ncincuenta a quinientos dólares de los Estados Unidos de América o su equivalente en moneda de\ncurso legal, sin perjuicio de las demás acciones a que hubiere lugar.",
+            "title": "Ley Orgánica de Defensa del Consumidor",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Congreso Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2018-09/Documento_Ley-Org%C3%A1nica-Defensa-Consumidor.pdf",
+            "official_citation": "Suplemento del Registro Oficial 116, 10-07-2000",
+            "publication_date": "2000-07-10",
+            "effective_date": "2000-07-10",
+            "topics": "consumidores|contratos|cláusulas abusivas",
+            "checksum": "f9fb0a29b61e36a981c6fd6fdc9d5dcc26dde421c020d8964be78305876f97d2",
+            "distance": 0.40083393
+          }
+        ]
+      },
+      "checks": {
+        "category": true,
+        "classification": true,
+        "risk_level": true,
+        "analysis_status": true,
+        "legal_basis": true,
+        "grounded": true
+      },
+      "error": null
+    },
+    {
+      "case_id": "TIT48-004",
+      "duration_seconds": 48.481,
+      "execution_success": true,
+      "overall_match": false,
+      "expected": {
+        "category": "dispute_resolution",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      },
+      "actual": {
+        "category": "dispute_resolution",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "relevant_fragment": "Toda controversia deberá resolverse obligatoriamente mediante arbitraje, aunque el consumidor no haya manifestado expresamente su consentimiento para utilizar este mecanismo.",
+        "justification": "La cláusula exige arbitraje obligatorio sin consentimiento explícito del consumidor, contradiciendo el Art. 43 inciso 4 de la Ley Orgánica de Defensa del Consumidor (evidence_index:4), que prohíbe cláusulas que impongan arbitraje sin consentimiento expreso.",
+        "recommendation": "Incluir consentimiento explícito del consumidor para arbitraje en la cláusula.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_defensa_consumidor_2000_chunk_0048",
+            "document_id": "ec_defensa_consumidor_2000",
+            "chunk_index": 48,
+            "content": "Concordancias:\nCODIGO CIVIL (LIBRO IV), Arts. 1499, 1505, 1561\nArt. 43.- Cláusulas Prohibidas.- Son nulas de pleno derecho y no producirán efecto alguno las\ncláusulas o estipulaciones contractuales que:\n1. Eximan, atenúen o limiten la responsabilidad de los proveedores por vicios de cualquier naturaleza\nde los bienes o servicios prestados;\n2. Impliquen renuncia a los derechos que esta ley reconoce a los consumidores o de alguna manera\nlimiten su ejercicio;\n3. Inviertan la carga de la prueba en perjuicio del consumidor;\n4. Impongan la utilización obligatoria de un arbitraje o mediación, salvo que el consumidor manifieste\nde manera expresa su consentimiento;\n5. Permitan al proveedor la variación unilateral del precio o de cualquier condición del contrato;\n6. Autoricen exclusivamente al proveedor a resolver unilateralmente el contrato, suspender su\nejecución o revocar cualquier derecho del consumidor nacido del contrato, excepto cuando tal\nresolución o modificación esté condicionada al incumplimiento imputable al consumidor;\n7. Incluyan espacios en blanco, que no hayan sido llenados o utilizados antes de que se suscriba el\ncontrato, o sean ilegibles;",
+            "title": "Ley Orgánica de Defensa del Consumidor",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Congreso Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2018-09/Documento_Ley-Org%C3%A1nica-Defensa-Consumidor.pdf",
+            "official_citation": "Suplemento del Registro Oficial 116, 10-07-2000",
+            "publication_date": "2000-07-10",
+            "effective_date": "2000-07-10",
+            "topics": "consumidores|contratos|cláusulas abusivas",
+            "checksum": "f9fb0a29b61e36a981c6fd6fdc9d5dcc26dde421c020d8964be78305876f97d2",
+            "distance": 0.43914297
+          }
+        ]
+      },
+      "checks": {
+        "category": true,
+        "classification": false,
+        "risk_level": false,
+        "analysis_status": true,
+        "legal_basis": true,
+        "grounded": true
+      },
+      "error": null
+    },
+    {
+      "case_id": "TIT48-005",
+      "duration_seconds": 54.757,
+      "execution_success": true,
+      "overall_match": true,
+      "expected": {
+        "category": "data_transfer_to_third_parties",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_lopdp_2021"
+        ]
+      },
+      "actual": {
+        "category": "data_transfer_to_third_parties",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "relevant_fragment": "El proveedor podrá vender o transferir los datos personales del usuario a cualquier tercero con fines comerciales, sin solicitar su consentimiento.",
+        "justification": "La cláusula permite la transferencia de datos personales a terceros sin consentimiento del usuario, contradiciendo la Ley Orgánica de Protección de Datos Personales (Art. 34 y 35), que exige que las transferencias a terceros se realicen bajo contrato específico y con consentimiento informado. La evidencia jurídica muestra que la transferencia sin consentimiento es ilegal en Ecuador.",
+        "recommendation": "Revisar la cláusula para incluir consentimiento informado y cumplir con los requisitos legales de transferencia a terceros según la Ley Orgánica de Protección de Datos Personales.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_spdp_2025_0006_chunk_0032",
+            "document_id": "ec_spdp_2025_0006",
+            "chunk_index": 32,
+            "content": "[Los datos personales serán trasferidos y comunicados únicamente para finalidades de\nalmacenamiento y, en caso de ser necesario serán comunicados y transferidos a las autoridades\ncompetentes por obligación legal.]\nCaso 2: [Para el siguiente tratamiento de datos personales no se realizarán transferencias ni\ncomunicaciones de datos personales.]\nEn el caso de que los datos personales sean transferidos a terceros, dentro o fuera de Ecuador,\nse garantizará que dichos terceros ofrezcan un nivel adecuado de protección conforme a la\nnormativa de protección de datos personales vigente y, en todo momento podrá consultar sobre\nestos ejerciendo su derecho de acceso e información.\nx.7. Plazo de Conservación de los Datos\nLos datos personales serán conservados únicamente durante el tiempo necesario para cumplir\ncon las finalidades de tratamiento para las que fueron recabados y conforme a los plazos\nestablecidos por la ley o por la necesidad del tratamiento.”\nRESOLUCIÓN Nº SPDP-SPD-2025-0006-R Página 10 de 16\n2 Modelo de cláusula entre responsable y encargado de tratamiento\n“CLÁUSULA _________.- Tratamiento de Datos Personales entre Responsable y\nEncargado del tratamiento:",
+            "title": "Obligación de incorporar cláusulas de protección de datos en contratos celebrados en Ecuador",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Superintendencia de Protección de Datos Personales",
+            "document_type": "resolution",
+            "binding_level": "binding",
+            "status": "in_force",
+            "language": "es",
+            "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/05/06.01.01-SPDP-SPD-2025-0006-R-clausulas-para-contratos-en-Ecuador-signed.pdf",
+            "official_citation": "Resolución SPDP-SPD-2025-0006-R",
+            "publication_date": null,
+            "effective_date": null,
+            "topics": "contratos|cláusulas|protección de datos",
+            "checksum": "54ddcbf7421806f928e48582550ac577df19b25d7fb909e98d21341fa80cc4ac",
+            "distance": 0.37764215
+          },
+          {
+            "chunk_id": "ec_lopdp_2021_chunk_0080",
+            "document_id": "ec_lopdp_2021",
+            "chunk_index": 80,
+            "content": "Se entenderá que el consentimiento es informado cuando para la transferencia o\ncomunicación de datos personales el Responsable del tratamiento haya entregado\ninformación suficiente al titular que le permita conocer la finalidad a que se\ndestinarán sus datos y el tipo de actividad del tercero a quien se pretende\ntransferir o comunicar dichos datos.\nArt. 34.- Acceso a datos personales por parte del encargado.- No se considerará\ntransferencia o comunicación en el caso de que el encargado acceda a datos\npersonales para la prestación de un servicio al responsable del tratamiento de datos\npersonales. El tercero que ha accedido legítimamente a datos personales en estas\nconsideraciones, será considerado encargado del tratamiento.\nEl tratamiento de datos personales realizado por el encargado deberá estar regulado\npor un contrato, en el que se establezca de manera clara y precisa que el encargado\ndel tratamiento de datos personales tratará únicamente los mismos conforme las\ninstrucciones del responsable y que no los utilizará para finalidades diferentes a\nlas señaladas en el contrato, ni que los transferirá o comunicará ni siquiera para\nsu conservación a otras personas.",
+            "title": "Ley Orgánica de Protección de Datos Personales",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Asamblea Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2022-08/Ley-Org%C3%A1nica-Protecci%C3%B3n-Datos-Personales.pdf",
+            "official_citation": "Quinto Suplemento del Registro Oficial 459, 26-05-2021",
+            "publication_date": "2021-05-26",
+            "effective_date": "2021-05-26",
+            "topics": "protección de datos|privacidad|derechos del titular",
+            "checksum": "3710d011ce36d21e7bae1575cf506946723b13add2c467d49e036abdc9268a88",
+            "distance": 0.38226563
+          },
+          {
+            "chunk_id": "ec_lopdp_2021_chunk_0082",
+            "document_id": "ec_lopdp_2021",
+            "chunk_index": 82,
+            "content": "El encargado será responsable de las infracciones derivadas del incumplimiento de\nlas condiciones de tratamiento de datos personales establecidas en la presente ley.\nArt. 35.-  Acceso a datos personales por parte de terceros.- No se considerará\ntransferencia o comunicación cuando el acceso a datos personales por un tercero sea\nnecesario para la prestación de un servicio al responsable del tratamiento de datos\npersonales. El tercero que ha accedido a datos personales en estas condiciones debió\nhacerlo legítimamente.\nEl tratamiento de datos personales realizado por terceros deberá estar regulado por\nun contrato, en el que se establezca de manera clara y precisa que el encargado del\ntratamiento de datos personales tratará únicamente los mismos conforme las\ninstrucciones del responsable y que no los utilizará para finalidades diferentes a\nlas Señaladas en el contrato, ni que los transferirá o comunicará ni siquiera para\nsu ¡conservación a otras personas.\nUna vez que se haya cumplido la prestación contractual, los datos personales deberán\nser destruidos o devueltos al responsable del tratamiento de datos personales bajo\nla supervisión de la autoridad de protección de datos personales.",
+            "title": "Ley Orgánica de Protección de Datos Personales",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Asamblea Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2022-08/Ley-Org%C3%A1nica-Protecci%C3%B3n-Datos-Personales.pdf",
+            "official_citation": "Quinto Suplemento del Registro Oficial 459, 26-05-2021",
+            "publication_date": "2021-05-26",
+            "effective_date": "2021-05-26",
+            "topics": "protección de datos|privacidad|derechos del titular",
+            "checksum": "3710d011ce36d21e7bae1575cf506946723b13add2c467d49e036abdc9268a88",
+            "distance": 0.38308793
+          }
+        ]
+      },
+      "checks": {
+        "category": true,
+        "classification": true,
+        "risk_level": true,
+        "analysis_status": true,
+        "legal_basis": true,
+        "grounded": true
+      },
+      "error": null
+    },
+    {
+      "case_id": "TIT48-006",
+      "duration_seconds": 67.295,
+      "execution_success": true,
+      "overall_match": false,
+      "expected": {
+        "category": "privacy_and_data_processing",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_lopdp_2021"
+        ]
+      },
+      "actual": {
+        "category": "privacy_and_data_processing",
+        "classification": "fair",
+        "risk_level": "low",
+        "analysis_status": "classified",
+        "relevant_fragment": "La plataforma podrá recopilar información sobre el comportamiento del usuario y conservarla durante el tiempo que considere necesario para finalidades relacionadas con su actividad.",
+        "justification": "La cláusula describe la recopilación y conservación de datos personales para finalidades específicas, alineada con la obligación de incorporar cláusulas de protección de datos en contratos en Ecuador (Resolución SPDP-SPD-2025-0006-R). La normativa vigente exige que las cláusulas establezcan condiciones mínimas para el tratamiento de datos, sin excluir la finalidad específica y el tiempo razonable de conservación.",
+        "recommendation": "Asegurar que las finalidades de tratamiento sean explícitas y que el tiempo de conservación no exceda lo necesario para las finalidades establecidas, conforme a la LOPDP ecuatoriana.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": false,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_spdp_2025_0006_chunk_0015",
+            "document_id": "ec_spdp_2025_0006",
+            "chunk_index": 15,
+            "content": "EXPEDIR EL REGLAMENTO QUE ESTABLECE LA OBLIGACIÓN DE INCORPORAR CLÁUSULAS DE\nPROTECCIÓN DE DATOS PERSONALES EN LOS CONTRATOS CELEBRADOS DENTRO DEL\nTERRITORIO DE LA REPÚBLICA DEL ECUADOR\nArt. 1.- Este reglamento tiene por objeto establecer la obligatoriedad de incorporar cláusulas de\nprotección de datos personales en las relaciones jurídico-contractuales que se generaren entre los\ndiferentes actores del sistema, para así cumplir la LOPDP.\nLas cláusulas de protección de datos personales establecen el respeto al cumplimiento de los\nprincipios establecidos en la normativa de protección de datos vigente y a los derechos de los titulares\nde los datos, de conformidad con las disposiciones legales aplicables. En este sentido, la obligación\nde incorporar cláusulas de protección de datos personales forma parte del sistema de gestión de\ncumplimiento y análisis de riesgos, como soporte documental y medida de seguridad jurídica.\nArt. 2.- El reglamento es de cumplimiento obligatorio. No obstante, su Anexo I tiene un carácter\nmeramente referencial o ejemplificativo, aplicable a los integrantes del sistema de protección de\ndatos personales establecidos en el artículo 5 de la LOPDP.",
+            "title": "Obligación de incorporar cláusulas de protección de datos en contratos celebrados en Ecuador",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Superintendencia de Protección de Datos Personales",
+            "document_type": "resolution",
+            "binding_level": "binding",
+            "status": "in_force",
+            "language": "es",
+            "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/05/06.01.01-SPDP-SPD-2025-0006-R-clausulas-para-contratos-en-Ecuador-signed.pdf",
+            "official_citation": "Resolución SPDP-SPD-2025-0006-R",
+            "publication_date": null,
+            "effective_date": null,
+            "topics": "contratos|cláusulas|protección de datos",
+            "checksum": "54ddcbf7421806f928e48582550ac577df19b25d7fb909e98d21341fa80cc4ac",
+            "distance": 0.41147187
+          },
+          {
+            "chunk_id": "ec_spdp_2025_0006_chunk_0025",
+            "document_id": "ec_spdp_2025_0006",
+            "chunk_index": 25,
+            "content": "al momento de proporcionar su\ninformación, el tratamiento de los mismos en conformidad con la presente cláusula y la\nnormativa vigente en materia de protección de datos personales en Ecuador. En caso de tratarse\nde datos sensibles, el consentimiento será solicitado y recabado de manera explícita y\nfehaciente.\n[En caso de que la base legitimadora sea obligación legal]\nDe conformidad con lo dispuesto en la LOPDP y la legislación nacional vigente en materia de\nprotección de datos personales, se informa que los datos personales recabados serán tratados\npara dar debido cumplimiento a las finalidades detalladas en el acápite uno (1) de la presente\ncláusula, en virtud de la normativa vigente en [especificar ámbito: laboral, fiscal, contable,\nadministrativa, etc.].\nLa base jurídica que legitima este tratamiento es el cumplimiento de una obligación legal\naplicable al responsable del tratamiento.",
+            "title": "Obligación de incorporar cláusulas de protección de datos en contratos celebrados en Ecuador",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Superintendencia de Protección de Datos Personales",
+            "document_type": "resolution",
+            "binding_level": "binding",
+            "status": "in_force",
+            "language": "es",
+            "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/05/06.01.01-SPDP-SPD-2025-0006-R-clausulas-para-contratos-en-Ecuador-signed.pdf",
+            "official_citation": "Resolución SPDP-SPD-2025-0006-R",
+            "publication_date": null,
+            "effective_date": null,
+            "topics": "contratos|cláusulas|protección de datos",
+            "checksum": "54ddcbf7421806f928e48582550ac577df19b25d7fb909e98d21341fa80cc4ac",
+            "distance": 0.42292857
+          },
+          {
+            "chunk_id": "ec_spdp_2025_0006_chunk_0022",
+            "document_id": "ec_spdp_2025_0006",
+            "chunk_index": 22,
+            "content": "Tercera.- Las cláusulas contenidas en el Anexo I de este instrumento no crean figuras no previstas\nen el ordenamiento jurídico ecuatoriano, sino que establecen las condiciones jurídicas mínimas que\ndeben reconocerse en las relaciones jurídico-contractuales entre los integrantes del sistema de\nprotección de datos personales, y que constan ya establecidas en la LOPDP.\nDISPOSICIÓN FINAL\nEsta resolución entrará en vigencia a partir de su suscripción, sin perjuicio de su publicación en\nel Registro Oficial.\nDada y firmada en Quito, D. M., el 30 de abril del 2025.\nFABRIZIO PERALTA-DÍAZ\nSUPERINTENDENTE DE PROTECCIÓN DE DATOS PERSONALES\nRESOLUCIÓN Nº SPDP-SPD-2025-0006-R Página 6 de 16\nANEXO I\nTabla de contenido\n1 Modelo de cláusula entre responsable y titular .............................................................. 7\n2 Modelo de cláusula entre responsable y encargado de tratamiento ............................. 10\n3 Modelo de cláusula entre responsable y destinatario ................................................... 13\n4 Modelo de cláusula responsables conjuntos .................................................................",
+            "title": "Obligación de incorporar cláusulas de protección de datos en contratos celebrados en Ecuador",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Superintendencia de Protección de Datos Personales",
+            "document_type": "resolution",
+            "binding_level": "binding",
+            "status": "in_force",
+            "language": "es",
+            "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/05/06.01.01-SPDP-SPD-2025-0006-R-clausulas-para-contratos-en-Ecuador-signed.pdf",
+            "official_citation": "Resolución SPDP-SPD-2025-0006-R",
+            "publication_date": null,
+            "effective_date": null,
+            "topics": "contratos|cláusulas|protección de datos",
+            "checksum": "54ddcbf7421806f928e48582550ac577df19b25d7fb909e98d21341fa80cc4ac",
+            "distance": 0.42767912
+          },
+          {
+            "chunk_id": "ec_spdp_2026_0004_chunk_0155",
+            "document_id": "ec_spdp_2026_0004",
+            "chunk_index": 155,
+            "content": "Cláusula 11\nDerecho y prácticas del país que afectan al cumplimiento de las cláusulas\na. Las Partes confirman que, al momento de celebrar este Acuerdo, han realizado\nesfuerzos razonables para identificar si los datos transferidos están cubiertos por\nalguna ley o práctica local de la jurisdicción del Importador de datos que va más allá\nde lo que es necesario y proporcional en una sociedad democrática para salva -\nguardar importantes objetivos de interés público y puede razonablemente esperarse\nque afecte las protecciones, derechos y garantías otorgadas bajo este Acuerdo al\nTitular. En base a lo expuesto las Partes confirman que no están al tanto que dicha\npráctica o norma exista o afecte adversamente las protecciones específicas bajo este\nAcuerdo.",
+            "title": "Norma general de transferencias o comunicaciones nacionales e internacionales de datos personales",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Superintendencia de Protección de Datos Personales",
+            "document_type": "resolution",
+            "binding_level": "binding",
+            "status": "in_force",
+            "language": "es",
+            "source_url": "https://spdp.gob.ec/wp-content/uploads/2026/01/04.01.01-SPSP-SPD-2026-0004-R-Norma-general-de-transferencias-signed.pdf",
+            "official_citation": "Resolución SPDP-SPD-2026-0004-R",
+            "publication_date": null,
+            "effective_date": null,
+            "topics": "transferencias internacionales|comunicación de datos|garantías",
+            "checksum": "bb0cc1e734b8a7a371a621718d03067625247f9b6fffc2fb829eae6719a83bb1",
+            "distance": 0.43432012
+          },
+          {
+            "chunk_id": "ec_spdp_2025_0006_chunk_0050",
+            "document_id": "ec_spdp_2025_0006",
+            "chunk_index": 50,
+            "content": "En cumplimiento con la normativa de protección de datos personales de Ecuador, ambas partes\nacuerdan lo siguiente con respecto al tratamiento de datos personales:\nx.1. Partes\nLas partes, [referente a las personas naturales o jurídicas, públicas o privadas quienes son\ncomparecientes en el presente contrato], quienes serán responsables conjuntos del tratamiento\nde los datos personales que se traten para las finalidades detalladas en el punto dos de la presente\ncláusula. Ambas partes se comprometen a garantizar el cumplimiento de la normativa vigente\nen materia de protección de datos personales.\nLas partes declaran y reconocen que son enteramente responsables de tratamiento de datos\npersonales para cada una de las finalidades detalladas en el presente contrato, las cuales se han\nestablecido de maneja conjunta con los medios del tratamiento de los datos personales que se\nemplearan para cumplir con las finalidades.\nx.2. Finalidad del Tratamiento\nEl tratamiento de los datos personales será realizado con las siguientes finalidades:\n• [Describir la finalidad específica, como \"gestión administrativa\", \"evaluación de\nservicios\", \"enviar comunicaciones comerciales\", etc.].",
+            "title": "Obligación de incorporar cláusulas de protección de datos en contratos celebrados en Ecuador",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Superintendencia de Protección de Datos Personales",
+            "document_type": "resolution",
+            "binding_level": "binding",
+            "status": "in_force",
+            "language": "es",
+            "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/05/06.01.01-SPDP-SPD-2025-0006-R-clausulas-para-contratos-en-Ecuador-signed.pdf",
+            "official_citation": "Resolución SPDP-SPD-2025-0006-R",
+            "publication_date": null,
+            "effective_date": null,
+            "topics": "contratos|cláusulas|protección de datos",
+            "checksum": "54ddcbf7421806f928e48582550ac577df19b25d7fb909e98d21341fa80cc4ac",
+            "distance": 0.4347216
+          }
+        ]
+      },
+      "checks": {
+        "category": true,
+        "classification": false,
+        "risk_level": false,
+        "analysis_status": true,
+        "legal_basis": false,
+        "grounded": true
+      },
+      "error": null
+    },
+    {
+      "case_id": "TIT48-007",
+      "duration_seconds": 51.985,
+      "execution_success": true,
+      "overall_match": true,
+      "expected": {
+        "category": "user_content_and_intellectual_property",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "document_ids": []
+      },
+      "actual": {
+        "category": "user_content_and_intellectual_property",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "relevant_fragment": "Al publicar contenido, el usuario concede al proveedor una licencia mundial, perpetua, irrevocable y sublicenciable para utilizarlo con cualquier finalidad presente o futura.",
+        "justification": "La cláusula otorga una licencia mundial, perpetua e irrevocable al proveedor, lo que podría limitar los derechos del usuario. El artículo 55 del Reglamento General a la Ley Orgánica de Telecomunicaciones (evidence_index: 0) establece que los derechos de los usuarios son irrenunciables y se encuentran establecidos en la LOT, lo que sugiere que la licencia no puede ser unilateralmente otorgada sin considerar los derechos del usuario.",
+        "recommendation": "Revisar la licencia para garantizar que no se limite los derechos del usuario según la normativa de derechos irrenunciables.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_reglamento_telecomunicaciones_2016_chunk_0108",
+            "document_id": "ec_reglamento_telecomunicaciones_2016",
+            "chunk_index": 108,
+            "content": "Los\nmecanismos descritos anteriormente serán aplicados para la terminación de los contratos\ny sus anexos.\nCapítulo III\nDE LOS DERECHOS Y OBLIGACIONES DE LOS USUARIOS\nArt. 55.- De los derechos de los usuarios.-Los derechos de los usuarios son irrenunciables,\nse encuentran establecidos en la LOT, en la ley que norma la defensa del consumidor, sus\nreglamentos, demás normativa que emita la ARCOTEL, y en los respectivos contratos.\nhttps://edicioneslegales.com.ec/ Pág. 32 de 60\nTodos los derechos reservados. Prohibida su reproducción parcial o total.\nPiense en el medio ambiente. Imprima solo de ser necesario.\nArt. 56.- Consideraciones generales de los derechos de los usuarios.- De acuerdo con lo\nestablecido en la LOT, para garantizar los derechos de los usuarios, se considerará lo\nsiguiente:",
+            "title": "Reglamento General a la Ley Orgánica de Telecomunicaciones",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Presidencia de la República del Ecuador",
+            "document_type": "regulation",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.telecomunicaciones.gob.ec/wp-content/uploads/2024/04/CompletosSinConcordanciaspdf1085906_-_REGLAMENTO_GENERAL_A_LA_LEY_ORGANICA_DE_-1.pdf",
+            "official_citation": "Suplemento del Registro Oficial 676, 25-01-2016",
+            "publication_date": "2016-01-25",
+            "effective_date": "2016-01-25",
+            "topics": "telecomunicaciones|servicios digitales|usuarios",
+            "checksum": "284db77d2b71f3e0a6254153b76c1e46528d0455202be5981fc82a10523ebdd7",
+            "distance": 0.41298026
+          }
+        ]
+      },
+      "checks": {
+        "category": true,
+        "classification": true,
+        "risk_level": true,
+        "analysis_status": true,
+        "legal_basis": true,
+        "grounded": true
+      },
+      "error": null
+    },
+    {
+      "case_id": "TIT48-008",
+      "duration_seconds": 43.059,
+      "execution_success": true,
+      "overall_match": false,
+      "expected": {
+        "category": "other_contractual_risk",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      },
+      "actual": {
+        "category": "unilateral_modification",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "relevant_fragment": "El valor y las condiciones de estos cargos serán determinados posteriormente.",
+        "justification": "La cláusula permite al proveedor establecer cargos adicionales sin especificar su valor ni condiciones previas, contradiciendo el Art. 40 de la Ley Orgánica de Defensa del Consumidor que exige que las planillas muestren exclusivamente el valor del consumo y recargos legales establecidos expresamente por leyes. La distancia semántica (0.4739) indica alta relevancia.",
+        "recommendation": "Incluir en la cláusula especificación previa de cargos adicionales y condiciones claras para cumplir con el Art. 40 de la Ley Orgánica de Defensa del Consumidor.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_defensa_consumidor_2000_chunk_0043",
+            "document_id": "ec_defensa_consumidor_2000",
+            "chunk_index": 43,
+            "content": "Mientras se desarrolle el trámite previsto en los incisos precedentes, la empresa proveedora estará\nobligada a seguir prestando el servicio sin interrupción alguna.\nConcordancias:\nCODIGO CIVIL (LIBRO IV), Arts. 1611, 2110, 2112\nCODIGO DE PROCEDIMIENTO CIVIL, Arts. 173, 175\nArt. 40.- Valores de las Planillas.- En las planillas emitidas por las empresas proveedoras de los\nservicios públicos domiciliarios, deberá constar exclusivamente el valor del consumo respectivo, más\nlos recargos legales pertinentes y cobros adicionales establecidos expresamente por leyes y\nordenanzas. Queda prohibido incluir en dichas planillas rubros adicionales a los señalados.\nEs un derecho del consumidor el conocer el valor exacto que debe cancelar por concepto de\nconsumo y recargos legales adicionales, por tanto, queda prohibido el planillaje en base de sistemas\ndiferentes a la medición directa, tales como valores presuntivos o estimativos, con excepción del\nsector rural que no disponga de instrumentos de medición.",
+            "title": "Ley Orgánica de Defensa del Consumidor",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Congreso Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2018-09/Documento_Ley-Org%C3%A1nica-Defensa-Consumidor.pdf",
+            "official_citation": "Suplemento del Registro Oficial 116, 10-07-2000",
+            "publication_date": "2000-07-10",
+            "effective_date": "2000-07-10",
+            "topics": "consumidores|contratos|cláusulas abusivas",
+            "checksum": "f9fb0a29b61e36a981c6fd6fdc9d5dcc26dde421c020d8964be78305876f97d2",
+            "distance": 0.47396064
+          }
+        ]
+      },
+      "checks": {
+        "category": false,
+        "classification": true,
+        "risk_level": true,
+        "analysis_status": true,
+        "legal_basis": true,
+        "grounded": true
+      },
+      "error": null
+    },
+    {
+      "case_id": "TIT48-009",
+      "duration_seconds": 46.957,
+      "execution_success": true,
+      "overall_match": true,
+      "expected": {
+        "category": "privacy_and_data_processing",
+        "classification": "fair",
+        "risk_level": "low",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_lopdp_2021"
+        ]
+      },
+      "actual": {
+        "category": "privacy_and_data_processing",
+        "classification": "fair",
+        "risk_level": "low",
+        "analysis_status": "classified",
+        "relevant_fragment": "El usuario podrá retirar su consentimiento y solicitar el acceso, rectificación o eliminación de sus datos.",
+        "justification": "La cláusula garantiza el derecho de retirar consentimiento y solicitar acceso, rectificación o eliminación de datos, alineado con el Art. 83 de la Ley Orgánica de Protección de Datos Personales (ec_lopdp_2021) que exige la posibilidad clara y fácil de retirar consentimiento y ejercer derechos de acceso y rectificación.",
+        "recommendation": "Incluir especificación de los datos personales afectados y plazo máximo de 3 días para suspensión tras solicitud de eliminación, conforme a Art. 18 del Reglamento SPDP-2025-0030-R.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": false,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_lopdp_2021_chunk_0168",
+            "document_id": "ec_lopdp_2021",
+            "chunk_index": 168,
+            "content": "Los usuarios o abonados\ndispondrán, de la posibilidad ciara y fácil de retirar su consentimiento para el aso\nde sus datos y de la información, antes indicada. Tal consentimiento deberá\nespecificar los datos personales o información cuyo uso se autorizan, el tiempo y su\nobjetivo específico.\nPágina 39 de 40\nSin contar con tal  consentimiento y con las mismas características, las y los\nprestadores de servicios de telecomunicaciones no podrán comercializar, ceder o\ntransferir a terceros los datos personales de sus usuarios, clientes o abonados.\nIgual requisito se aplicará para la información del uso del servicio, información de\ntráfico o del patrón de consumo de sus usuarios, clientes y abonados.\"\nd) El artículo 83 por el siguiente:\n\"Art. 83.­ Control técnico.­ Guando para la realización de las tareas de control\ntécnico, ya sea para verificar el.",
+            "title": "Ley Orgánica de Protección de Datos Personales",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Asamblea Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2022-08/Ley-Org%C3%A1nica-Protecci%C3%B3n-Datos-Personales.pdf",
+            "official_citation": "Quinto Suplemento del Registro Oficial 459, 26-05-2021",
+            "publication_date": "2021-05-26",
+            "effective_date": "2021-05-26",
+            "topics": "protección de datos|privacidad|derechos del titular",
+            "checksum": "3710d011ce36d21e7bae1575cf506946723b13add2c467d49e036abdc9268a88",
+            "distance": 0.39736202
+          },
+          {
+            "chunk_id": "ec_spdp_2025_0030_chunk_0030",
+            "document_id": "ec_spdp_2025_0030",
+            "chunk_index": 30,
+            "content": "RESOLUCIÓN Nº SPDP-SPD-2025-0030-R Página 7 de 8\n17.3.  Por razones de interés público establecidas en una norma con rango de ley, para lo\ncual se deberá cumplir con las condiciones de proporcionalidad y necesidad, en cuyo\ncaso se respetarán, en todo momento, los principios de limitación, minimización y\nseguridad de los datos; y,\n17.4.  Por obligaciones legales previamente establecidas, las cuales deberán en todo\nmomento respetar los principios de limitación, minimización y seguridad de los datos.\nArt. 18.- En caso de que el titular de los datos personales ejerciere el derecho de suspensión\no solicitare la revocatoria de su consentimiento, una vez recibida la notificación correspondiente\nel responsable deberá, de forma obligatoria, suspender o cesar aquellas actividades de\ntratamiento que se estén llevando a cabo sobre los datos personales del titular en un término no\nmayor a tres (3) días.\nTÍTULO VI\nELIMINACIÓN",
+            "title": "Reglamento para la seudonimización, anonimización, bloqueo y eliminación de datos personales",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Superintendencia de Protección de Datos Personales",
+            "document_type": "resolution",
+            "binding_level": "binding",
+            "status": "in_force",
+            "language": "es",
+            "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/08/0030-R.pdf",
+            "official_citation": "Resolución SPDP-SPD-2025-0030-R",
+            "publication_date": null,
+            "effective_date": null,
+            "topics": "seudonimización|anonimización|eliminación de datos",
+            "checksum": "02decb57dcf2d3ad1fa3ac130de4a03ca52a733f190e2a09b12644319b4e7210",
+            "distance": 0.41103992
+          }
+        ]
+      },
+      "checks": {
+        "category": true,
+        "classification": true,
+        "risk_level": true,
+        "analysis_status": true,
+        "legal_basis": true,
+        "grounded": true
+      },
+      "error": null
+    },
+    {
+      "case_id": "TIT48-010",
+      "duration_seconds": 44.277,
+      "execution_success": true,
+      "overall_match": true,
+      "expected": {
+        "category": "unilateral_termination",
+        "classification": "fair",
+        "risk_level": "low",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      },
+      "actual": {
+        "category": "unilateral_termination",
+        "classification": "fair",
+        "risk_level": "low",
+        "analysis_status": "classified",
+        "relevant_fragment": "El usuario podrá terminar el servicio en cualquier momento mediante una notificación, sin multas, sanciones ni recargos por terminación anticipada.",
+        "justification": "La cláusula coincide con el Art. 44 de la Ley Orgánica de Defensa del Consumidor, que establece que el consumidor puede terminar unilateralmente el contrato sin multas, sanciones o recargos. La evidencia jurídica confirma que no se permiten cláusulas que impongan multas por terminación anticipada.",
+        "recommendation": "Asegurar que el usuario reciba notificación por escrito con al menos quince días de anticipación, como exige la normativa.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": false,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_defensa_consumidor_2000_chunk_0050",
+            "document_id": "ec_defensa_consumidor_2000",
+            "chunk_index": 50,
+            "content": "LEY ORGANICA DE DEFENSA DEL CONSUMIDOR  - Página 12\neSilec Profesional - www.lexis.com.ec\nConcordancias:\nCONSTITUCION DE LA REPUBLICA DEL ECUADOR, Arts. 11\nCODIGO DE PROCEDIMIENTO CIVIL, Arts. 113, 171\nCODIGO CIVIL (LIBRO IV), Arts. 1561, 1576, 1698\nArt. 44.- Terminación Anticipada.- En los contratos de adhesión referentes a la prestación de\nservicios tales como, telefonía celular, medicina prepagada, televisión satelital o por cable u otros\nsimilares, el consumidor podrá dar por terminado unilateralmente el contrato en cualquier tiempo,\nprevia notificación por escrito con al menos quince días de anticipación a la finalización del período\nen curso. En estos casos, en el contrato de adhesión no se podrá incluir cláusulas ni disposición\nalguna que impongan al consumidor multas, sanciones o recargos de ninguna naturaleza, atribuida a\nla terminación anticipada de dicho contrato y de incluirlas no tendrán ningún efecto jurídico.",
+            "title": "Ley Orgánica de Defensa del Consumidor",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Congreso Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2018-09/Documento_Ley-Org%C3%A1nica-Defensa-Consumidor.pdf",
+            "official_citation": "Suplemento del Registro Oficial 116, 10-07-2000",
+            "publication_date": "2000-07-10",
+            "effective_date": "2000-07-10",
+            "topics": "consumidores|contratos|cláusulas abusivas",
+            "checksum": "f9fb0a29b61e36a981c6fd6fdc9d5dcc26dde421c020d8964be78305876f97d2",
+            "distance": 0.3490579
+          },
+          {
+            "chunk_id": "ec_defensa_consumidor_2000_chunk_0051",
+            "document_id": "ec_defensa_consumidor_2000",
+            "chunk_index": 51,
+            "content": "En estos casos, en el contrato de adhesión no se podrá incluir cláusulas ni disposición\nalguna que impongan al consumidor multas, sanciones o recargos de ninguna naturaleza, atribuida a\nla terminación anticipada de dicho contrato y de incluirlas no tendrán ningún efecto jurídico.\nSin perjuicio de lo dispuesto en el presente artículo, el consumidor mantendrá la obligación de\ncancelar los saldos pendientes únicamente por servicios efectivamente prestados hasta la fecha de\nterminación unilateral del contrato, así como los valores adeudados por la adquisición de los bienes\nnecesarios para la prestación del servicio, de ser el caso.\nConcordancias:\nCODIGO CIVIL (LIBRO IV), Arts. 1505, 1576, 1800",
+            "title": "Ley Orgánica de Defensa del Consumidor",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Congreso Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2018-09/Documento_Ley-Org%C3%A1nica-Defensa-Consumidor.pdf",
+            "official_citation": "Suplemento del Registro Oficial 116, 10-07-2000",
+            "publication_date": "2000-07-10",
+            "effective_date": "2000-07-10",
+            "topics": "consumidores|contratos|cláusulas abusivas",
+            "checksum": "f9fb0a29b61e36a981c6fd6fdc9d5dcc26dde421c020d8964be78305876f97d2",
+            "distance": 0.44720048
+          }
+        ]
+      },
+      "checks": {
+        "category": true,
+        "classification": true,
+        "risk_level": true,
+        "analysis_status": true,
+        "legal_basis": true,
+        "grounded": true
+      },
+      "error": null
+    },
+    {
+      "case_id": "TIT48-011",
+      "duration_seconds": 50.101,
+      "execution_success": true,
+      "overall_match": true,
+      "expected": {
+        "category": "unilateral_modification",
+        "classification": "fair",
+        "risk_level": "low",
+        "analysis_status": "classified",
+        "document_ids": [
+          "ec_defensa_consumidor_2000"
+        ]
+      },
+      "actual": {
+        "category": "unilateral_modification",
+        "classification": "fair",
+        "risk_level": "low",
+        "analysis_status": "classified",
+        "relevant_fragment": "Toda modificación del precio o de las condiciones será comunicada al usuario con treinta días de anticipación y requerirá su aceptación. Si no acepta, podrá terminar el servicio sin penalización.",
+        "justification": "La cláusula cumple con el requisito de notificación previa de 30 días establecido en la Ley Orgánica de Defensa del Consumidor (Art. 44), que permite al consumidor terminar el contrato sin penalización tras notificación escrita con al menos quince días de anticipación. La distancia semántica de 0.42365193 indica una alta coincidencia con la norma aplicable.",
+        "recommendation": "Asegurar que la notificación de modificaciones incluya un plazo mínimo de 15 días según la ley, evitando ambigüedades en la interpretación del tiempo requerido.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": false,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_defensa_consumidor_2000_chunk_0050",
+            "document_id": "ec_defensa_consumidor_2000",
+            "chunk_index": 50,
+            "content": "LEY ORGANICA DE DEFENSA DEL CONSUMIDOR  - Página 12\neSilec Profesional - www.lexis.com.ec\nConcordancias:\nCONSTITUCION DE LA REPUBLICA DEL ECUADOR, Arts. 11\nCODIGO DE PROCEDIMIENTO CIVIL, Arts. 113, 171\nCODIGO CIVIL (LIBRO IV), Arts. 1561, 1576, 1698\nArt. 44.- Terminación Anticipada.- En los contratos de adhesión referentes a la prestación de\nservicios tales como, telefonía celular, medicina prepagada, televisión satelital o por cable u otros\nsimilares, el consumidor podrá dar por terminado unilateralmente el contrato en cualquier tiempo,\nprevia notificación por escrito con al menos quince días de anticipación a la finalización del período\nen curso. En estos casos, en el contrato de adhesión no se podrá incluir cláusulas ni disposición\nalguna que impongan al consumidor multas, sanciones o recargos de ninguna naturaleza, atribuida a\nla terminación anticipada de dicho contrato y de incluirlas no tendrán ningún efecto jurídico.",
+            "title": "Ley Orgánica de Defensa del Consumidor",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Congreso Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2018-09/Documento_Ley-Org%C3%A1nica-Defensa-Consumidor.pdf",
+            "official_citation": "Suplemento del Registro Oficial 116, 10-07-2000",
+            "publication_date": "2000-07-10",
+            "effective_date": "2000-07-10",
+            "topics": "consumidores|contratos|cláusulas abusivas",
+            "checksum": "f9fb0a29b61e36a981c6fd6fdc9d5dcc26dde421c020d8964be78305876f97d2",
+            "distance": 0.42365193
+          }
+        ]
+      },
+      "checks": {
+        "category": true,
+        "classification": true,
+        "risk_level": true,
+        "analysis_status": true,
+        "legal_basis": true,
+        "grounded": true
+      },
+      "error": null
+    },
+    {
+      "case_id": "TIT48-012",
+      "duration_seconds": 43.704,
+      "execution_success": true,
+      "overall_match": false,
+      "expected": {
+        "category": "other_contractual_risk",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "document_ids": []
+      },
+      "actual": {
+        "category": "other_contractual_risk",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "relevant_fragment": "El proveedor podrá adoptar otras medidas cuando resulte necesario.",
+        "justification": "La cláusula permite al proveedor adoptar medidas sin especificar condiciones, contradiciendo la obligación de transparencia y equidad establecida en la Resolución SPDP-SPD-2025-0006-R que exige cláusulas claras y específicas para proteger los derechos del consumidor. La distancia semántica con la evidencia es 0.45365912, indicando una relación directa pero no vinculante.",
+        "recommendation": "Incluir condiciones específicas para las medidas adicionales y garantizar transparencia en el uso de datos.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_spdp_2025_0006_chunk_0022",
+            "document_id": "ec_spdp_2025_0006",
+            "chunk_index": 22,
+            "content": "Tercera.- Las cláusulas contenidas en el Anexo I de este instrumento no crean figuras no previstas\nen el ordenamiento jurídico ecuatoriano, sino que establecen las condiciones jurídicas mínimas que\ndeben reconocerse en las relaciones jurídico-contractuales entre los integrantes del sistema de\nprotección de datos personales, y que constan ya establecidas en la LOPDP.\nDISPOSICIÓN FINAL\nEsta resolución entrará en vigencia a partir de su suscripción, sin perjuicio de su publicación en\nel Registro Oficial.\nDada y firmada en Quito, D. M., el 30 de abril del 2025.\nFABRIZIO PERALTA-DÍAZ\nSUPERINTENDENTE DE PROTECCIÓN DE DATOS PERSONALES\nRESOLUCIÓN Nº SPDP-SPD-2025-0006-R Página 6 de 16\nANEXO I\nTabla de contenido\n1 Modelo de cláusula entre responsable y titular .............................................................. 7\n2 Modelo de cláusula entre responsable y encargado de tratamiento ............................. 10\n3 Modelo de cláusula entre responsable y destinatario ................................................... 13\n4 Modelo de cláusula responsables conjuntos .................................................................",
+            "title": "Obligación de incorporar cláusulas de protección de datos en contratos celebrados en Ecuador",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Superintendencia de Protección de Datos Personales",
+            "document_type": "resolution",
+            "binding_level": "binding",
+            "status": "in_force",
+            "language": "es",
+            "source_url": "https://spdp.gob.ec/wp-content/uploads/2025/05/06.01.01-SPDP-SPD-2025-0006-R-clausulas-para-contratos-en-Ecuador-signed.pdf",
+            "official_citation": "Resolución SPDP-SPD-2025-0006-R",
+            "publication_date": null,
+            "effective_date": null,
+            "topics": "contratos|cláusulas|protección de datos",
+            "checksum": "54ddcbf7421806f928e48582550ac577df19b25d7fb909e98d21341fa80cc4ac",
+            "distance": 0.45365912
+          }
+        ]
+      },
+      "checks": {
+        "category": true,
+        "classification": false,
+        "risk_level": false,
+        "analysis_status": false,
+        "legal_basis": true,
+        "grounded": true
+      },
+      "error": null
+    }
+  ]
+}

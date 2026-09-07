@@ -33,6 +33,7 @@ def generate_with_ollama(
         "think": False,
         "options": {
             "temperature": settings.llm_temperature,
+            "num_ctx": settings.ollama_context_length,
         },
     }
 

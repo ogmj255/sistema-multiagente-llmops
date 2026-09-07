@@ -29,6 +29,7 @@ class Settings(BaseSettings):
         "qwen3-embedding:0.6b"
     )
     ollama_embedding_dimensions: int = 1024
+    ollama_context_length: int = 8192
 
     legal_analyzer_mode: Literal[
         "local",

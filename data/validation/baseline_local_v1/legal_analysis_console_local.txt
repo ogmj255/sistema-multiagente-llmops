@@ -1,0 +1,65 @@
+[1/12] TIT48-001
+  estado: OK
+  coincide: True
+  tiempo: 45.775 segundos
+[2/12] TIT48-002
+  estado: OK
+  coincide: True
+  tiempo: 39.382 segundos
+[3/12] TIT48-003
+  estado: OK
+  coincide: True
+  tiempo: 43.51 segundos
+[4/12] TIT48-004
+  estado: OK
+  coincide: False
+  tiempo: 48.481 segundos
+[5/12] TIT48-005
+  estado: OK
+  coincide: True
+  tiempo: 54.757 segundos
+[6/12] TIT48-006
+  estado: OK
+  coincide: False
+  tiempo: 67.295 segundos
+[7/12] TIT48-007
+  estado: OK
+  coincide: True
+  tiempo: 51.985 segundos
+[8/12] TIT48-008
+  estado: OK
+  coincide: False
+  tiempo: 43.059 segundos
+[9/12] TIT48-009
+  estado: OK
+  coincide: True
+  tiempo: 46.957 segundos
+[10/12] TIT48-010
+  estado: OK
+  coincide: True
+  tiempo: 44.277 segundos
+[11/12] TIT48-011
+  estado: OK
+  coincide: True
+  tiempo: 50.101 segundos
+[12/12] TIT48-012
+  estado: OK
+  coincide: False
+  tiempo: 43.704 segundos
+
+RESUMEN
+cases: 12
+successful_executions: 12
+execution_errors: 0
+exact_matches: 8
+category_matches: 11
+classification_matches: 9
+risk_matches: 9
+status_matches: 11
+legal_basis_matches: 11
+grounded_results: 12
+total_seconds: 579.283
+average_seconds: 48.274
+median_seconds: 46.366
+p95_seconds: 67.295
+Resultados: data\validation\legal_analysis_results.json

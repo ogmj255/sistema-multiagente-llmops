@@ -1,3 +1,6 @@
+import json
+import logging
+import os
 from dataclasses import dataclass
 
 from pydantic import ValidationError
@@ -20,6 +23,7 @@ from app.schemas.legal_analysis import (
     ClauseAssessment,
 )
 
+logger = logging.getLogger(__name__)
 
 class ClauseClassificationError(RuntimeError):
     """Indica que una cláusula no pudo clasificarse."""
@@ -125,6 +129,27 @@ def classify_clause(
         ValidationError,
         ValueError,
     ) as error:
+        if os.getenv("LEGAL_ANALYSIS_DEBUG") == "1":
+            diagnostic = {
+                "error": str(error),
+                "provider": model_response.provider,
+                "model": model_response.model,
+                "clause": request.clause.content,
+                "raw_response": model_response.content,
+                "available_evidence": [
+                    {
+                        "evidence_index": index,
+                        "chunk_id": match.chunk_id,
+                    }
+                    for index, match in enumerate(legal_context)
+                ],
+            }
+
+            logger.error(
+                "LEGAL_ANALYSIS_INVALID_RESPONSE %s",
+                json.dumps(diagnostic, ensure_ascii=False),
+            )
+
         raise ClauseClassificationError(
             "El modelo devolvió una clasificación "
             f"inválida: {error}"
