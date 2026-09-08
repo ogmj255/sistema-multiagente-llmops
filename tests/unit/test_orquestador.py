@@ -1,15 +1,32 @@
 from collections.abc import Callable
+from datetime import UTC, datetime
 
+from app.agents import orquestador
 from app.agents.orquestador import (
     AgenteOrquestador,
     NodosOrquestacion,
 )
-from app.schemas.contract import ExtractionRequest
+from app.schemas.contract import (
+    ContractSection,
+    ExtractedContract,
+    ExtractionRequest,
+    ExtractionResponse,
+)
+from app.schemas.knowledge import LegalKnowledgeMatch
+from app.schemas.legal_analysis import (
+    ClauseAnalysisResponse,
+    ClauseAssessment,
+)
 from app.schemas.orquestacion import (
     OrchestrationState,
     PipelineStatus,
     PipelineStep,
     create_initial_state,
+)
+from app.schemas.preprocessing import (
+    PreprocessedContract,
+    PreprocessingResponse,
+    ProcessedClause,
 )
 
 
@@ -32,7 +49,7 @@ def crear_nodo(
     return ejecutar
 
 
-def crear_orquestador(
+def crear_orquestador_controlado(
     ejecutados: list[str],
 ) -> AgenteOrquestador:
     nodos = NodosOrquestacion(
@@ -43,11 +60,6 @@ def crear_orquestador(
         ),
         preprocesar=crear_nodo(
             "preprocesar",
-            "knowledge",
-            ejecutados,
-        ),
-        consultar_conocimiento=crear_nodo(
-            "consultar_conocimiento",
             "legal_analysis",
             ejecutados,
         ),
@@ -89,14 +101,83 @@ def crear_estado() -> OrchestrationState:
     return create_initial_state(request)
 
 
+def crear_contrato_extraido() -> ExtractedContract:
+    return ExtractedContract(
+        source_url="https://example.com/terms",
+        platform="Example",
+        title="Terms",
+        retrieved_at=datetime.now(UTC),
+        extraction_method="beautiful_soup",
+        language="es",
+        sections=[
+            ContractSection(
+                order=1,
+                heading="Condiciones",
+                heading_level=1,
+                content="Contenido contractual.",
+            ),
+        ],
+        full_text="Contenido contractual.",
+    )
+
+
+def crear_contrato_preprocesado() -> PreprocessedContract:
+    return PreprocessedContract(
+        source_url="https://example.com/terms",
+        platform="Example",
+        title="Terms",
+        language="es",
+        cleaned_text=(
+            "Primera cláusula. Segunda cláusula."
+        ),
+        clauses=[
+            ProcessedClause(
+                order=1,
+                original_order=1,
+                heading="Primera",
+                heading_level=2,
+                content="Primera cláusula.",
+            ),
+            ProcessedClause(
+                order=2,
+                original_order=2,
+                heading="Segunda",
+                heading_level=2,
+                content="Segunda cláusula.",
+            ),
+        ],
+        removed_blocks=[],
+    )
+
+
+def crear_respuesta_legal() -> ClauseAnalysisResponse:
+    evidencia = LegalKnowledgeMatch.model_construct()
+
+    valoracion = ClauseAssessment(
+        category="other_contractual_risk",
+        classification="fair",
+        analysis_status="classified",
+        relevant_fragment="cláusula",
+        justification="No se identificó un riesgo.",
+        recommendation="Mantener la redacción.",
+        evidence_sufficiency="sufficient",
+        legal_basis=[evidencia],
+    )
+
+    return ClauseAnalysisResponse(
+        status="success",
+        result=valoracion,
+    )
+
+
 def test_orquestador_compila_todos_los_nodos():
-    orquestador = crear_orquestador([])
-    grafo = orquestador.construir()
+    grafo = crear_orquestador_controlado(
+        []
+    ).construir()
 
     nodos_esperados = {
         "extraer",
         "preprocesar",
-        "consultar_conocimiento",
         "analizar_clausula",
         "registrar_resultado",
         "finalizar",
@@ -107,18 +188,83 @@ def test_orquestador_compila_todos_los_nodos():
 
 def test_orquestador_ejecuta_el_flujo_definido():
     ejecutados: list[str] = []
-    orquestador = crear_orquestador(ejecutados)
-    grafo = orquestador.construir()
+
+    grafo = crear_orquestador_controlado(
+        ejecutados
+    ).construir()
 
     resultado = grafo.invoke(crear_estado())
 
     assert ejecutados == [
         "extraer",
         "preprocesar",
-        "consultar_conocimiento",
         "analizar_clausula",
         "registrar_resultado",
         "finalizar",
     ]
     assert resultado["status"] == "success"
-    assert resultado["current_step"] == "finalization"
+
+
+def test_coordina_los_agentes_secuencialmente(
+    monkeypatch,
+):
+    llamadas: list[str] = []
+
+    def extraer(request):
+        llamadas.append("web_scraper")
+
+        return ExtractionResponse(
+            status="success",
+            contract=crear_contrato_extraido(),
+        )
+
+    def preprocesar(contract):
+        llamadas.append("preprocesador")
+
+        return PreprocessingResponse(
+            status="success",
+            result=crear_contrato_preprocesado(),
+        )
+
+    def analizar(request):
+        llamadas.append(
+            f"analizador:{request.clause.order}"
+        )
+
+        return crear_respuesta_legal()
+
+    monkeypatch.setattr(
+        orquestador,
+        "run_web_scraper_agent",
+        extraer,
+    )
+    monkeypatch.setattr(
+        orquestador,
+        "run_preprocessor_agent",
+        preprocesar,
+    )
+    monkeypatch.setattr(
+        orquestador,
+        "run_legal_analyzer_agent",
+        analizar,
+    )
+
+    resultado = orquestador.ejecutar_orquestacion(
+        ExtractionRequest(
+            url="https://example.com/terms",
+            platform="Example",
+        )
+    )
+
+    assert llamadas == [
+        "web_scraper",
+        "preprocesador",
+        "analizador:1",
+        "analizador:2",
+    ]
+    assert resultado["current_clause_index"] == 2
+    assert set(resultado["clause_results"]) == {
+        1,
+        2,
+    }
+    assert resultado["status"] == "success"
