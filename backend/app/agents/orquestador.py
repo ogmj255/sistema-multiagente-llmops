@@ -2,7 +2,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Literal, TypeAlias
 
+from langgraph.errors import NodeError
 from langgraph.graph import END, START, StateGraph
+from langgraph.types import RetryPolicy
 
 from app.agents.legal_analyzer_agent import (
     run_legal_analyzer_agent,
@@ -19,6 +21,7 @@ from app.schemas.legal_corpus import Jurisdiction
 from app.schemas.orquestacion import (
     OrchestrationState,
     PipelineStatus,
+    PipelineStep,
     create_initial_state,
 )
 
@@ -38,6 +41,73 @@ EnrutadorOrquestacion: TypeAlias = Callable[
     [OrchestrationState],
     DecisionRuta,
 ]
+
+MAX_INTENTOS = 2
+
+POLITICA_REINTENTOS = RetryPolicy(
+    max_attempts=MAX_INTENTOS,
+    jitter=False,
+    retry_on=RuntimeError,
+)
+
+ETAPA_POR_NODO: dict[str, PipelineStep] = {
+    "extraer": "extraction",
+    "preprocesar": "preprocessing",
+    "analizar_clausula": "legal_analysis",
+}
+
+
+def manejar_error_nodo(
+    state: OrchestrationState,
+    error: NodeError,
+) -> ActualizacionEstado:
+    """Registra un error despues de agotar los intentos."""
+
+    if not isinstance(error.error, RuntimeError):
+        raise error.error
+
+    etapa = ETAPA_POR_NODO[error.node]
+    orden_clausula = None
+
+    if etapa == "legal_analysis":
+        contrato = state["preprocessed_contract"]
+        indice = state["current_clause_index"]
+
+        if (
+            contrato is not None
+            and indice < len(contrato.clauses)
+        ):
+            orden_clausula = (
+                contrato.clauses[indice].order
+            )
+
+    clave_intento = etapa
+
+    if orden_clausula is not None:
+        clave_intento = (
+            f"{etapa}:{orden_clausula}"
+        )
+
+    errores = list(state["errors"])
+    errores.append(
+        {
+            "step": etapa,
+            "clause_order": orden_clausula,
+            "message": str(error.error),
+            "attempt": MAX_INTENTOS,
+            "retryable": True,
+        }
+    )
+
+    intentos = dict(state["attempts"])
+    intentos[clave_intento] = MAX_INTENTOS
+
+    return {
+        "status": "error",
+        "current_step": etapa,
+        "errors": errores,
+        "attempts": intentos,
+    }
 
 
 @dataclass(frozen=True)
@@ -67,14 +137,23 @@ class AgenteOrquestador:
 
         grafo = StateGraph(OrchestrationState)
 
-        grafo.add_node("extraer", self._nodos.extraer)
+        grafo.add_node(
+            "extraer",
+            self._nodos.extraer,
+            retry_policy=POLITICA_REINTENTOS,
+            error_handler=manejar_error_nodo,
+        )
         grafo.add_node(
             "preprocesar",
             self._nodos.preprocesar,
+            retry_policy=POLITICA_REINTENTOS,
+            error_handler=manejar_error_nodo,
         )
         grafo.add_node(
             "analizar_clausula",
             self._nodos.analizar_clausula,
+            retry_policy=POLITICA_REINTENTOS,
+            error_handler=manejar_error_nodo,
         )
         grafo.add_node(
             "registrar_resultado",
@@ -86,14 +165,32 @@ class AgenteOrquestador:
         )
 
         grafo.add_edge(START, "extraer")
-        grafo.add_edge("extraer", "preprocesar")
-        grafo.add_edge(
-            "preprocesar",
-            "analizar_clausula",
+
+        grafo.add_conditional_edges(
+            "extraer",
+            decidir_continuacion,
+            {
+                "continuar": "preprocesar",
+                "finalizar": "finalizar",
+            },
         )
-        grafo.add_edge(
+
+        grafo.add_conditional_edges(
+            "preprocesar",
+            decidir_continuacion,
+            {
+                "continuar": "analizar_clausula",
+                "finalizar": "finalizar",
+            },
+        )
+
+        grafo.add_conditional_edges(
             "analizar_clausula",
-            "registrar_resultado",
+            decidir_continuacion,
+            {
+                "continuar": "registrar_resultado",
+                "finalizar": "finalizar",
+            },
         )
 
         grafo.add_conditional_edges(
@@ -195,6 +292,12 @@ def analizar_clausula(
 
     respuesta = run_legal_analyzer_agent(solicitud)
 
+    if respuesta.status == "error":
+        raise RuntimeError(
+            respuesta.error
+            or "No se pudo analizar la clausula."
+        )
+
     resultados = dict(state["clause_results"])
     resultados[clausula.order] = respuesta
 
@@ -226,6 +329,17 @@ def registrar_resultado(
         "current_clause_index": siguiente_indice,
         "current_step": siguiente_paso,
     }
+
+
+def decidir_continuacion(
+    state: OrchestrationState,
+) -> DecisionRuta:
+    """Continua el flujo si no existe un error."""
+
+    if state["status"] == "error":
+        return "finalizar"
+
+    return "continuar"
 
 
 def decidir_siguiente(

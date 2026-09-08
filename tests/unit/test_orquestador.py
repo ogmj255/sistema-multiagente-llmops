@@ -239,6 +239,12 @@ def test_coordina_los_agentes_secuencialmente(
     def extraer(request):
         llamadas.append("web_scraper")
 
+        if llamadas.count("web_scraper") == 1:
+            return ExtractionResponse(
+                status="error",
+                error="Error temporal de extraccion.",
+            )
+
         return ExtractionResponse(
             status="success",
             contract=crear_contrato_extraido(),
@@ -284,6 +290,7 @@ def test_coordina_los_agentes_secuencialmente(
 
     assert llamadas == [
         "web_scraper",
+        "web_scraper",
         "preprocesador",
         "analizador:1",
         "analizador:2",
@@ -294,3 +301,47 @@ def test_coordina_los_agentes_secuencialmente(
         2,
     }
     assert resultado["status"] == "success"
+
+def test_registra_error_al_agotar_reintentos(
+    monkeypatch,
+):
+    intentos = 0
+
+    def extraer(_):
+        nonlocal intentos
+        intentos += 1
+
+        return ExtractionResponse(
+            status="error",
+            error="Servicio temporal no disponible.",
+        )
+
+    monkeypatch.setattr(
+        orquestador,
+        "run_web_scraper_agent",
+        extraer,
+    )
+
+    resultado = orquestador.ejecutar_orquestacion(
+        ExtractionRequest(
+            url="https://example.com/terms",
+            platform="Example",
+        )
+    )
+
+    assert intentos == 2
+    assert resultado["status"] == "error"
+    assert resultado["attempts"] == {
+        "extraction": 2,
+    }
+    assert resultado["errors"] == [
+        {
+            "step": "extraction",
+            "clause_order": None,
+            "message": (
+                "Servicio temporal no disponible."
+            ),
+            "attempt": 2,
+            "retryable": True,
+        }
+    ]
