@@ -207,15 +207,24 @@ def analizar_clausula(
 def registrar_resultado(
     state: OrchestrationState,
 ) -> ActualizacionEstado:
-    """Avanza a la siguiente cláusula del contrato."""
+    """Avanza a la siguiente cl?usula del contrato."""
 
+    contrato = state["preprocessed_contract"]
     siguiente_indice = (
         state["current_clause_index"] + 1
     )
 
+    if (
+        contrato is not None
+        and siguiente_indice < len(contrato.clauses)
+    ):
+        siguiente_paso = "legal_analysis"
+    else:
+        siguiente_paso = "finalization"
+
     return {
         "current_clause_index": siguiente_indice,
-        "current_step": "finalization",
+        "current_step": siguiente_paso,
     }
 
 

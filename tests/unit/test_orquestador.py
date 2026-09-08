@@ -205,6 +205,32 @@ def test_orquestador_ejecuta_el_flujo_definido():
     assert resultado["status"] == "success"
 
 
+def test_estado_avanza_entre_clausulas():
+    estado = crear_estado()
+    estado["preprocessed_contract"] = (
+        crear_contrato_preprocesado()
+    )
+
+    primera = orquestador.registrar_resultado(
+        estado
+    )
+
+    estado["current_clause_index"] = 1
+
+    segunda = orquestador.registrar_resultado(
+        estado
+    )
+
+    assert primera == {
+        "current_clause_index": 1,
+        "current_step": "legal_analysis",
+    }
+    assert segunda == {
+        "current_clause_index": 2,
+        "current_step": "finalization",
+    }
+
+
 def test_coordina_los_agentes_secuencialmente(
     monkeypatch,
 ):
