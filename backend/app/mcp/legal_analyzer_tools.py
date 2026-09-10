@@ -3,8 +3,9 @@ from asyncio import to_thread
 from mcp.server.fastmcp import FastMCP
 
 from app.agents.legal_analyzer_agent import (
-    run_legal_analyzer_agent,
+    run_legal_analyzer_with_context,
 )
+from app.schemas.knowledge import LegalKnowledgeMatch
 from app.schemas.legal_analysis import (
     ClauseAnalysisRequest,
 )
@@ -20,9 +21,10 @@ async def analyze_legal_clause(
     platform: str,
     language: str,
     clause: ProcessedClause,
+    legal_context: list[LegalKnowledgeMatch],
     jurisdiction: Jurisdiction = "ecuador",
 ) -> dict[str, object]:
-    """Analiza jurídicamente una cláusula SaaS."""
+    """Analiza una cláusula usando evidencia jurídica recuperada."""
 
     request = ClauseAnalysisRequest(
         source_url=source_url,
@@ -33,8 +35,9 @@ async def analyze_legal_clause(
     )
 
     response = await to_thread(
-        run_legal_analyzer_agent,
+        run_legal_analyzer_with_context,
         request,
+        legal_context,
     )
 
     return response.model_dump(mode="json")

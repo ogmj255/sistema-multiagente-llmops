@@ -61,18 +61,18 @@ EvidenceIndex = Annotated[
     Field(ge=0),
 ]
 
+
 class ClauseAnalysisRequest(BaseModel):
     """Entrada para analizar una cláusula contractual."""
 
-    model_config = ConfigDict(
-        str_strip_whitespace=True
-    )
+    model_config = ConfigDict(str_strip_whitespace=True)
 
     source_url: HttpUrl
     platform: str = Field(min_length=1)
     language: str = Field(min_length=2)
     jurisdiction: Jurisdiction = "ecuador"
     clause: ProcessedClause
+
 
 class ClauseAnalysisDecision(BaseModel):
     """Decisión estructurada generada por el LLM."""
@@ -85,7 +85,6 @@ class ClauseAnalysisDecision(BaseModel):
     category: ClauseCategory
     classification: ClauseClassification | None
     analysis_status: AnalysisStatus
-    relevant_fragment: str = Field(min_length=1)
     justification: str = Field(min_length=1)
     recommendation: str = Field(min_length=1)
     evidence_sufficiency: EvidenceSufficiency
@@ -98,15 +97,11 @@ class ClauseAnalysisDecision(BaseModel):
         if self.analysis_status == "requires_review":
             if self.classification is not None:
                 raise ValueError(
-                    "Una decisión inconclusa no puede "
-                    "contener clasificación."
+                    "Una decisión inconclusa no puede contener clasificación."
                 )
 
             if self.evidence_sufficiency != "insufficient":
-                raise ValueError(
-                    "La revisión requiere evidencia "
-                    "insuficiente."
-                )
+                raise ValueError("La revisión requiere evidencia insuficiente.")
 
             if self.legal_basis_indices:
                 raise ValueError(
@@ -118,38 +113,29 @@ class ClauseAnalysisDecision(BaseModel):
 
         if self.classification is None:
             raise ValueError(
-                "Una decisión clasificada debe contener "
-                "una clasificación."
+                "Una decisión clasificada debe contener una clasificación."
             )
 
         if self.evidence_sufficiency == "insufficient":
-            raise ValueError(
-                "No se puede clasificar con evidencia "
-                "insuficiente."
-            )
+            raise ValueError("No se puede clasificar con evidencia insuficiente.")
 
         if not self.legal_basis_indices:
             raise ValueError(
-                "Una decisión clasificada debe seleccionar "
-                "fundamento jurídico."
+                "Una decisión clasificada debe seleccionar fundamento jurídico."
             )
 
         if (
             self.classification == "abusive"
             and self.evidence_sufficiency != "sufficient"
         ):
-            raise ValueError(
-                "Una clasificación abusiva requiere "
-                "evidencia suficiente."
-            )
+            raise ValueError("Una clasificación abusiva requiere evidencia suficiente.")
         return self
+
 
 class ClauseAssessment(BaseModel):
     """Valoración jurídica automatizada de una cláusula."""
 
-    model_config = ConfigDict(
-        str_strip_whitespace=True
-    )
+    model_config = ConfigDict(str_strip_whitespace=True)
 
     category: ClauseCategory
     classification: ClauseClassification | None = None
@@ -160,9 +146,7 @@ class ClauseAssessment(BaseModel):
     recommendation: str = Field(min_length=1)
     evidence_sufficiency: EvidenceSufficiency
     requires_human_review: bool = False
-    legal_basis: list[LegalKnowledgeMatch] = Field(
-        default_factory=list
-    )
+    legal_basis: list[LegalKnowledgeMatch] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_assessment(self) -> Self:
@@ -171,67 +155,48 @@ class ClauseAssessment(BaseModel):
         if self.analysis_status == "requires_review":
             if self.classification is not None:
                 raise ValueError(
-                    "Un análisis inconcluso no puede "
-                    "contener clasificación."
+                    "Un análisis inconcluso no puede contener clasificación."
                 )
 
             if self.risk_level is not None:
                 raise ValueError(
-                    "Un análisis inconcluso no puede "
-                    "contener nivel de riesgo."
+                    "Un análisis inconcluso no puede contener nivel de riesgo."
                 )
 
             if self.evidence_sufficiency != "insufficient":
                 raise ValueError(
-                    "La revisión se utiliza cuando la "
-                    "evidencia es insuficiente."
+                    "La revisión se utiliza cuando la evidencia es insuficiente."
                 )
 
             self.requires_human_review = True
             return self
 
         if self.classification is None:
-            raise ValueError(
-                "Un análisis clasificado debe contener "
-                "una clasificación."
-            )
+            raise ValueError("Un análisis clasificado debe contener una clasificación.")
 
         if self.evidence_sufficiency == "insufficient":
-            raise ValueError(
-                "No se puede clasificar con evidencia "
-                "insuficiente."
-            )
+            raise ValueError("No se puede clasificar con evidencia insuficiente.")
 
-        expected_risk = RISK_BY_CLASSIFICATION[
-            self.classification
-        ]
+        expected_risk = RISK_BY_CLASSIFICATION[self.classification]
 
         if self.risk_level is None:
             self.risk_level = expected_risk
         elif self.risk_level != expected_risk:
-            raise ValueError(
-                "El nivel de riesgo no corresponde "
-                "a la clasificación."
-            )
+            raise ValueError("El nivel de riesgo no corresponde a la clasificación.")
 
         if not self.legal_basis:
-            raise ValueError(
-                "Una clasificación debe contener "
-                "fundamento jurídico."
-            )
+            raise ValueError("Una clasificación debe contener fundamento jurídico.")
 
         if (
             self.classification == "abusive"
             and self.evidence_sufficiency != "sufficient"
         ):
             raise ValueError(
-                "Una cláusula abusiva requiere evidencia "
-                "jurídica suficiente."
+                "Una cláusula abusiva requiere evidencia jurídica suficiente."
             )
 
         self.requires_human_review = (
-            self.classification != "fair"
-            or self.evidence_sufficiency != "sufficient"
+            self.classification != "fair" or self.evidence_sufficiency != "sufficient"
         )
 
         return self
@@ -253,28 +218,18 @@ class ClauseAnalysisResponse(BaseModel):
 
         if self.status == "success":
             if self.result is None:
-                raise ValueError(
-                    "Una respuesta exitosa debe contener "
-                    "un resultado."
-                )
+                raise ValueError("Una respuesta exitosa debe contener un resultado.")
 
             if self.error is not None:
-                raise ValueError(
-                    "Una respuesta exitosa no puede "
-                    "contener un error."
-                )
+                raise ValueError("Una respuesta exitosa no puede contener un error.")
 
         if self.status == "error":
             if self.result is not None:
                 raise ValueError(
-                    "Una respuesta de error no puede "
-                    "contener un resultado."
+                    "Una respuesta de error no puede contener un resultado."
                 )
 
             if self.error is None:
-                raise ValueError(
-                    "Una respuesta de error debe contener "
-                    "un mensaje."
-                )
+                raise ValueError("Una respuesta de error debe contener un mensaje.")
 
         return self

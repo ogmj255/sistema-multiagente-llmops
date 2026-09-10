@@ -25,11 +25,14 @@ from app.schemas.legal_analysis import (
 
 logger = logging.getLogger(__name__)
 
+
 class ClauseClassificationError(RuntimeError):
     """Indica que una cláusula no pudo clasificarse."""
 
+
 class LegalGroundingError(RuntimeError):
     """Indica que una justificación no pudo respaldarse."""
+
 
 @dataclass(frozen=True, slots=True)
 class ClassificationExecution:
@@ -37,55 +40,6 @@ class ClassificationExecution:
 
     decision: ClauseAnalysisDecision
     model_response: ModelResponse
-
-
-def normalize_comparison_text(text: str) -> str:
-    """Normaliza espacios y mayúsculas para comparar textos."""
-
-    return " ".join(text.split()).casefold()
-
-
-def validate_model_decision(
-    decision: ClauseAnalysisDecision,
-    request: ClauseAnalysisRequest,
-    legal_context: list[LegalKnowledgeMatch],
-) -> None:
-    """Contrasta la decisión con la entrada original."""
-
-    normalized_fragment = normalize_comparison_text(
-        decision.relevant_fragment
-    )
-    normalized_clause = normalize_comparison_text(
-        request.clause.content
-    )
-
-    if normalized_fragment not in normalized_clause:
-        raise ValueError(
-            "El fragmento relevante no pertenece "
-            "a la cláusula analizada."
-        )
-
-    selected_indices = decision.legal_basis_indices
-
-    if len(selected_indices) != len(
-        set(selected_indices)
-    ):
-        raise ValueError(
-            "La decisión contiene índices jurídicos "
-            "duplicados."
-        )
-
-    invalid_indices = [
-        index
-        for index in selected_indices
-        if index >= len(legal_context)
-    ]
-
-    if invalid_indices:
-        raise ValueError(
-            "La decisión contiene un índice jurídico "
-            "inexistente."
-        )
 
 
 def classify_clause(
@@ -118,11 +72,6 @@ def classify_clause(
             ClauseAnalysisDecision.model_validate_json(
                 model_response.content
             )
-        )
-        validate_model_decision(
-            decision,
-            request,
-            legal_context,
         )
     except (
         TypeError,
@@ -159,8 +108,11 @@ def classify_clause(
         decision=decision,
         model_response=model_response,
     )
+
+
 def build_grounded_assessment(
     execution: ClassificationExecution,
+    request: ClauseAnalysisRequest,
     legal_context: list[LegalKnowledgeMatch],
 ) -> ClauseAssessment:
     """Vincula la decisión con evidencias jurídicas reales."""
@@ -198,9 +150,7 @@ def build_grounded_assessment(
             category=decision.category,
             classification=decision.classification,
             analysis_status=decision.analysis_status,
-            relevant_fragment=(
-                decision.relevant_fragment
-            ),
+            relevant_fragment=request.clause.content,
             justification=decision.justification,
             recommendation=decision.recommendation,
             evidence_sufficiency=(

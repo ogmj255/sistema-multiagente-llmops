@@ -11,9 +11,7 @@ def test_root() -> None:
     response = client.get("/")
 
     assert response.status_code == 200
-    assert response.json()["message"] == (
-        "Sistema Multiagente LLMOps"
-    )
+    assert response.json()["message"] == ("Sistema Multiagente LLMOps")
 
 
 def test_health() -> None:
@@ -33,12 +31,8 @@ def test_analisis_ejecuta_pipeline(
         jurisdiction: Jurisdiction,
     ) -> dict[str, object]:
         datos_recibidos["url"] = str(request.url)
-        datos_recibidos["platform"] = (
-            request.platform
-        )
-        datos_recibidos["jurisdiction"] = (
-            jurisdiction
-        )
+        datos_recibidos["platform"] = request.platform
+        datos_recibidos["jurisdiction"] = jurisdiction
 
         return {
             "execution_id": "ejecucion-prueba",
@@ -75,7 +69,15 @@ def test_analisis_ejecuta_pipeline(
         "platform": "Example",
         "jurisdiction": "ecuador",
     }
-    assert response.json()["execution_id"] == (
-        "ejecucion-prueba"
-    )
-    assert response.json()["status"] == "success"
+    cuerpo = response.json()
+
+    assert cuerpo["execution_id"] == ("ejecucion-prueba")
+    assert cuerpo["status"] == "success"
+    assert cuerpo["source_url"] == ("https://example.com/terms")
+    assert cuerpo["total_clauses"] == 0
+    assert cuerpo["analyzed_clauses"] == 0
+    assert cuerpo["successful_clauses"] == 0
+    assert cuerpo["failed_clauses"] == 0
+    assert cuerpo["results"] == []
+    assert "extracted_contract" not in cuerpo
+    assert "preprocessed_contract" not in cuerpo

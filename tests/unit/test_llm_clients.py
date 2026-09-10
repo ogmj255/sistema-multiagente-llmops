@@ -60,18 +60,12 @@ def test_ollama_client_generates_response(
         assert json["model"] == "qwen3:4b"
         assert json["stream"] is False
         assert json["think"] is False
-        assert json["format"] == {
-            "type": "object"
-        }
+        assert json["format"] == {"type": "object"}
         assert timeout == 120.0
 
         return FakeResponse(
             {
-                "message": {
-                    "content": (
-                        '{"classification": "fair"}'
-                    )
-                },
+                "message": {"content": ('{"classification": "fair"}')},
                 "prompt_eval_count": 120,
                 "eval_count": 30,
             }
@@ -109,9 +103,7 @@ def test_openrouter_requires_api_key(
         ModelProviderError,
         match="OPENROUTER_API_KEY",
     ):
-        openrouter_client.generate_with_openrouter(
-            create_messages()
-        )
+        openrouter_client.generate_with_openrouter(create_messages())
 
 
 def test_openrouter_client_generates_response(
@@ -124,6 +116,11 @@ def test_openrouter_client_generates_response(
         "openrouter_api_key",
         SecretStr("test-key"),
     )
+    monkeypatch.setattr(
+        openrouter_client.settings,
+        "openrouter_model",
+        "deepseek/deepseek-v4-flash-0731",
+    )
 
     def fake_post(
         url: str,
@@ -132,31 +129,19 @@ def test_openrouter_client_generates_response(
         headers: dict[str, str],
         timeout: float,
     ) -> FakeResponse:
-        assert url.endswith(
-            "/chat/completions"
-        )
-        assert headers["Authorization"] == (
-            "Bearer test-key"
-        )
-        assert json["model"] == (
-            "deepseek/deepseek-v4-flash-0731"
-        )
+        assert url.endswith("/chat/completions")
+        assert headers["Authorization"] == ("Bearer test-key")
+        assert json["model"] == ("deepseek/deepseek-v4-flash-0731")
         assert "response_format" in json
         assert timeout == 120.0
 
         return FakeResponse(
             {
-                "model": (
-                    "deepseek/"
-                    "deepseek-v4-flash-0731"
-                ),
+                "model": ("deepseek/deepseek-v4-flash-0731"),
                 "choices": [
                     {
                         "message": {
-                            "content": (
-                                '{"classification": '
-                                '"potentially_abusive"}'
-                            )
+                            "content": ('{"classification": "potentially_abusive"}')
                         }
                     }
                 ],
@@ -173,12 +158,9 @@ def test_openrouter_client_generates_response(
         fake_post,
     )
 
-    result = (
-        openrouter_client
-        .generate_with_openrouter(
-            create_messages(),
-            {"type": "object"},
-        )
+    result = openrouter_client.generate_with_openrouter(
+        create_messages(),
+        {"type": "object"},
     )
 
     assert result.provider == "openrouter"
@@ -209,11 +191,7 @@ def test_gateway_uses_local_mode(
         lambda messages, schema: expected,
     )
 
-    result = (
-        model_gateway.generate_model_response(
-            create_messages()
-        )
-    )
+    result = model_gateway.generate_model_response(create_messages())
 
     assert result == expected
     assert result.fallback_used is False
@@ -232,10 +210,7 @@ def test_gateway_uses_remote_mode(
 
     expected = ModelResponse(
         provider="openrouter",
-        model=(
-            "deepseek/"
-            "deepseek-v4-flash-0731"
-        ),
+        model=("deepseek/deepseek-v4-flash-0731"),
         content='{"classification": "fair"}',
     )
 
@@ -245,11 +220,7 @@ def test_gateway_uses_remote_mode(
         lambda messages, schema: expected,
     )
 
-    result = (
-        model_gateway.generate_model_response(
-            create_messages()
-        )
-    )
+    result = model_gateway.generate_model_response(create_messages())
 
     assert result == expected
     assert result.fallback_used is False
@@ -270,9 +241,7 @@ def test_gateway_falls_back_to_ollama(
         messages: list[ChatMessage],
         schema: dict[str, object] | None,
     ) -> ModelResponse:
-        raise ModelProviderError(
-            "OpenRouter no disponible."
-        )
+        raise ModelProviderError("OpenRouter no disponible.")
 
     expected = ModelResponse(
         provider="ollama",
@@ -291,11 +260,7 @@ def test_gateway_falls_back_to_ollama(
         lambda messages, schema: expected,
     )
 
-    result = (
-        model_gateway.generate_model_response(
-            create_messages()
-        )
-    )
+    result = model_gateway.generate_model_response(create_messages())
 
     assert result.provider == "ollama"
     assert result.fallback_used is True

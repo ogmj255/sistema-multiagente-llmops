@@ -38,4 +38,47 @@ def analizar_terminos(
         jurisdiction,
     )
 
-    return jsonable_encoder(estado)
+    respuestas = estado["clause_results"]
+
+    resultados = [
+        {
+            "clause_order": orden,
+            **jsonable_encoder(respuesta),
+        }
+        for orden, respuesta in sorted(
+            respuestas.items()
+        )
+    ]
+
+    exitosas = sum(
+        respuesta.status == "success"
+        for respuesta in respuestas.values()
+    )
+    contrato = estado["preprocessed_contract"]
+
+    return jsonable_encoder(
+        {
+            "execution_id": estado["execution_id"],
+            "status": estado["status"],
+            "source_url": request.url,
+            "platform": (
+                contrato.platform
+                if contrato is not None
+                else request.platform
+            ),
+            "jurisdiction": estado["jurisdiction"],
+            "total_clauses": (
+                len(contrato.clauses)
+                if contrato is not None
+                else 0
+            ),
+            "analyzed_clauses": len(resultados),
+            "successful_clauses": exitosas,
+            "failed_clauses": (
+                len(resultados) - exitosas
+            ),
+            "results": resultados,
+            "errors": estado["errors"],
+            "attempts": estado["attempts"],
+        }
+    )

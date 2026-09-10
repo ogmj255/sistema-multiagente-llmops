@@ -18,8 +18,7 @@ def create_clause() -> ProcessedClause:
         heading="Modificación unilateral",
         heading_level=2,
         content=(
-            "El proveedor podrá modificar "
-            "unilateralmente el precio del servicio."
+            "El proveedor podrá modificar unilateralmente el precio del servicio."
         ),
     )
 
@@ -28,18 +27,14 @@ def create_match() -> LegalKnowledgeMatch:
     """Crea un fundamento jurídico para la prueba."""
 
     return LegalKnowledgeMatch(
-        chunk_id=(
-            "ec_defensa_consumidor_2000_chunk_0048"
-        ),
+        chunk_id=("ec_defensa_consumidor_2000_chunk_0048"),
         document_id="ec_defensa_consumidor_2000",
         chunk_index=48,
         content=(
             "Son nulas las cláusulas que permiten al "
             "proveedor variar unilateralmente el precio."
         ),
-        title=(
-            "Ley Orgánica de Defensa del Consumidor"
-        ),
+        title=("Ley Orgánica de Defensa del Consumidor"),
         jurisdiction="ecuador",
         issuing_body="Congreso Nacional del Ecuador",
         document_type="law",
@@ -62,16 +57,12 @@ def create_assessment() -> ClauseAssessment:
         classification="abusive",
         analysis_status="classified",
         relevant_fragment=(
-            "El proveedor podrá modificar "
-            "unilateralmente el precio del servicio."
+            "El proveedor podrá modificar unilateralmente el precio del servicio."
         ),
         justification=(
-            "La modificación unilateral está prohibida "
-            "por la normativa de consumo."
+            "La modificación unilateral está prohibida por la normativa de consumo."
         ),
-        recommendation=(
-            "Eliminar la facultad unilateral."
-        ),
+        recommendation=("Eliminar la facultad unilateral."),
         evidence_sufficiency="sufficient",
         legal_basis=[create_match()],
     )
@@ -81,20 +72,21 @@ def create_assessment() -> ClauseAssessment:
 async def test_analyze_legal_clause_tool(
     monkeypatch,
 ) -> None:
-    """Comprueba entrada, agente y salida MCP."""
+    """Comprueba cláusula, evidencia y respuesta MCP."""
 
     clause = create_clause()
+    legal_context = [create_match()]
 
     def fake_agent(
         request: ClauseAnalysisRequest,
+        received_context: list[LegalKnowledgeMatch],
     ) -> ClauseAnalysisResponse:
-        assert str(request.source_url) == (
-            "https://example.com/terms"
-        )
+        assert str(request.source_url) == ("https://example.com/terms")
         assert request.platform == "Example SaaS"
         assert request.language == "es"
         assert request.jurisdiction == "ecuador"
         assert request.clause == clause
+        assert received_context == legal_context
 
         return ClauseAnalysisResponse(
             status="success",
@@ -103,27 +95,23 @@ async def test_analyze_legal_clause_tool(
 
     monkeypatch.setattr(
         legal_analyzer_tools,
-        "run_legal_analyzer_agent",
+        "run_legal_analyzer_with_context",
         fake_agent,
     )
 
-    result = await (
-        legal_analyzer_tools.analyze_legal_clause(
-            source_url="https://example.com/terms",
-            platform="Example SaaS",
-            language="es",
-            jurisdiction="ecuador",
-            clause=clause,
-        )
+    result = await legal_analyzer_tools.analyze_legal_clause(
+        source_url="https://example.com/terms",
+        platform="Example SaaS",
+        language="es",
+        jurisdiction="ecuador",
+        clause=clause,
+        legal_context=legal_context,
     )
 
     assert result["status"] == "success"
     assert result["error"] is None
     assert result["result"] is not None
-    assert (
-        result["result"]["classification"]
-        == "abusive"
-    )
+    assert result["result"]["classification"] == "abusive"
     assert result["result"]["risk_level"] == "high"
     assert len(result["result"]["legal_basis"]) == 1
 
@@ -132,35 +120,36 @@ async def test_analyze_legal_clause_tool(
 async def test_analyzer_tool_preserves_agent_error(
     monkeypatch,
 ) -> None:
-    """Devuelve el error controlado del agente."""
+    """Devuelve el error controlado del analizador."""
+
+    legal_context = [create_match()]
 
     def fake_agent(
         request: ClauseAnalysisRequest,
+        received_context: list[LegalKnowledgeMatch],
     ) -> ClauseAnalysisResponse:
+        assert request.clause == create_clause()
+        assert received_context == legal_context
+
         return ClauseAnalysisResponse(
             status="error",
-            error=(
-                "No se pudo consultar la base jurídica."
-            ),
+            error=("No se pudo clasificar la cláusula."),
         )
 
     monkeypatch.setattr(
         legal_analyzer_tools,
-        "run_legal_analyzer_agent",
+        "run_legal_analyzer_with_context",
         fake_agent,
     )
 
-    result = await (
-        legal_analyzer_tools.analyze_legal_clause(
-            source_url="https://example.com/terms",
-            platform="Example SaaS",
-            language="es",
-            clause=create_clause(),
-        )
+    result = await legal_analyzer_tools.analyze_legal_clause(
+        source_url="https://example.com/terms",
+        platform="Example SaaS",
+        language="es",
+        clause=create_clause(),
+        legal_context=legal_context,
     )
 
     assert result["status"] == "error"
     assert result["result"] is None
-    assert result["error"] == (
-        "No se pudo consultar la base jurídica."
-    )
+    assert result["error"] == ("No se pudo clasificar la cláusula.")

@@ -1,7 +1,10 @@
 from app.agents.knowledge_agent import (
     run_knowledge_agent,
 )
-from app.schemas.knowledge import KnowledgeQuery
+from app.schemas.knowledge import (
+    KnowledgeQuery,
+    LegalKnowledgeMatch,
+)
 from app.schemas.legal_analysis import (
     ClauseAnalysisRequest,
     ClauseAnalysisResponse,
@@ -33,15 +36,51 @@ def build_legal_search_query(
     ]
 
     if request.clause.heading is not None:
-        parts.append(
-            f"Encabezado: {request.clause.heading}."
-        )
+        parts.append(f"Encabezado: {request.clause.heading}.")
 
-    parts.append(
-        f"Cláusula: {request.clause.content}"
-    )
+    parts.append(f"Cláusula: {request.clause.content}")
 
     return "\n".join(parts)
+
+
+def run_legal_analyzer_with_context(
+    request: ClauseAnalysisRequest,
+    legal_context: list[LegalKnowledgeMatch],
+) -> ClauseAnalysisResponse:
+    """Analiza una cláusula usando evidencia ya recuperada."""
+
+    if not legal_context:
+        return ClauseAnalysisResponse(
+            status="error",
+            error=(
+                "No se pudo analizar la cláusula: "
+                "el RAG no recuperó evidencia jurídica."
+            ),
+        )
+
+    try:
+        execution = classify_clause(
+            request,
+            legal_context,
+        )
+        assessment = build_grounded_assessment(
+            execution,
+            request,
+            legal_context,
+        )
+    except (
+        ClauseClassificationError,
+        LegalGroundingError,
+    ) as error:
+        return ClauseAnalysisResponse(
+            status="error",
+            error=(f"No se pudo analizar la cláusula: {error}"),
+        )
+
+    return ClauseAnalysisResponse(
+        status="success",
+        result=assessment,
+    )
 
 
 def run_legal_analyzer_agent(
@@ -67,43 +106,9 @@ def run_legal_analyzer_agent(
 
         return ClauseAnalysisResponse(
             status="error",
-            error=(
-                "No se pudo analizar la cláusula: "
-                f"{detail}"
-            ),
+            error=(f"No se pudo analizar la cláusula: {detail}"),
         )
-
-    if not knowledge_response.matches:
-        return ClauseAnalysisResponse(
-            status="error",
-            error=(
-                "No se pudo analizar la cláusula: "
-                "el RAG no recuperó evidencia jurídica."
-            ),
-        )
-
-    try:
-        execution = classify_clause(
-            request,
-            knowledge_response.matches,
-        )
-        assessment = build_grounded_assessment(
-            execution,
-            knowledge_response.matches,
-        )
-    except (
-        ClauseClassificationError,
-        LegalGroundingError,
-    ) as error:
-        return ClauseAnalysisResponse(
-            status="error",
-            error=(
-                "No se pudo analizar la cláusula: "
-                f"{error}"
-            ),
-        )
-
-    return ClauseAnalysisResponse(
-        status="success",
-        result=assessment,
+    return run_legal_analyzer_with_context(
+        request,
+        knowledge_response.matches,
     )
