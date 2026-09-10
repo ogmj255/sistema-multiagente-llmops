@@ -1,7 +1,10 @@
-from collections.abc import Callable
+import asyncio
+import inspect
+import re
+from collections.abc import Awaitable, Callable
 from datetime import UTC, datetime
 from types import TracebackType
-from typing import Self
+from typing import Self, TypeAlias
 
 from app.agents import orquestador
 from app.agents.orquestador import (
@@ -19,6 +22,7 @@ from app.schemas.knowledge import (
     LegalKnowledgeMatch,
 )
 from app.schemas.legal_analysis import (
+    ClauseAnalysisRequest,
     ClauseAnalysisResponse,
     ClauseAssessment,
 )
@@ -33,10 +37,13 @@ from app.schemas.preprocessing import (
     PreprocessingResponse,
     ProcessedClause,
 )
+from langgraph.types import Send
 
-RespuestaMCP = Callable[
+RespuestaMCP: TypeAlias = dict[str, object] | Awaitable[dict[str, object]]
+
+RespondedorMCP: TypeAlias = Callable[
     [str, dict[str, object]],
-    dict[str, object],
+    RespuestaMCP,
 ]
 
 
@@ -45,7 +52,7 @@ class ClienteMCPFalso:
 
     def __init__(
         self,
-        responder: RespuestaMCP,
+        responder: RespondedorMCP,
     ) -> None:
         self._responder = responder
 
@@ -65,12 +72,20 @@ class ClienteMCPFalso:
         clave: str,
         argumentos: dict[str, object],
     ) -> dict[str, object]:
-        return self._responder(clave, argumentos)
+        respuesta = self._responder(
+            clave,
+            argumentos,
+        )
+
+        if inspect.isawaitable(respuesta):
+            return await respuesta
+
+        return respuesta
 
 
 def usar_cliente_mcp_falso(
     monkeypatch,
-    responder: RespuestaMCP,
+    responder: RespondedorMCP,
 ) -> None:
     """Reemplaza el cliente real sin iniciar procesos."""
 
@@ -91,9 +106,9 @@ def crear_nodo(
     etapa: PipelineStep,
     ejecutados: list[str],
     estado: PipelineStatus = "running",
-) -> Callable[[OrchestrationState], dict[str, object]]:
+) -> Callable[[object], dict[str, object]]:
     def ejecutar(
-        _: OrchestrationState,
+        _: object,
     ) -> dict[str, object]:
         ejecutados.append(nombre)
 
@@ -103,6 +118,24 @@ def crear_nodo(
         }
 
     return ejecutar
+
+
+def crear_solicitud_analisis(
+    orden: int = 1,
+) -> ClauseAnalysisRequest:
+    return ClauseAnalysisRequest(
+        source_url="https://example.com/terms",
+        platform="Example",
+        language="es",
+        jurisdiction="ecuador",
+        clause=ProcessedClause(
+            order=orden,
+            original_order=orden,
+            heading=f"Cláusula {orden}",
+            heading_level=2,
+            content=f"Contenido contractual {orden}.",
+        ),
+    )
 
 
 def crear_orquestador_controlado(
@@ -119,19 +152,9 @@ def crear_orquestador_controlado(
             "knowledge",
             ejecutados,
         ),
-        consultar_conocimiento=crear_nodo(
-            "consultar_conocimiento",
+        procesar_clausula=crear_nodo(
+            "procesar_clausula",
             "legal_analysis",
-            ejecutados,
-        ),
-        analizar_clausula=crear_nodo(
-            "analizar_clausula",
-            "record_result",
-            ejecutados,
-        ),
-        registrar_resultado=crear_nodo(
-            "registrar_resultado",
-            "finalization",
             ejecutados,
         ),
         finalizar=crear_nodo(
@@ -142,14 +165,21 @@ def crear_orquestador_controlado(
         ),
     )
 
-    def decidir_ruta(
+    def distribuir(
         _: OrchestrationState,
-    ) -> str:
-        return "finalizar"
+    ) -> list[Send]:
+        return [
+            Send(
+                "procesar_clausula",
+                {
+                    "analysis_request": crear_solicitud_analisis(),
+                },
+            )
+        ]
 
     return AgenteOrquestador(
         nodos=nodos,
-        enrutador=decidir_ruta,
+        distribuidor=distribuir,
     )
 
 
@@ -182,29 +212,20 @@ def crear_contrato_extraido() -> ExtractedContract:
     )
 
 
-def crear_contrato_preprocesado() -> PreprocessedContract:
+def crear_contrato_preprocesado(
+    cantidad: int = 2,
+) -> PreprocessedContract:
+    clausulas = [
+        crear_solicitud_analisis(orden).clause for orden in range(1, cantidad + 1)
+    ]
+
     return PreprocessedContract(
         source_url="https://example.com/terms",
         platform="Example",
         title="Terms",
         language="es",
-        cleaned_text=("Primera cláusula. Segunda cláusula."),
-        clauses=[
-            ProcessedClause(
-                order=1,
-                original_order=1,
-                heading="Primera",
-                heading_level=2,
-                content="Primera cláusula.",
-            ),
-            ProcessedClause(
-                order=2,
-                original_order=2,
-                heading="Segunda",
-                heading_level=2,
-                content="Segunda cláusula.",
-            ),
-        ],
+        cleaned_text=" ".join(clausula.content for clausula in clausulas),
+        clauses=clausulas,
         removed_blocks=[],
     )
 
@@ -214,7 +235,7 @@ def crear_evidencia() -> LegalKnowledgeMatch:
         chunk_id="ec_ley_consumidor_chunk_0001",
         document_id="ec_ley_consumidor",
         chunk_index=1,
-        content=("Normativa aplicable a relaciones de consumo."),
+        content="Normativa aplicable a relaciones de consumo.",
         title="Ley de Defensa del Consumidor",
         jurisdiction="ecuador",
         issuing_body="Congreso Nacional del Ecuador",
@@ -240,12 +261,14 @@ def crear_respuesta_conocimiento(
     )
 
 
-def crear_respuesta_legal() -> ClauseAnalysisResponse:
+def crear_respuesta_legal(
+    orden: int,
+) -> ClauseAnalysisResponse:
     valoracion = ClauseAssessment(
         category="other_contractual_risk",
         classification="fair",
         analysis_status="classified",
-        relevant_fragment="cláusula",
+        relevant_fragment=f"Contenido contractual {orden}.",
         justification="No se identificó un riesgo.",
         recommendation="Mantener la redacción.",
         evidence_sufficiency="sufficient",
@@ -262,14 +285,15 @@ def obtener_orden_consulta(
     argumentos: dict[str, object],
 ) -> int:
     consulta = str(argumentos["query"])
+    coincidencia = re.search(
+        r"Cláusula: Contenido contractual (\d+)\.",
+        consulta,
+    )
 
-    if "Primera cláusula." in consulta:
-        return 1
+    if coincidencia is None:
+        raise AssertionError("La consulta no contiene la cláusula esperada.")
 
-    if "Segunda cláusula." in consulta:
-        return 2
-
-    raise AssertionError("La consulta no contiene la cláusula esperada.")
+    return int(coincidencia.group(1))
 
 
 def obtener_orden_analisis(
@@ -290,9 +314,7 @@ def test_orquestador_compila_todos_los_nodos():
     nodos_esperados = {
         "extraer",
         "preprocesar",
-        "consultar_conocimiento",
-        "analizar_clausula",
-        "registrar_resultado",
+        "procesar_clausula",
         "finalizar",
     }
 
@@ -303,43 +325,18 @@ def test_orquestador_ejecuta_el_flujo_definido():
     ejecutados: list[str] = []
 
     grafo = crear_orquestador_controlado(ejecutados).construir()
-
     resultado = grafo.invoke(crear_estado())
 
     assert ejecutados == [
         "extraer",
         "preprocesar",
-        "consultar_conocimiento",
-        "analizar_clausula",
-        "registrar_resultado",
+        "procesar_clausula",
         "finalizar",
     ]
     assert resultado["status"] == "success"
 
 
-def test_estado_avanza_entre_clausulas():
-    estado = crear_estado()
-    estado["preprocessed_contract"] = crear_contrato_preprocesado()
-
-    primera = orquestador.registrar_resultado(estado)
-
-    estado["current_clause_index"] = 1
-
-    segunda = orquestador.registrar_resultado(estado)
-
-    assert primera == {
-        "current_clause_index": 1,
-        "current_step": "knowledge",
-        "knowledge_response": None,
-    }
-    assert segunda == {
-        "current_clause_index": 2,
-        "current_step": "finalization",
-        "knowledge_response": None,
-    }
-
-
-def test_coordina_los_mcp_secuencialmente(
+def test_coordina_cada_clausula_mediante_mcp(
     monkeypatch,
 ):
     llamadas: list[str] = []
@@ -354,7 +351,7 @@ def test_coordina_los_mcp_secuencialmente(
             if llamadas.count("extractor_web") == 1:
                 return ExtractionResponse(
                     status="error",
-                    error=("Error temporal de extracción."),
+                    error="Error temporal de extracción.",
                 ).model_dump(mode="json")
 
             return ExtractionResponse(
@@ -386,7 +383,7 @@ def test_coordina_los_mcp_secuencialmente(
                 crear_evidencia().model_dump(mode="json")
             ]
 
-            return crear_respuesta_legal().model_dump(mode="json")
+            return crear_respuesta_legal(orden).model_dump(mode="json")
 
         raise AssertionError(f"Servidor MCP inesperado: {clave}")
 
@@ -399,20 +396,83 @@ def test_coordina_los_mcp_secuencialmente(
         )
     )
 
-    assert llamadas == [
-        "extractor_web",
-        "extractor_web",
-        "preprocesador",
-        "conocimiento_juridico:1",
-        "analizador_legal:1",
-        "conocimiento_juridico:2",
-        "analizador_legal:2",
-    ]
+    assert llamadas.count("extractor_web") == 2
+    assert llamadas.count("preprocesador") == 1
+
+    for orden in (1, 2):
+        consulta = f"conocimiento_juridico:{orden}"
+        analisis = f"analizador_legal:{orden}"
+
+        assert llamadas.count(consulta) == 1
+        assert llamadas.count(analisis) == 1
+        assert llamadas.index(consulta) < llamadas.index(analisis)
+
     assert resultado["current_clause_index"] == 2
     assert set(resultado["clause_results"]) == {
         1,
         2,
     }
+    assert resultado["status"] == "success"
+
+
+def test_limita_concurrencia_a_cinco_clausulas(
+    monkeypatch,
+):
+    activas = 0
+    maximo_activas = 0
+
+    async def responder(
+        clave: str,
+        argumentos: dict[str, object],
+    ) -> dict[str, object]:
+        nonlocal activas, maximo_activas
+
+        if clave == "extractor_web":
+            return ExtractionResponse(
+                status="success",
+                contract=crear_contrato_extraido(),
+            ).model_dump(mode="json")
+
+        if clave == "preprocesador":
+            return PreprocessingResponse(
+                status="success",
+                result=crear_contrato_preprocesado(8),
+            ).model_dump(mode="json")
+
+        activas += 1
+        maximo_activas = max(
+            maximo_activas,
+            activas,
+        )
+
+        try:
+            await asyncio.sleep(0.01)
+
+            if clave == "conocimiento_juridico":
+                return crear_respuesta_conocimiento(
+                    str(argumentos["query"])
+                ).model_dump(mode="json")
+
+            if clave == "analizador_legal":
+                orden = obtener_orden_analisis(argumentos)
+                return crear_respuesta_legal(orden).model_dump(mode="json")
+        finally:
+            activas -= 1
+
+        raise AssertionError(f"Servidor MCP inesperado: {clave}")
+
+    usar_cliente_mcp_falso(monkeypatch, responder)
+
+    resultado = orquestador.ejecutar_orquestacion(
+        ExtractionRequest(
+            url="https://example.com/terms",
+            platform="Example",
+        )
+    )
+
+    assert orquestador.MAX_CLAUSULAS_CONCURRENTES == 5
+    assert maximo_activas == 5
+    assert len(resultado["clause_results"]) == 8
     assert resultado["status"] == "success"
 
 
@@ -453,7 +513,7 @@ def test_registra_error_al_agotar_reintentos(
         {
             "step": "extraction",
             "clause_order": None,
-            "message": ("Servicio temporal no disponible."),
+            "message": "Servicio temporal no disponible.",
             "attempt": 2,
             "retryable": True,
         }
@@ -499,7 +559,7 @@ def test_continua_despues_de_error_en_clausula(
                     error="Error temporal de análisis.",
                 ).model_dump(mode="json")
 
-            return crear_respuesta_legal().model_dump(mode="json")
+            return crear_respuesta_legal(orden).model_dump(mode="json")
 
         raise AssertionError(f"Servidor MCP inesperado: {clave}")
 
@@ -512,17 +572,14 @@ def test_continua_despues_de_error_en_clausula(
         )
     )
 
-    assert llamadas == [
-        "conocimiento_juridico:1",
-        "analizador_legal:1",
-        "analizador_legal:1",
-        "conocimiento_juridico:2",
-        "analizador_legal:2",
-    ]
+    assert llamadas.count("conocimiento_juridico:1") == 1
+    assert llamadas.count("analizador_legal:1") == 2
+    assert llamadas.count("conocimiento_juridico:2") == 1
+    assert llamadas.count("analizador_legal:2") == 1
     assert resultado["current_clause_index"] == 2
     assert resultado["status"] == "partial"
-    assert resultado["clause_results"][1].status == ("error")
-    assert resultado["clause_results"][2].status == ("success")
+    assert resultado["clause_results"][1].status == "error"
+    assert resultado["clause_results"][2].status == "success"
     assert resultado["attempts"] == {
         "legal_analysis:1": 2,
     }
@@ -569,7 +626,7 @@ def test_continua_despues_de_error_de_conocimiento(
             orden = obtener_orden_analisis(argumentos)
             llamadas.append(f"analizador_legal:{orden}")
 
-            return crear_respuesta_legal().model_dump(mode="json")
+            return crear_respuesta_legal(orden).model_dump(mode="json")
 
         raise AssertionError(f"Servidor MCP inesperado: {clave}")
 
@@ -582,17 +639,15 @@ def test_continua_despues_de_error_de_conocimiento(
         )
     )
 
-    assert llamadas == [
-        "conocimiento_juridico:1",
-        "conocimiento_juridico:1",
-        "conocimiento_juridico:2",
-        "analizador_legal:2",
-    ]
+    assert llamadas.count("conocimiento_juridico:1") == 2
+    assert "analizador_legal:1" not in llamadas
+    assert llamadas.count("conocimiento_juridico:2") == 1
+    assert llamadas.count("analizador_legal:2") == 1
     assert resultado["current_clause_index"] == 2
     assert resultado["status"] == "partial"
-    assert resultado["clause_results"][1].status == ("error")
-    assert resultado["clause_results"][2].status == ("success")
+    assert resultado["clause_results"][1].status == "error"
+    assert resultado["clause_results"][2].status == "success"
     assert resultado["attempts"] == {
         "knowledge:1": 2,
     }
-    assert resultado["errors"][0]["step"] == ("knowledge")
+    assert resultado["errors"][0]["step"] == "knowledge"

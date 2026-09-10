@@ -2,11 +2,11 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
 from functools import partial
-from typing import Literal, TypeAlias
+from typing import Literal, TypeAlias, TypeVar
 
 from langgraph.errors import NodeError
 from langgraph.graph import END, START, StateGraph
-from langgraph.types import Command, RetryPolicy
+from langgraph.types import Command, RetryPolicy, Send
 from pydantic import ValidationError
 
 from app.agents.legal_analyzer_agent import (
@@ -25,6 +25,7 @@ from app.schemas.legal_analysis import (
 )
 from app.schemas.legal_corpus import Jurisdiction
 from app.schemas.orquestacion import (
+    ClauseTaskState,
     OrchestrationState,
     PipelineStatus,
     PipelineStep,
@@ -34,8 +35,13 @@ from app.schemas.preprocessing import PreprocessingResponse
 
 ActualizacionEstado: TypeAlias = dict[str, object]
 
-NodoOrquestacion: TypeAlias = Callable[
+NodoPipeline: TypeAlias = Callable[
     [OrchestrationState],
+    ActualizacionEstado | Awaitable[ActualizacionEstado],
+]
+
+NodoClausula: TypeAlias = Callable[
+    [ClauseTaskState],
     ActualizacionEstado | Awaitable[ActualizacionEstado],
 ]
 
@@ -44,13 +50,21 @@ DecisionRuta = Literal[
     "finalizar",
 ]
 
-EnrutadorOrquestacion: TypeAlias = Callable[
+DistribucionClausulas: TypeAlias = list[Send] | Literal["finalizar"]
+
+EnrutadorClausulas: TypeAlias = Callable[
     [OrchestrationState],
-    DecisionRuta,
+    DistribucionClausulas,
+]
+
+ResultadoOperacion = TypeVar("ResultadoOperacion")
+OperacionAsincrona: TypeAlias = Callable[
+    [],
+    Awaitable[ResultadoOperacion],
 ]
 
 MAX_INTENTOS = 2
-LIMITE_RECURSION = 1000
+MAX_CLAUSULAS_CONCURRENTES = 5
 
 POLITICA_REINTENTOS = RetryPolicy(
     max_attempts=MAX_INTENTOS,
@@ -61,73 +75,36 @@ POLITICA_REINTENTOS = RetryPolicy(
 ETAPA_POR_NODO: dict[str, PipelineStep] = {
     "extraer": "extraction",
     "preprocesar": "preprocessing",
-    "consultar_conocimiento": "knowledge",
-    "analizar_clausula": "legal_analysis",
 }
 
 
 def manejar_error_nodo(
-    state: OrchestrationState,
+    _state: OrchestrationState,
     error: NodeError,
-) -> Command[Literal["registrar_resultado", "finalizar"]]:
-    """Registra un error despues de agotar los intentos."""
+) -> Command[Literal["finalizar"]]:
+    """Registra un error global después de agotar los intentos."""
 
     if not isinstance(error.error, RuntimeError):
         raise error.error
 
     etapa = ETAPA_POR_NODO[error.node]
-    orden_clausula = None
-
-    if etapa in {"knowledge", "legal_analysis"}:
-        contrato = state["preprocessed_contract"]
-        indice = state["current_clause_index"]
-
-        if contrato is not None and indice < len(contrato.clauses):
-            orden_clausula = contrato.clauses[indice].order
-
-    clave_intento = etapa
-
-    if orden_clausula is not None:
-        clave_intento = f"{etapa}:{orden_clausula}"
-
-    errores = list(state["errors"])
-    errores.append(
-        {
-            "step": etapa,
-            "clause_order": orden_clausula,
-            "message": str(error.error),
-            "attempt": MAX_INTENTOS,
-            "retryable": True,
-        }
-    )
-
-    intentos = dict(state["attempts"])
-    intentos[clave_intento] = MAX_INTENTOS
-
-    if etapa in {"knowledge", "legal_analysis"} and orden_clausula is not None:
-        resultados = dict(state["clause_results"])
-        resultados[orden_clausula] = ClauseAnalysisResponse(
-            status="error",
-            error=str(error.error),
-        )
-
-        return Command(
-            update={
-                "status": "running",
-                "current_step": "record_result",
-                "clause_results": resultados,
-                "errors": errores,
-                "attempts": intentos,
-            },
-            goto="registrar_resultado",
-        )
 
     return Command(
         update={
             "status": "error",
             "current_step": etapa,
-            "errors": errores,
-            "attempts": intentos,
+            "errors": [
+                {
+                    "step": etapa,
+                    "clause_order": None,
+                    "message": str(error.error),
+                    "attempt": MAX_INTENTOS,
+                    "retryable": True,
+                }
+            ],
+            "attempts": {
+                etapa: MAX_INTENTOS,
+            },
         },
         goto="finalizar",
     )
@@ -137,12 +114,10 @@ def manejar_error_nodo(
 class NodosOrquestacion:
     """Funciones que ejecutará el grafo."""
 
-    extraer: NodoOrquestacion
-    preprocesar: NodoOrquestacion
-    consultar_conocimiento: NodoOrquestacion
-    analizar_clausula: NodoOrquestacion
-    registrar_resultado: NodoOrquestacion
-    finalizar: NodoOrquestacion
+    extraer: NodoPipeline
+    preprocesar: NodoPipeline
+    procesar_clausula: NodoClausula
+    finalizar: NodoPipeline
 
 
 class AgenteOrquestador:
@@ -151,10 +126,10 @@ class AgenteOrquestador:
     def __init__(
         self,
         nodos: NodosOrquestacion,
-        enrutador: EnrutadorOrquestacion,
+        distribuidor: EnrutadorClausulas,
     ) -> None:
         self._nodos = nodos
-        self._enrutador = enrutador
+        self._distribuidor = distribuidor
 
     def construir(self):
         """Construye y compila el grafo."""
@@ -174,20 +149,8 @@ class AgenteOrquestador:
             error_handler=manejar_error_nodo,
         )
         grafo.add_node(
-            "consultar_conocimiento",
-            self._nodos.consultar_conocimiento,
-            retry_policy=POLITICA_REINTENTOS,
-            error_handler=manejar_error_nodo,
-        )
-        grafo.add_node(
-            "analizar_clausula",
-            self._nodos.analizar_clausula,
-            retry_policy=POLITICA_REINTENTOS,
-            error_handler=manejar_error_nodo,
-        )
-        grafo.add_node(
-            "registrar_resultado",
-            self._nodos.registrar_resultado,
+            "procesar_clausula",
+            self._nodos.procesar_clausula,
         )
         grafo.add_node(
             "finalizar",
@@ -207,67 +170,70 @@ class AgenteOrquestador:
 
         grafo.add_conditional_edges(
             "preprocesar",
-            decidir_continuacion,
-            {
-                "continuar": "consultar_conocimiento",
-                "finalizar": "finalizar",
-            },
+            self._distribuidor,
+            [
+                "procesar_clausula",
+                "finalizar",
+            ],
         )
 
-        grafo.add_conditional_edges(
-            "consultar_conocimiento",
-            decidir_continuacion,
-            {
-                "continuar": "analizar_clausula",
-                "finalizar": "finalizar",
-            },
+        grafo.add_edge(
+            "procesar_clausula",
+            "finalizar",
         )
-
-        grafo.add_conditional_edges(
-            "analizar_clausula",
-            decidir_continuacion,
-            {
-                "continuar": "registrar_resultado",
-                "finalizar": "finalizar",
-            },
-        )
-
-        grafo.add_conditional_edges(
-            "registrar_resultado",
-            self._enrutador,
-            {
-                "continuar": "consultar_conocimiento",
-                "finalizar": "finalizar",
-            },
-        )
-
         grafo.add_edge("finalizar", END)
 
         return grafo.compile()
 
 
-def crear_solicitud_analisis(
-    state: OrchestrationState,
-) -> ClauseAnalysisRequest:
-    """Crea la solicitud para la cláusula actual."""
+async def ejecutar_con_reintentos(
+    operacion: OperacionAsincrona[ResultadoOperacion],
+) -> ResultadoOperacion:
+    """Reintenta una operación MCP sin repetir etapas anteriores."""
 
-    contrato = state["preprocessed_contract"]
+    ultimo_error: RuntimeError | None = None
 
-    if contrato is None:
-        raise RuntimeError("No existe un contrato preprocesado.")
+    for _ in range(MAX_INTENTOS):
+        try:
+            return await operacion()
+        except RuntimeError as error:
+            ultimo_error = error
 
-    indice = state["current_clause_index"]
+    if ultimo_error is None:
+        raise RuntimeError("La operación MCP no pudo ejecutarse.")
 
-    if indice >= len(contrato.clauses):
-        raise RuntimeError("El índice de cláusula está fuera del contrato.")
+    raise ultimo_error
 
-    return ClauseAnalysisRequest(
-        source_url=contrato.source_url,
-        platform=contrato.platform,
-        language=contrato.language,
-        jurisdiction=state["jurisdiction"],
-        clause=contrato.clauses[indice],
-    )
+
+def crear_actualizacion_error_clausula(
+    etapa: Literal["knowledge", "legal_analysis"],
+    orden_clausula: int,
+    error: RuntimeError,
+) -> ActualizacionEstado:
+    """Construye el resultado de un fallo aislado por cláusula."""
+
+    mensaje = str(error)
+
+    return {
+        "clause_results": {
+            orden_clausula: ClauseAnalysisResponse(
+                status="error",
+                error=mensaje,
+            )
+        },
+        "errors": [
+            {
+                "step": etapa,
+                "clause_order": orden_clausula,
+                "message": mensaje,
+                "attempt": MAX_INTENTOS,
+                "retryable": True,
+            }
+        ],
+        "attempts": {
+            f"{etapa}:{orden_clausula}": MAX_INTENTOS,
+        },
+    }
 
 
 async def extraer_contrato(
@@ -331,12 +297,11 @@ async def preprocesar_contrato(
 
 
 async def consultar_conocimiento(
-    state: OrchestrationState,
+    solicitud: ClauseAnalysisRequest,
     cliente: ClienteMCP,
-) -> ActualizacionEstado:
-    """Consulta evidencia jurídica mediante MCP."""
+) -> KnowledgeResponse:
+    """Consulta evidencia jurídica para una cláusula mediante MCP."""
 
-    solicitud = crear_solicitud_analisis(state)
     consulta = build_legal_search_query(solicitud)
 
     contenido = await cliente.invocar(
@@ -344,7 +309,7 @@ async def consultar_conocimiento(
         {
             "query": consulta,
             "top_k": LEGAL_CONTEXT_RESULTS,
-            "jurisdiction": state["jurisdiction"],
+            "jurisdiction": solicitud.jurisdiction,
         },
     )
 
@@ -363,23 +328,15 @@ async def consultar_conocimiento(
             "El Agente de Conocimiento Jurídico no recuperó evidencia para la cláusula."
         )
 
-    return {
-        "current_step": "legal_analysis",
-        "knowledge_response": respuesta,
-    }
+    return respuesta
 
 
 async def analizar_clausula(
-    state: OrchestrationState,
+    solicitud: ClauseAnalysisRequest,
+    conocimiento: KnowledgeResponse,
     cliente: ClienteMCP,
-) -> ActualizacionEstado:
-    """Ejecuta el Analizador Legal mediante MCP."""
-
-    solicitud = crear_solicitud_analisis(state)
-    conocimiento = state["knowledge_response"]
-
-    if conocimiento is None or not conocimiento.matches:
-        raise RuntimeError("No existe evidencia jurídica para analizar la cláusula.")
+) -> ClauseAnalysisResponse:
+    """Analiza una cláusula con la evidencia recuperada mediante MCP."""
 
     argumentos = solicitud.model_dump(mode="json")
     argumentos["legal_context"] = [
@@ -401,39 +358,60 @@ async def analizar_clausula(
     if respuesta.status == "error":
         raise RuntimeError(respuesta.error or "No se pudo analizar la cláusula.")
 
-    resultados = dict(state["clause_results"])
-    resultados[solicitud.clause.order] = respuesta
-
-    return {
-        "current_step": "record_result",
-        "clause_results": resultados,
-    }
+    return respuesta
 
 
-def registrar_resultado(
-    state: OrchestrationState,
+async def procesar_clausula(
+    state: ClauseTaskState,
+    cliente: ClienteMCP,
 ) -> ActualizacionEstado:
-    """Avanza a la siguiente cláusula del contrato."""
+    """Coordina conocimiento y análisis para una cláusula independiente."""
 
-    contrato = state["preprocessed_contract"]
-    siguiente_indice = state["current_clause_index"] + 1
+    solicitud = state["analysis_request"]
+    orden = solicitud.clause.order
 
-    if contrato is not None and siguiente_indice < len(contrato.clauses):
-        siguiente_paso = "knowledge"
-    else:
-        siguiente_paso = "finalization"
+    try:
+        conocimiento = await ejecutar_con_reintentos(
+            partial(
+                consultar_conocimiento,
+                solicitud,
+                cliente,
+            )
+        )
+    except RuntimeError as error:
+        return crear_actualizacion_error_clausula(
+            "knowledge",
+            orden,
+            error,
+        )
+
+    try:
+        respuesta = await ejecutar_con_reintentos(
+            partial(
+                analizar_clausula,
+                solicitud,
+                conocimiento,
+                cliente,
+            )
+        )
+    except RuntimeError as error:
+        return crear_actualizacion_error_clausula(
+            "legal_analysis",
+            orden,
+            error,
+        )
 
     return {
-        "current_clause_index": siguiente_indice,
-        "current_step": siguiente_paso,
-        "knowledge_response": None,
+        "clause_results": {
+            orden: respuesta,
+        },
     }
 
 
 def decidir_continuacion(
     state: OrchestrationState,
 ) -> DecisionRuta:
-    """Continua el flujo si no existe un error."""
+    """Continúa el flujo si no existe un error global."""
 
     if state["status"] == "error":
         return "finalizar"
@@ -441,17 +419,34 @@ def decidir_continuacion(
     return "continuar"
 
 
-def decidir_siguiente(
+def distribuir_clausulas(
     state: OrchestrationState,
-) -> DecisionRuta:
-    """Decide si quedan cláusulas por analizar."""
+) -> DistribucionClausulas:
+    """Crea una tarea independiente de LangGraph por cláusula."""
+
+    if state["status"] == "error":
+        return "finalizar"
 
     contrato = state["preprocessed_contract"]
 
-    if contrato is not None and state["current_clause_index"] < len(contrato.clauses):
-        return "continuar"
+    if contrato is None or not contrato.clauses:
+        return "finalizar"
 
-    return "finalizar"
+    return [
+        Send(
+            "procesar_clausula",
+            {
+                "analysis_request": ClauseAnalysisRequest(
+                    source_url=contrato.source_url,
+                    platform=contrato.platform,
+                    language=contrato.language,
+                    jurisdiction=state["jurisdiction"],
+                    clause=clausula,
+                )
+            },
+        )
+        for clausula in contrato.clauses
+    ]
 
 
 def finalizar_flujo(
@@ -460,7 +455,6 @@ def finalizar_flujo(
     """Calcula el estado final de la ejecución."""
 
     respuestas = tuple(state["clause_results"].values())
-
     exitosas = sum(respuesta.status == "success" for respuesta in respuestas)
 
     estado: PipelineStatus
@@ -472,9 +466,13 @@ def finalizar_flujo(
     else:
         estado = "error"
 
+    contrato = state["preprocessed_contract"]
+    clausulas_procesadas = len(contrato.clauses) if contrato is not None else 0
+
     return {
         "status": estado,
         "current_step": "finalization",
+        "current_clause_index": clausulas_procesadas,
     }
 
 
@@ -492,21 +490,16 @@ def crear_orquestador(
             preprocesar_contrato,
             cliente=cliente,
         ),
-        consultar_conocimiento=partial(
-            consultar_conocimiento,
+        procesar_clausula=partial(
+            procesar_clausula,
             cliente=cliente,
         ),
-        analizar_clausula=partial(
-            analizar_clausula,
-            cliente=cliente,
-        ),
-        registrar_resultado=registrar_resultado,
         finalizar=finalizar_flujo,
     )
 
     return AgenteOrquestador(
         nodos=nodos,
-        enrutador=decidir_siguiente,
+        distribuidor=distribuir_clausulas,
     )
 
 
@@ -527,7 +520,7 @@ async def ejecutar_orquestacion_async(
         return await grafo.ainvoke(
             estado,
             config={
-                "recursion_limit": LIMITE_RECURSION,
+                "max_concurrency": MAX_CLAUSULAS_CONCURRENTES,
             },
         )
 

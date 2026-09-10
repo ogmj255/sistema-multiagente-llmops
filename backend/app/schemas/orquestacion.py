@@ -1,12 +1,15 @@
-from typing import Literal, TypedDict
+from operator import add, or_
+from typing import Annotated, Literal, TypedDict
 from uuid import uuid4
 
 from app.schemas.contract import (
     ExtractedContract,
     ExtractionRequest,
 )
-from app.schemas.knowledge import KnowledgeResponse
-from app.schemas.legal_analysis import ClauseAnalysisResponse
+from app.schemas.legal_analysis import (
+    ClauseAnalysisRequest,
+    ClauseAnalysisResponse,
+)
 from app.schemas.legal_corpus import Jurisdiction
 from app.schemas.preprocessing import PreprocessedContract
 
@@ -23,7 +26,6 @@ PipelineStep = Literal[
     "preprocessing",
     "knowledge",
     "legal_analysis",
-    "record_result",
     "finalization",
 ]
 
@@ -38,6 +40,12 @@ class PipelineError(TypedDict):
     retryable: bool
 
 
+class ClauseTaskState(TypedDict):
+    """Entrada independiente enviada para analizar una cláusula."""
+
+    analysis_request: ClauseAnalysisRequest
+
+
 class OrchestrationState(TypedDict):
     """Datos compartidos durante una ejecución del pipeline."""
 
@@ -49,10 +57,12 @@ class OrchestrationState(TypedDict):
     extracted_contract: ExtractedContract | None
     preprocessed_contract: PreprocessedContract | None
     current_clause_index: int
-    knowledge_response: KnowledgeResponse | None
-    clause_results: dict[int, ClauseAnalysisResponse]
-    errors: list[PipelineError]
-    attempts: dict[str, int]
+    clause_results: Annotated[
+        dict[int, ClauseAnalysisResponse],
+        or_,
+    ]
+    errors: Annotated[list[PipelineError], add]
+    attempts: Annotated[dict[str, int], or_]
 
 
 def create_initial_state(
@@ -70,7 +80,6 @@ def create_initial_state(
         extracted_contract=None,
         preprocessed_contract=None,
         current_clause_index=0,
-        knowledge_response=None,
         clause_results={},
         errors=[],
         attempts={},
