@@ -370,7 +370,7 @@ def test_coordina_cada_clausula_mediante_mcp(
         if clave == "conocimiento_juridico":
             orden = obtener_orden_consulta(argumentos)
             llamadas.append(f"conocimiento_juridico:{orden}")
-
+            assert "jurisdiction" not in argumentos
             return crear_respuesta_conocimiento(str(argumentos["query"])).model_dump(
                 mode="json"
             )

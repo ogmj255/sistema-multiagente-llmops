@@ -309,7 +309,6 @@ async def consultar_conocimiento(
         {
             "query": consulta,
             "top_k": LEGAL_CONTEXT_RESULTS,
-            "jurisdiction": solicitud.jurisdiction,
         },
     )
 

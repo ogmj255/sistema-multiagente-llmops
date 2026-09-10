@@ -113,7 +113,7 @@ def test_builds_query_from_processed_clause() -> None:
 
     assert request.clause.content in query
     assert request.clause.heading in query
-    assert request.jurisdiction in query
+    assert "Jurisdicción:" not in query
     assert "términos de servicio SaaS" in query
 
 
@@ -132,7 +132,7 @@ def test_agent_runs_complete_analysis(
     ) -> KnowledgeResponse:
         assert request.clause.content in (knowledge_request.query)
         assert knowledge_request.top_k == 5
-        assert knowledge_request.jurisdiction == "ecuador"
+        assert knowledge_request.jurisdiction is None
 
         return KnowledgeResponse(
             status="success",

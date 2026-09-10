@@ -32,7 +32,6 @@ def build_legal_search_query(
             "derechos del usuario y posibles "
             "restricciones contractuales."
         ),
-        f"Jurisdicción: {request.jurisdiction}.",
     ]
 
     if request.clause.heading is not None:
@@ -94,15 +93,11 @@ def run_legal_analyzer_agent(
         KnowledgeQuery(
             query=legal_query,
             top_k=LEGAL_CONTEXT_RESULTS,
-            jurisdiction=request.jurisdiction,
         )
     )
 
     if knowledge_response.status == "error":
-        detail = (
-            knowledge_response.error
-            or "Error desconocido en el RAG jurídico."
-        )
+        detail = knowledge_response.error or "Error desconocido en el RAG jurídico."
 
         return ClauseAnalysisResponse(
             status="error",
