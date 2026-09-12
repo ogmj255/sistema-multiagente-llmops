@@ -1,4 +1,4 @@
-﻿from asyncio import to_thread
+from asyncio import to_thread
 
 from mcp.server.fastmcp import FastMCP
 
@@ -21,9 +21,9 @@ async def extract_saas_terms(
     )
 
     response = await to_thread(
-    run_web_scraper_agent,
-    request,
-)
+        run_web_scraper_agent,
+        request,
+    )
 
     return response.model_dump(mode="json")
 

@@ -1,32 +1,23 @@
-import pytest
 from app.schemas.contract import ContractSection
 from app.services.text_preprocessor import (
-    build_cleaned_text,
+    build_cleaned_document_text,
     clean_contract_sections,
     normalize_text,
-    segment_contract_sections,
 )
 
 
 def test_normalize_text() -> None:
     """Normaliza espacios especiales y saltos de linea."""
-    text = (
-        "Texto\u00a0con\t espacios\r\n"
-        "\u202frepetidos."
-    )
+    text = "Texto\u00a0con\t espacios\r\n\u202frepetidos."
 
-    assert normalize_text(text) == (
-        "Texto con espacios repetidos."
-    )
+    assert normalize_text(text) == ("Texto con espacios repetidos.")
 
 
 def test_normalize_unicode_composition() -> None:
     """Convierte caracteres descompuestos a Unicode NFC."""
     text = "Cafe\u0301, informacio\u0301n y nin\u0303o."
 
-    assert normalize_text(text) == (
-        "Caf\u00e9, informaci\u00f3n y ni\u00f1o."
-    )
+    assert normalize_text(text) == ("Caf\u00e9, informaci\u00f3n y ni\u00f1o.")
 
 
 def test_remove_byte_order_mark() -> None:
@@ -53,10 +44,7 @@ def test_clean_sections_normalizes_heading_and_content() -> None:
         ContractSection(
             order=1,
             heading="Informacio\u0301n de la cuenta",
-            content=(
-                "\ufeffEl\u00a0usuario debe\r\n"
-                "proteger su cuenta."
-            ),
+            content=("\ufeffEl\u00a0usuario debe\r\nproteger su cuenta."),
             source_area="content",
         )
     ]
@@ -65,12 +53,8 @@ def test_clean_sections_normalizes_heading_and_content() -> None:
 
     assert len(cleaned) == 1
     assert removed == []
-    assert cleaned[0].heading == (
-        "Informaci\u00f3n de la cuenta"
-    )
-    assert cleaned[0].content == (
-        "El usuario debe proteger su cuenta."
-    )
+    assert cleaned[0].heading == ("Informaci\u00f3n de la cuenta")
+    assert cleaned[0].content == ("El usuario debe proteger su cuenta.")
 
 
 def test_remove_structural_noise() -> None:
@@ -157,55 +141,8 @@ def test_remove_consecutive_duplicates() -> None:
     assert removed[0].original_order == 2
 
 
-def test_segment_sections_preserving_order() -> None:
-    """Segmenta según la estructura y conserva el orden original."""
-
-    sections = [
-        ContractSection(
-            order=5,
-            heading="Account Terms",
-            content="The user must provide accurate information.",
-            html_tag="p",
-            source_area="content",
-        ),
-        ContractSection(
-            order=6,
-            heading="Account Terms",
-            content="The user must protect the account.",
-            html_tag="li",
-            source_area="content",
-        ),
-    ]
-
-    clauses = segment_contract_sections(sections)
-    cleaned_text = build_cleaned_text(clauses)
-
-    assert len(clauses) == 2
-    assert clauses[0].order == 1
-    assert clauses[0].original_order == 5
-    assert clauses[1].original_order == 6
-    assert cleaned_text.count("Account Terms") == 1
 
 
-def test_preserve_large_contract_without_length_limit() -> None:
-    """Conserva todas las secciones sin establecer límites artificiales."""
-
-    sections = [
-        ContractSection(
-            order=index,
-            heading="Condiciones",
-            content=f"Condición contractual número {index}.",
-            source_area="content",
-        )
-        for index in range(1, 201)
-    ]
-
-    cleaned, removed = clean_contract_sections(sections)
-    clauses = segment_contract_sections(cleaned)
-
-    assert len(cleaned) == 200
-    assert len(clauses) == 200
-    assert removed == []
 
 
 def test_remove_multiple_link_selector() -> None:
@@ -233,96 +170,106 @@ def test_remove_multiple_link_selector() -> None:
     assert len(removed) == 1
 
 
-def test_use_default_document_heading() -> None:
-    """Utiliza el título cuando el HTML no incluye encabezado."""
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+def test_preserve_same_content_under_different_headings() -> None:
+    """Conserva textos iguales cuando pertenecen a secciones distintas."""
 
     sections = [
         ContractSection(
             order=1,
-            content="Valid contractual condition.",
+            heading="Cancelación",
+            heading_level=2,
+            content="No se realizarán reembolsos.",
             source_area="content",
-        )
-    ]
-
-    clauses = segment_contract_sections(
-        sections,
-        default_heading="Terms of Service",
-        default_heading_level=1,
-    )
-
-    assert clauses[0].heading == "Terms of Service"
-    assert clauses[0].heading_level == 1
-def test_reject_empty_segmentation_input() -> None:
-    """Rechaza una entrada sin secciones contractuales."""
-
-    with pytest.raises(
-        ValueError,
-        match="No existen secciones contractuales",
-    ):
-        segment_contract_sections([])
-
-
-def test_reject_sections_with_inconsistent_order() -> None:
-    """Rechaza secciones cuyo orden original no es ascendente."""
-
-    sections = [
+        ),
         ContractSection(
             order=2,
-            heading="Condiciones",
-            content="Segunda condición.",
-            html_tag="p",
-            source_area="content",
-        ),
-        ContractSection(
-            order=1,
-            heading="Condiciones",
-            content="Primera condición.",
-            html_tag="p",
+            heading="Terminación",
+            heading_level=2,
+            content="No se realizarán reembolsos.",
             source_area="content",
         ),
     ]
 
-    with pytest.raises(
-        ValueError,
-        match="orden original ascendente",
-    ):
-        segment_contract_sections(sections)
+    cleaned, removed = clean_contract_sections(sections)
+
+    assert len(cleaned) == 2
+    assert removed == []
+    assert cleaned[0].heading == "Cancelación"
+    assert cleaned[1].heading == "Terminación"
 
 
-def test_segment_list_and_table_row_as_complete_clauses() -> None:
-    """Conserva listas y filas de tabla como cláusulas completas."""
+
+
+
+
+
+
+
+def test_build_cleaned_document_text_preserves_block_order() -> None:
+    """Construye el documento sin decidir l?mites de cl?usulas."""
 
     sections = [
         ContractSection(
-            order=10,
-            heading="2. Condiciones de pago",
-            heading_level=2,
-            content="2.1 El cliente deberá pagar la tarifa acordada.",
-            html_tag="li",
+            order=1,
+            heading="Terms",
+            content="El usuario deber? tener",
+            html_tag="p",
             source_area="content",
         ),
         ContractSection(
-            order=11,
-            heading="2. Condiciones de pago",
-            heading_level=2,
-            content="Plan anual | USD 100",
+            order=2,
+            heading="Terms",
+            content="18 a?os y ser capaz de contratar.",
+            html_tag="p",
+            source_area="content",
+        ),
+        ContractSection(
+            order=3,
+            heading="Oferta",
+            content="PLAN PREMIUM | USD 20",
             html_tag="tr",
             source_area="content",
         ),
     ]
 
-    clauses = segment_contract_sections(sections)
+    text = build_cleaned_document_text(sections)
 
-    assert len(clauses) == 2
-    assert clauses[0].order == 1
-    assert clauses[0].original_order == 10
-    assert clauses[0].content == (
-        "2.1 El cliente deberá pagar la tarifa acordada."
+    assert text == (
+        "El usuario deber? tener\n\n"
+        "18 a?os y ser capaz de contratar.\n\n"
+        "PLAN PREMIUM | USD 20"
     )
-    assert clauses[1].order == 2
-    assert clauses[1].original_order == 11
-    assert clauses[1].content == "Plan anual | USD 100"
-    assert all(
-        clause.heading == "2. Condiciones de pago"
-        for clause in clauses
-    )
+
+
+def test_build_cleaned_document_text_does_not_inject_heading_metadata() -> None:
+    """No duplica encabezados almacenados como metadatos."""
+
+    sections = [
+        ContractSection(
+            order=1,
+            heading="Condiciones generales",
+            heading_level=1,
+            content="El usuario deber? cumplir las condiciones.",
+            source_area="content",
+        )
+    ]
+
+    text = build_cleaned_document_text(sections)
+
+    assert text == "El usuario deber? cumplir las condiciones."

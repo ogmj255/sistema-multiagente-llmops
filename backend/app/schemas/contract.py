@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime
 from typing import Literal
 
 from pydantic import BaseModel, Field, HttpUrl
@@ -25,14 +25,18 @@ class ContractSection(BaseModel):
     """Sección identificada dentro de un contrato."""
 
     order: int = Field(ge=1)
+
     heading: str | None = None
     heading_level: int | None = Field(
         default=None,
         ge=1,
         le=6,
     )
+
     content: str = Field(min_length=1)
+
     html_tag: str | None = None
+    is_fully_emphasized: bool = False
     source_area: SourceArea = "body"
     is_link_only: bool = False
     link_count: int = Field(default=0, ge=0)
@@ -50,6 +54,7 @@ class ExtractedContract(BaseModel):
         "playwright",
     ]
     language: str
+
     sections: list[ContractSection]
     full_text: str
 

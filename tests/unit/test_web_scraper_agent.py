@@ -38,9 +38,7 @@ def test_agent_uses_playwright_when_static_extraction_fails(
     def fail_static_extraction(
         _request: ExtractionRequest,
     ) -> None:
-        raise ValueError(
-            "El HTML estático no contiene el contrato."
-        )
+        raise ValueError("El HTML estático no contiene el contrato.")
 
     def return_dynamic_contract(
         _request: ExtractionRequest,
@@ -68,13 +66,12 @@ def test_agent_uses_playwright_when_static_extraction_fails(
         accept_contract,
     )
 
-    response = web_scraper_agent.run_web_scraper_agent(
-        request
-    )
+    response = web_scraper_agent.run_web_scraper_agent(request)
 
     assert response.status == "success"
     assert response.contract == expected_contract
     assert response.contract.extraction_method == "playwright"
+
 
 def test_agent_returns_error_when_both_methods_fail(
     monkeypatch,
@@ -108,6 +105,7 @@ def test_agent_returns_error_when_both_methods_fail(
     assert response.contract is None
     assert response.error is not None
     assert "No se pudo extraer el contrato" in response.error
+
 
 def test_agent_rejects_insufficient_content(
     monkeypatch,
@@ -160,6 +158,4 @@ def test_agent_rejects_insufficient_content(
     assert response.status == "error"
     assert response.contract is None
     assert response.error is not None
-    assert "contenido contractual utilizable" in (
-        response.error.lower()
-    )
+    assert "contenido contractual utilizable" in (response.error.lower())

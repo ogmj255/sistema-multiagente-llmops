@@ -1,4 +1,4 @@
-﻿from datetime import UTC, datetime
+from datetime import UTC, datetime
 
 from app.agents.preprocessor_agent import (
     run_preprocessor_agent,
@@ -22,9 +22,7 @@ def create_contract(
         extraction_method="beautiful_soup",
         language="en",
         sections=sections,
-        full_text="\n\n".join(
-            section.content for section in sections
-        ),
+        full_text="\n\n".join(section.content for section in sections),
     )
 
 
@@ -43,14 +41,18 @@ def test_preprocessor_cleans_and_segments_contract() -> None:
             ContractSection(
                 order=2,
                 heading="Account Terms",
-                content="The user must provide accurate information.",
+                content=(
+                    "The user must provide accurate information."
+                ),
                 html_tag="p",
                 source_area="content",
             ),
             ContractSection(
                 order=3,
                 heading="Account Terms",
-                content="The user must protect the account.",
+                content=(
+                    "The user must protect the account."
+                ),
                 html_tag="li",
                 source_area="content",
             ),
@@ -68,13 +70,31 @@ def test_preprocessor_cleans_and_segments_contract() -> None:
 
     assert response.status == "success"
     assert response.result is not None
-    assert len(response.result.clauses) == 2
+
+    assert len(response.result.clauses) == 1
+
+    clause = response.result.clauses[0]
+
+    assert clause.order == 1
+    assert clause.original_order == 2
+    assert clause.heading == "Account Terms"
+    assert clause.content == (
+        "The user must provide accurate information.\n\n"
+        "The user must protect the account."
+    )
+
+    assert response.result.cleaned_text == (
+        "The user must provide accurate information.\n\n"
+        "The user must protect the account."
+    )
+
     assert len(response.result.removed_blocks) == 2
-    assert response.result.clauses[0].original_order == 2
-    assert response.result.clauses[1].original_order == 3
-    assert response.result.cleaned_text.count(
-        "Account Terms"
-    ) == 1
+
+    assert {
+        block.original_order
+        for block in response.result.removed_blocks
+    } == {1, 4}
+
 
 
 def test_preprocessor_preserves_logical_order() -> None:
@@ -132,6 +152,7 @@ def test_preprocessor_returns_error_without_contract_content() -> None:
     assert response.result is None
     assert response.error is not None
     assert "No se encontró contenido contractual" in response.error
+
 
 def test_preprocessor_controls_inconsistent_section_order() -> None:
     """Devuelve un error controlado cuando el orden es inconsistente."""

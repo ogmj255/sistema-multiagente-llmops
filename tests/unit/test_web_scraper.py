@@ -1,11 +1,14 @@
 from datetime import UTC, datetime
+from unittest.mock import MagicMock
 
 import pytest
 from app.schemas.contract import (
     ContractSection,
     ExtractedContract,
+    ExtractionRequest,
     SourceArea,
 )
+from app.services import web_scraper
 from app.services.web_scraper import (
     has_sufficient_contract_content,
     parse_static_html,
@@ -49,9 +52,14 @@ def test_parse_static_html() -> None:
     assert len(sections) == 5
     assert sections[1].heading == "Términos de servicio"
     assert sections[2].heading == "Contenido del usuario"
-    assert "Menú principal" in full_text
-    assert "pie de página" in full_text
-    assert "contenido_no_permitido" not in full_text
+    assert "Menú principal" not in full_text
+    assert any(
+        section.content == "Menú principal"
+        and section.source_area == "navigation"
+        for section in sections
+    )
+    assert "El usuario deberá respetar las condiciones del servicio." in full_text
+    assert "El usuario conserva la propiedad de su contenido." in full_text
 
 
 def test_reject_html_without_contract_content() -> None:
@@ -419,3 +427,286 @@ def test_extract_semantic_and_generic_content_together() -> None:
     assert sections[1].html_tag == "div"
     assert "semantic HTML" in full_text
     assert "generic container" in full_text
+
+
+def test_dynamic_extraction_rejects_http_error(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Rechaza una navegación dinámica bloqueada."""
+
+    playwright_manager = MagicMock()
+    playwright = playwright_manager.__enter__.return_value
+    browser = playwright.chromium.launch.return_value
+    page = browser.new_page.return_value
+
+    navigation_response = MagicMock()
+    navigation_response.ok = False
+    navigation_response.status = 403
+    page.goto.return_value = navigation_response
+
+    monkeypatch.setattr(
+        web_scraper,
+        "sync_playwright",
+        lambda: playwright_manager,
+    )
+
+    with pytest.raises(
+        ValueError,
+        match="HTTP 403",
+    ):
+        web_scraper.extract_dynamic_contract(
+            ExtractionRequest(
+                url="https://example.com/terms",
+                platform="Example",
+            )
+        )
+
+    page.content.assert_not_called()
+    browser.close.assert_called_once_with()
+
+
+def test_identify_fully_emphasized_paragraph() -> None:
+    """Distingue énfasis completo de énfasis parcial."""
+
+    html = """
+    <html>
+        <body>
+            <main>
+                <h1>Terms</h1>
+
+                <p>
+                    <strong>Payment conditions</strong>
+                </p>
+
+                <p>
+                    Read <strong>these conditions</strong>
+                    carefully.
+                </p>
+            </main>
+        </body>
+    </html>
+    """
+
+    _, _, sections, _ = parse_static_html(html)
+
+    assert len(sections) == 2
+    assert sections[0].is_fully_emphasized is True
+    assert sections[1].is_fully_emphasized is False
+def test_detect_cookie_banner_as_non_contract_content() -> None:
+    """Evita considerar un banner de cookies como contenido contractual."""
+
+    html = """
+    <html>
+        <body>
+            <div class="cookie-banner">
+                Acepta las cookies para continuar.
+            </div>
+
+            <main>
+                <p>El usuario deberá cumplir los términos del servicio.</p>
+            </main>
+        </body>
+    </html>
+    """
+
+    _, _, sections, _ = parse_static_html(html)
+
+    cookie_section = next(
+        section
+        for section in sections
+        if "Acepta las cookies" in section.content
+    )
+
+    assert cookie_section.source_area not in {"content", "body"}
+
+
+def test_detect_sidebar_div_as_non_contract_content() -> None:
+    """Evita tratar un sidebar genérico como contenido contractual."""
+
+    html = """
+    <html>
+        <body>
+            <div class="sidebar">
+                Artículos relacionados
+            </div>
+
+            <main>
+                <p>El servicio podrá suspender cuentas que incumplan las reglas.</p>
+            </main>
+        </body>
+    </html>
+    """
+
+    _, _, sections, _ = parse_static_html(html)
+
+    sidebar_section = next(
+        section
+        for section in sections
+        if "Artículos relacionados" in section.content
+    )
+
+    assert sidebar_section.source_area not in {"content", "body"}
+
+
+def test_detect_footer_div_without_semantic_footer_tag() -> None:
+    """Detecta un pie de página construido con div en lugar de footer."""
+
+    html = """
+    <html>
+        <body>
+            <main>
+                <p>Estos términos regulan el uso del servicio.</p>
+            </main>
+
+            <div class="footer-links">
+                Contacto y redes sociales
+            </div>
+        </body>
+    </html>
+    """
+
+    _, _, sections, _ = parse_static_html(html)
+
+    footer_section = next(
+        section
+        for section in sections
+        if "Contacto y redes sociales" in section.content
+    )
+
+    assert footer_section.source_area not in {"content", "body"}
+
+
+def test_reject_tiny_body_content_as_contract() -> None:
+    """Rechaza una extracción demasiado pequeña para ser un contrato."""
+
+    contract = ExtractedContract(
+        source_url="https://example.com/terms",
+        platform="Example",
+        title="Terms",
+        retrieved_at=datetime.now(UTC),
+        extraction_method="beautiful_soup",
+        language="en",
+        sections=[
+            ContractSection(
+                order=1,
+                content="Terms",
+                source_area="body",
+            )
+        ],
+        full_text="Terms",
+    )
+
+    assert has_sufficient_contract_content(contract) is False
+
+
+def test_preserve_direct_text_in_container_with_child_paragraph() -> None:
+    """Evita perder texto directo de un contenedor con hijos estructurados."""
+
+    html = """
+    <html>
+        <body>
+            <main>
+                <div class="legal-content">
+                    Este acuerdo regula la relación entre las partes.
+                    <p>
+                        El usuario acepta cumplir las condiciones del servicio.
+                    </p>
+                </div>
+            </main>
+        </body>
+    </html>
+    """
+
+    _, _, _, full_text = parse_static_html(html)
+
+    assert "Este acuerdo regula la relación entre las partes." in full_text
+    assert "El usuario acepta cumplir las condiciones del servicio." in full_text
+
+
+def test_nested_emphasis_is_detected_as_fully_emphasized() -> None:
+    """Reconoce texto completamente resaltado aunque strong y b estén anidados."""
+
+    html = """
+    <html>
+        <body>
+            <main>
+                <p>
+                    <strong>
+                        Limitación de <b>responsabilidad</b>
+                    </strong>
+                </p>
+            </main>
+        </body>
+    </html>
+    """
+
+    _, _, sections, _ = parse_static_html(html)
+
+    assert len(sections) == 1
+    assert sections[0].is_fully_emphasized is True
+def test_generic_container_does_not_duplicate_nested_structured_content() -> None:
+    """Evita duplicar texto estructurado dentro de wrappers genéricos."""
+
+    html = """
+    <html>
+        <body>
+            <main>
+                <div>
+                    Texto directo del contenedor.
+
+                    <span>
+                        <div>
+                            <p>Contenido contractual anidado.</p>
+                        </div>
+                    </span>
+                </div>
+            </main>
+        </body>
+    </html>
+    """
+
+    _, _, sections, full_text = parse_static_html(html)
+
+    assert full_text.count("Texto directo del contenedor.") == 1
+    assert full_text.count("Contenido contractual anidado.") == 1
+
+    matching_sections = [
+        section
+        for section in sections
+        if section.content == "Contenido contractual anidado."
+    ]
+
+    assert len(matching_sections) == 1
+
+def test_preserve_section_heading_inside_main_with_header_class() -> None:
+    """No confunde encabezados de sección con la cabecera del sitio."""
+
+    html = """
+    <html>
+        <body>
+            <main>
+                <h1>Master Subscription Agreement</h1>
+
+                <div class="notion-sub_header-block">
+                    <h3>9. Limitation of Liability</h3>
+                </div>
+
+                <div>
+                    Neither party will be liable for consequential damages.
+                </div>
+            </main>
+        </body>
+    </html>
+    """
+
+    _, _, sections, _ = parse_static_html(html)
+
+    clause = next(
+        section
+        for section in sections
+        if "Neither party will be liable" in section.content
+    )
+
+    assert clause.source_area == "content"
+    assert clause.heading == "9. Limitation of Liability"
+    assert clause.heading_level == 3
