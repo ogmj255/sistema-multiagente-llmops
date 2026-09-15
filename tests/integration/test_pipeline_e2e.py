@@ -113,9 +113,9 @@ def test_pipeline_completo_desde_traefik() -> None:
 
         if assessment["analysis_status"] == "classified":
             assert assessment["classification"] in {
-                "fair",
+                "not_potentially_abusive",
                 "potentially_abusive",
-                "abusive",
+                "high_risk_abusiveness",
             }
             assert assessment["risk_level"] in {
                 "low",

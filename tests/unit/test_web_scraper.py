@@ -84,7 +84,7 @@ def create_test_contract(
         sections.append(
             ContractSection(
                 order=index + 1,
-                heading=f"Secci?n {index + 1}",
+                heading=f"Sección {index + 1}",
                 content="Contenido de prueba.",
                 source_area=source_area,
             )
@@ -114,7 +114,7 @@ def test_accept_sufficient_contract_content() -> None:
 
 
 def test_reject_insufficient_contract_content() -> None:
-    """Rechaza texto que procede ?nicamente de navegaci?n."""
+    """Rechaza texto que procede únicamente de navegación."""
     contract = create_test_contract(
         section_count=2,
         character_count=700,

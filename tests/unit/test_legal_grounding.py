@@ -20,7 +20,6 @@ def create_request() -> ClauseAnalysisRequest:
         source_url="https://example.com/terms",
         platform="Example SaaS",
         language="es",
-        jurisdiction="ecuador",
         clause=ProcessedClause(
             order=1,
             original_order=4,
@@ -68,7 +67,7 @@ def create_execution(
 
     decision = ClauseAnalysisDecision(
         category="unilateral_modification",
-        classification="abusive",
+        classification="high_risk_abusiveness",
         analysis_status="classified",
         justification=(
             "La cláusula permite una modificación "
@@ -109,7 +108,7 @@ def test_builds_assessment_with_selected_basis() -> None:
         [first_match, second_match],
     )
 
-    assert assessment.classification == "abusive"
+    assert assessment.classification == "high_risk_abusiveness"
     assert assessment.risk_level == "high"
     assert assessment.requires_human_review is True
     assert assessment.legal_basis == [second_match]

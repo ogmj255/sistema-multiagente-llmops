@@ -65,7 +65,7 @@ def test_ollama_client_generates_response(
 
         return FakeResponse(
             {
-                "message": {"content": ('{"classification": "fair"}')},
+                "message": {"content": ('{"classification": "not_potentially_abusive"}')},
                 "prompt_eval_count": 120,
                 "eval_count": 30,
             }
@@ -182,7 +182,7 @@ def test_gateway_uses_local_mode(
     expected = ModelResponse(
         provider="ollama",
         model="qwen3:4b",
-        content='{"classification": "fair"}',
+        content='{"classification": "not_potentially_abusive"}',
     )
 
     monkeypatch.setattr(
@@ -211,7 +211,7 @@ def test_gateway_uses_remote_mode(
     expected = ModelResponse(
         provider="openrouter",
         model=("deepseek/deepseek-v4-flash-0731"),
-        content='{"classification": "fair"}',
+        content='{"classification": "not_potentially_abusive"}',
     )
 
     monkeypatch.setattr(
@@ -246,7 +246,7 @@ def test_gateway_falls_back_to_ollama(
     expected = ModelResponse(
         provider="ollama",
         model="qwen3:4b",
-        content='{"classification": "fair"}',
+        content='{"classification": "not_potentially_abusive"}',
     )
 
     monkeypatch.setattr(

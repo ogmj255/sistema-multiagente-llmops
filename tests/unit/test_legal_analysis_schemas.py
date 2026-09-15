@@ -65,8 +65,28 @@ def test_analysis_request_uses_processed_clause() -> None:
         clause=create_clause(),
     )
 
-    assert request.jurisdiction == "ecuador"
     assert request.clause.original_order == 5
+
+
+def test_analysis_request_rejects_unknown_jurisdiction() -> None:
+    """Rechaza campos obsoletos en la solicitud de análisis."""
+
+    with pytest.raises(
+        ValidationError,
+    ) as exc_info:
+        ClauseAnalysisRequest(
+            source_url="https://example.com/terms",
+            platform="Example SaaS",
+            language="es",
+            clause=create_clause(),
+            jurisdiction="ecuador",
+        )
+
+    errors = exc_info.value.errors()
+
+    assert len(errors) == 1
+    assert errors[0]["type"] == "extra_forbidden"
+    assert errors[0]["loc"] == ("jurisdiction",)
 
 
 def test_fair_clause_derives_low_risk() -> None:
@@ -74,7 +94,7 @@ def test_fair_clause_derives_low_risk() -> None:
 
     assessment = ClauseAssessment(
         category="limitation_of_liability",
-        classification="fair",
+        classification="not_potentially_abusive",
         analysis_status="classified",
         relevant_fragment=create_clause().content,
         justification=(
@@ -97,7 +117,7 @@ def test_abusive_clause_derives_high_risk() -> None:
 
     assessment = ClauseAssessment(
         category="limitation_of_liability",
-        classification="abusive",
+        classification="high_risk_abusiveness",
         analysis_status="classified",
         relevant_fragment=create_clause().content,
         justification=(
@@ -124,7 +144,7 @@ def test_abusive_clause_requires_sufficient_evidence() -> None:
     ):
         ClauseAssessment(
             category="limitation_of_liability",
-            classification="abusive",
+            classification="high_risk_abusiveness",
             analysis_status="classified",
             relevant_fragment=create_clause().content,
             justification="Existe un posible riesgo.",
@@ -165,7 +185,7 @@ def test_rejects_inconsistent_risk_level() -> None:
     ):
         ClauseAssessment(
             category="unilateral_modification",
-            classification="fair",
+            classification="not_potentially_abusive",
             risk_level="high",
             analysis_status="classified",
             relevant_fragment=create_clause().content,

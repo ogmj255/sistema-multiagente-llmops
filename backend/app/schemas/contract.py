@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Literal
 
-from pydantic import BaseModel, Field, HttpUrl
+from pydantic import BaseModel, ConfigDict, Field, HttpUrl
 
 SourceArea = Literal[
     "content",
@@ -16,6 +16,10 @@ SourceArea = Literal[
 
 class ExtractionRequest(BaseModel):
     """Datos necesarios para solicitar una extracción."""
+
+    model_config = ConfigDict(
+        extra="forbid",
+    )
 
     url: HttpUrl
     platform: str | None = None

@@ -49,6 +49,12 @@ SERVIDORES_MCP: dict[str, ServidorMCP] = {
         nombre="Agente Preprocesador",
         modulo="app.mcp.preprocessor_tools",
         herramienta="preprocess_saas_terms",
+        variables_entorno=(
+            "OLLAMA_BASE_URL",
+            "OLLAMA_EMBEDDING_MODEL",
+            "OLLAMA_EMBEDDING_DIMENSIONS",
+            "LLM_TIMEOUT_SECONDS",
+        ),
     ),
     "conocimiento_juridico": ServidorMCP(
         nombre="Agente de Conocimiento Jurídico",

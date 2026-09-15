@@ -3,7 +3,6 @@ from fastapi.encoders import jsonable_encoder
 
 from app.agents.orquestador import ejecutar_orquestacion
 from app.schemas.contract import ExtractionRequest
-from app.schemas.legal_corpus import Jurisdiction
 
 router = APIRouter()
 
@@ -29,15 +28,10 @@ def health() -> dict[str, str]:
 @router.post("/analisis", tags=["Analisis"])
 def analizar_terminos(
     request: ExtractionRequest,
-    jurisdiction: Jurisdiction = "ecuador",
 ) -> dict[str, object]:
     """Ejecuta el pipeline desde una URL de terminos."""
 
-    estado = ejecutar_orquestacion(
-        request,
-        jurisdiction,
-    )
-
+    estado = ejecutar_orquestacion(request)
     respuestas = estado["clause_results"]
 
     resultados = [
@@ -66,7 +60,6 @@ def analizar_terminos(
                 if contrato is not None
                 else request.platform
             ),
-            "jurisdiction": estado["jurisdiction"],
             "total_clauses": (
                 len(contrato.clauses)
                 if contrato is not None

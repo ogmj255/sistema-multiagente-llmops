@@ -13,7 +13,6 @@ def main() -> None:
             "los datos personales?"
         ),
         top_k=3,
-        jurisdiction="ecuador",
     )
 
     response = run_knowledge_agent(request)

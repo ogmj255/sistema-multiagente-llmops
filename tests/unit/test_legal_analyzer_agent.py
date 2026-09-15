@@ -25,7 +25,6 @@ def create_request() -> ClauseAnalysisRequest:
         source_url="https://example.com/terms",
         platform="Example SaaS",
         language="es",
-        jurisdiction="ecuador",
         clause=ProcessedClause(
             order=1,
             original_order=8,
@@ -70,7 +69,7 @@ def create_execution() -> ClassificationExecution:
     return ClassificationExecution(
         decision=ClauseAnalysisDecision(
             category="unilateral_modification",
-            classification="abusive",
+            classification="high_risk_abusiveness",
             analysis_status="classified",
             justification=(
                 "La cláusula permite una modificación unilateral prohibida."
@@ -92,7 +91,7 @@ def create_assessment() -> ClauseAssessment:
 
     return ClauseAssessment(
         category="unilateral_modification",
-        classification="abusive",
+        classification="high_risk_abusiveness",
         analysis_status="classified",
         relevant_fragment=(
             "El proveedor podrá modificar unilateralmente el precio del servicio."
@@ -109,12 +108,14 @@ def test_builds_query_from_processed_clause() -> None:
 
     request = create_request()
 
-    query = legal_analyzer_agent.build_legal_search_query(request)
+    query = legal_analyzer_agent.build_legal_search_query(
+        request
+    )
 
     assert request.clause.content in query
     assert request.clause.heading in query
     assert "Jurisdicción:" not in query
-    assert "términos de servicio SaaS" in query
+    assert "Normativa aplicable" not in query
 
 
 def test_agent_runs_complete_analysis(
@@ -132,7 +133,6 @@ def test_agent_runs_complete_analysis(
     ) -> KnowledgeResponse:
         assert request.clause.content in (knowledge_request.query)
         assert knowledge_request.top_k == 5
-        assert knowledge_request.jurisdiction is None
 
         return KnowledgeResponse(
             status="success",

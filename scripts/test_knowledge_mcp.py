@@ -54,7 +54,6 @@ async def main() -> None:
                         "proteger los datos personales?"
                     ),
                     "top_k": 3,
-                    "jurisdiction": "ecuador",
                 },
             )
 

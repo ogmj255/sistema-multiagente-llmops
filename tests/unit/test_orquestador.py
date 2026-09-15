@@ -127,7 +127,6 @@ def crear_solicitud_analisis(
         source_url="https://example.com/terms",
         platform="Example",
         language="es",
-        jurisdiction="ecuador",
         clause=ProcessedClause(
             order=orden,
             original_order=orden,
@@ -266,7 +265,7 @@ def crear_respuesta_legal(
 ) -> ClauseAnalysisResponse:
     valoracion = ClauseAssessment(
         category="other_contractual_risk",
-        classification="fair",
+        classification="not_potentially_abusive",
         analysis_status="classified",
         relevant_fragment=f"Contenido contractual {orden}.",
         justification="No se identificó un riesgo.",
@@ -515,7 +514,7 @@ def test_registra_error_al_agotar_reintentos(
             "clause_order": None,
             "message": "Servicio temporal no disponible.",
             "attempt": 2,
-            "retryable": True,
+            "retryable": False,
         }
     ]
 

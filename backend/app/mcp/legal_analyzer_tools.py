@@ -9,7 +9,6 @@ from app.schemas.knowledge import LegalKnowledgeMatch
 from app.schemas.legal_analysis import (
     ClauseAnalysisRequest,
 )
-from app.schemas.legal_corpus import Jurisdiction
 from app.schemas.preprocessing import ProcessedClause
 
 mcp = FastMCP("Agente Analizador Legal")
@@ -22,7 +21,6 @@ async def analyze_legal_clause(
     language: str,
     clause: ProcessedClause,
     legal_context: list[LegalKnowledgeMatch],
-    jurisdiction: Jurisdiction = "ecuador",
 ) -> dict[str, object]:
     """Analiza una cláusula usando evidencia jurídica recuperada."""
 
@@ -30,7 +28,6 @@ async def analyze_legal_clause(
         source_url=source_url,
         platform=platform,
         language=language,
-        jurisdiction=jurisdiction,
         clause=clause,
     )
 

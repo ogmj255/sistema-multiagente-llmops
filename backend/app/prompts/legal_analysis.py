@@ -30,22 +30,27 @@ Categorías permitidas:
 """.strip()
 
 CLASSIFICATION_GUIDANCE = """
-- fair: hay evidencia aplicable suficiente para sustentar un
-  equilibrio razonable respecto del aspecto analizado.
-  La ausencia de una prohibición recuperada no demuestra
-  por sí sola que la cláusula sea justa.
-- potentially_abusive: la cláusula describe una conducta
-  identificable y la evidencia aplicable sustenta un posible
-  desequilibrio, aunque no permite establecer una
-  contradicción directa.
-- abusive: la conducta descrita contradice directamente una
-  prohibición u obligación aplicable y vinculante, sin que
-  las condiciones o excepciones identificadas en la evidencia
-  desvirtúen esa contradicción.
+- not_potentially_abusive: existe evidencia jurídica aplicable
+  y suficiente para sustentar que, respecto del aspecto analizado,
+  no se identifican indicios relevantes de potencial abusividad.
+  La ausencia de una prohibición recuperada no demuestra por sí
+  sola esta clasificación.
 
-Si falta contexto contractual o evidencia aplicable para
-sustentar cualquiera de estas clasificaciones, utiliza
-requires_review con classification null.
+- potentially_abusive: la cláusula contiene una conducta,
+  facultad, restricción u obligación identificable y la evidencia
+  jurídica aplicable sustenta indicios de un posible desequilibrio
+  o afectación de derechos, sin alcanzar un nivel alto de riesgo.
+
+- high_risk_abusiveness: existe evidencia jurídica aplicable
+  y suficiente que muestra indicios fuertes de desequilibrio,
+  restricción de derechos o contradicción con una disposición
+  vinculante aplicable. Esta clasificación expresa un alto nivel
+  de riesgo y no constituye una declaración jurídica definitiva
+  de abusividad.
+
+Si falta contexto contractual o evidencia jurídica aplicable
+para sustentar una clasificación, utiliza requires_review con
+classification null y evidence_sufficiency insufficient.
 """.strip()
 
 SYSTEM_PROMPT = f"""
@@ -63,8 +68,10 @@ recuperada desde la base jurídica.
 Reglas obligatorias:
 1. No inventes leyes, artículos, citas, hechos ni fuentes.
 2. No uses conocimientos jurídicos externos a la evidencia.
-3. Considera la jurisdicción, vigencia, carácter vinculante y
-   relación directa de cada evidencia con la cláusula.
+3. Considera la jurisdicción propia de cada evidencia, su vigencia,
+   carácter vinculante y relación directa con la cláusula. No asumas
+   una jurisdicción objetivo para el usuario o el contrato si esta no
+   se encuentra expresamente establecida en la información disponible.
 4. Una menor distancia semántica indica mayor similitud, pero
    no demuestra por sí sola que una norma sea aplicable.
 5. legal_basis_indices solo puede contener evidence_index
@@ -104,14 +111,20 @@ Reglas obligatorias:
     expresados. Tampoco asumas que una garantía ausente
     en el fragmento falta en todo el contrato.
 18. Mantén coherencia entre clasificación y justificación.
-    Si estableces una contradicción directa con una norma
-    aplicable y vinculante, utiliza abusive. Si no puedes
-    establecerla, no afirmes que existe tal contradicción.
+    Si la evidencia aplicable y suficiente muestra una
+    contradicción directa con una disposición vinculante o
+    indicios fuertes de afectación de derechos, utiliza
+    high_risk_abusiveness. No presentes esta clasificación
+    como una declaración jurídica definitiva de abusividad.
 19. Si no puedes identificar la conducta, su alcance o la
     relación con la evidencia, utiliza requires_review.
     No deduzcas la materia de la cláusula a partir del tema
     de los documentos recuperados. En ese caso, explica
     qué información falta y no selecciones evidencias.
+20. No utilices not_potentially_abusive únicamente porque
+    no encuentres una prohibición o contradicción. Esta
+    clasificación requiere evidencia jurídica suficiente que
+    permita sustentar la valoración realizada.
 El resultado es una valoración automatizada de apoyo y no
 constituye asesoramiento jurídico definitivo.
 """.strip()
@@ -146,7 +159,6 @@ def build_legal_analysis_messages(
             "source_url": str(request.source_url),
             "platform": request.platform,
             "language": request.language,
-            "jurisdiction": request.jurisdiction,
         },
         "clause": request.clause.model_dump(
             mode="json"

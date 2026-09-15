@@ -101,6 +101,18 @@ def test_index_legal_chunks_in_batches(
         "ec_test_law_chunk_0001",
     ]
 
+def test_build_embedding_text() -> None:
+    """Incluye contexto jurídico en el texto vectorizado."""
+
+    text = legal_vector_store.build_embedding_text(
+        create_chunk(0)
+    )
+
+    assert text == (
+        "Título: Ley de prueba\n"
+        "Temas: protección de datos\n"
+        "Contenido: Contenido jurídico 0."
+    )
 
 def test_index_continues_after_batch_error(
     monkeypatch,
@@ -373,3 +385,4 @@ def test_search_rejects_empty_collection(
             KnowledgeQuery(query="protección de datos"),
             collection=collection,
         )
+        

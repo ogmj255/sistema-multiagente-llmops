@@ -24,20 +24,16 @@ def build_legal_search_query(
 ) -> str:
     """Construye la consulta jurídica desde la cláusula."""
 
-    parts = [
-        (
-            "Normativa aplicable para evaluar una "
-            "cláusula de términos de servicio SaaS, "
-            "considerando obligaciones del proveedor, "
-            "derechos del usuario y posibles "
-            "restricciones contractuales."
-        ),
-    ]
+    parts: list[str] = []
 
     if request.clause.heading is not None:
-        parts.append(f"Encabezado: {request.clause.heading}.")
+        parts.append(
+            f"Encabezado: {request.clause.heading}"
+        )
 
-    parts.append(f"Cláusula: {request.clause.content}")
+    parts.append(
+        f"Cláusula: {request.clause.content}"
+    )
 
     return "\n".join(parts)
 

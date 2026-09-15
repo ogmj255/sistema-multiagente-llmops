@@ -23,7 +23,6 @@ from app.schemas.legal_analysis import (
     ClauseAnalysisRequest,
     ClauseAnalysisResponse,
 )
-from app.schemas.legal_corpus import Jurisdiction
 from app.schemas.orquestacion import (
     ClauseTaskState,
     OrchestrationState,
@@ -99,7 +98,7 @@ def manejar_error_nodo(
                     "clause_order": None,
                     "message": str(error.error),
                     "attempt": MAX_INTENTOS,
-                    "retryable": True,
+                    "retryable": False,
                 }
             ],
             "attempts": {
@@ -227,7 +226,7 @@ def crear_actualizacion_error_clausula(
                 "clause_order": orden_clausula,
                 "message": mensaje,
                 "attempt": MAX_INTENTOS,
-                "retryable": True,
+                "retryable": False,
             }
         ],
         "attempts": {
@@ -439,7 +438,6 @@ def distribuir_clausulas(
                     source_url=contrato.source_url,
                     platform=contrato.platform,
                     language=contrato.language,
-                    jurisdiction=state["jurisdiction"],
                     clause=clausula,
                 )
             },
@@ -504,15 +502,10 @@ def crear_orquestador(
 
 async def ejecutar_orquestacion_async(
     request: ExtractionRequest,
-    jurisdiction: Jurisdiction = "ecuador",
 ) -> OrchestrationState:
     """Ejecuta el grafo usando conexiones MCP."""
 
-    estado = create_initial_state(
-        request,
-        jurisdiction,
-    )
-
+    estado = create_initial_state(request)
     async with ClienteMCP() as cliente:
         grafo = crear_orquestador(cliente).construir()
 
@@ -526,13 +519,9 @@ async def ejecutar_orquestacion_async(
 
 def ejecutar_orquestacion(
     request: ExtractionRequest,
-    jurisdiction: Jurisdiction = "ecuador",
 ) -> OrchestrationState:
     """Conserva la entrada síncrona usada por la API."""
 
     return asyncio.run(
-        ejecutar_orquestacion_async(
-            request,
-            jurisdiction,
-        )
+        ejecutar_orquestacion_async(request)
     )

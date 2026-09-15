@@ -9,7 +9,6 @@ from pydantic import (
 )
 
 from app.schemas.knowledge import LegalKnowledgeMatch
-from app.schemas.legal_corpus import Jurisdiction
 from app.schemas.preprocessing import ProcessedClause
 
 ClauseCategory = Literal[
@@ -25,9 +24,9 @@ ClauseCategory = Literal[
 ]
 
 ClauseClassification = Literal[
-    "fair",
+    "not_potentially_abusive",
     "potentially_abusive",
-    "abusive",
+    "high_risk_abusiveness",
 ]
 
 RiskLevel = Literal[
@@ -51,9 +50,9 @@ RISK_BY_CLASSIFICATION: dict[
     ClauseClassification,
     RiskLevel,
 ] = {
-    "fair": "low",
+    "not_potentially_abusive": "low",
     "potentially_abusive": "medium",
-    "abusive": "high",
+    "high_risk_abusiveness": "high",
 }
 
 EvidenceIndex = Annotated[
@@ -65,12 +64,14 @@ EvidenceIndex = Annotated[
 class ClauseAnalysisRequest(BaseModel):
     """Entrada para analizar una cláusula contractual."""
 
-    model_config = ConfigDict(str_strip_whitespace=True)
+    model_config = ConfigDict(
+        str_strip_whitespace=True,
+        extra="forbid",
+    )
 
     source_url: HttpUrl
     platform: str = Field(min_length=1)
     language: str = Field(min_length=2)
-    jurisdiction: Jurisdiction = "ecuador"
     clause: ProcessedClause
 
 
@@ -125,12 +126,17 @@ class ClauseAnalysisDecision(BaseModel):
             )
 
         if (
-            self.classification == "abusive"
+            self.classification
+            in {
+                "not_potentially_abusive",
+                "high_risk_abusiveness",
+            }
             and self.evidence_sufficiency != "sufficient"
         ):
-            raise ValueError("Una clasificación abusiva requiere evidencia suficiente.")
+            raise ValueError(
+                "Esta clasificación requiere evidencia jurídica suficiente."
+            )
         return self
-
 
 class ClauseAssessment(BaseModel):
     """Valoración jurídica automatizada de una cláusula."""
@@ -188,15 +194,19 @@ class ClauseAssessment(BaseModel):
             raise ValueError("Una clasificación debe contener fundamento jurídico.")
 
         if (
-            self.classification == "abusive"
+            self.classification
+            in {
+                "not_potentially_abusive",
+                "high_risk_abusiveness",
+            }
             and self.evidence_sufficiency != "sufficient"
         ):
             raise ValueError(
-                "Una cláusula abusiva requiere evidencia jurídica suficiente."
+                "Esta clasificación requiere evidencia jurídica suficiente."
             )
 
         self.requires_human_review = (
-            self.classification != "fair" or self.evidence_sufficiency != "sufficient"
+            self.classification != "not_potentially_abusive"
         )
 
         return self

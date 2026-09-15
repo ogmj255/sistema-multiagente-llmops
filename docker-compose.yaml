@@ -1,4 +1,4 @@
-﻿services:
+services:
   postgres:
     image: postgres:16-alpine
     container_name: clausulas-postgres
@@ -49,9 +49,29 @@
         condition: service_started
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.backend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.backend.rule=PathPrefix(`/api`)"
       - "traefik.http.routers.backend.entrypoints=web"
+      - "traefik.http.routers.backend.priority=100"
+      - "traefik.http.routers.backend.middlewares=backend-strip-prefix"
+      - "traefik.http.middlewares.backend-strip-prefix.stripprefix.prefixes=/api"
       - "traefik.http.services.backend.loadbalancer.server.port=8000"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    image: clausulas-frontend:0.1
+    container_name: clausulas-frontend
+    expose:
+      - "8501"
+    depends_on:
+      - backend
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.frontend.rule=PathPrefix(`/`)"
+      - "traefik.http.routers.frontend.entrypoints=web"
+      - "traefik.http.routers.frontend.priority=1"
+      - "traefik.http.services.frontend.loadbalancer.server.port=8501"
 
   traefik:
     image: traefik:v3.7

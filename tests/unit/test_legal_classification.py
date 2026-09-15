@@ -21,7 +21,6 @@ def create_request() -> ClauseAnalysisRequest:
         source_url="https://example.com/terms",
         platform="Example SaaS",
         language="es",
-        jurisdiction="ecuador",
         clause=ProcessedClause(
             order=1,
             original_order=4,
@@ -64,7 +63,7 @@ def create_decision_payload() -> dict[str, object]:
 
     return {
         "category": "limitation_of_liability",
-        "classification": "abusive",
+        "classification": "high_risk_abusiveness",
         "analysis_status": "classified",
         "justification": (
             "La cláusula excluye ampliamente la responsabilidad del proveedor."
@@ -131,7 +130,7 @@ def test_classify_clause_returns_valid_decision(
         [create_match()],
     )
 
-    assert execution.decision.classification == "abusive"
+    assert execution.decision.classification == "high_risk_abusiveness"
     assert execution.decision.legal_basis_indices == [0]
     assert execution.model_response.provider == "ollama"
     assert execution.model_response.prompt_tokens == 120

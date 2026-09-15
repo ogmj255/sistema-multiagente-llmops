@@ -1,7 +1,6 @@
 from app.api import routes
 from app.main import app
 from app.schemas.contract import ExtractionRequest
-from app.schemas.legal_corpus import Jurisdiction
 from fastapi.testclient import TestClient
 
 client = TestClient(app)
@@ -28,16 +27,13 @@ def test_analisis_ejecuta_pipeline(
 
     def ejecutar(
         request: ExtractionRequest,
-        jurisdiction: Jurisdiction,
     ) -> dict[str, object]:
         datos_recibidos["url"] = str(request.url)
         datos_recibidos["platform"] = request.platform
-        datos_recibidos["jurisdiction"] = jurisdiction
 
         return {
             "execution_id": "ejecucion-prueba",
             "request": request,
-            "jurisdiction": jurisdiction,
             "status": "success",
             "current_step": "finalization",
             "extracted_contract": None,
@@ -56,7 +52,7 @@ def test_analisis_ejecuta_pipeline(
     )
 
     response = client.post(
-        "/analisis?jurisdiction=ecuador",
+        "/analisis",
         json={
             "url": "https://example.com/terms",
             "platform": "Example",
@@ -67,7 +63,6 @@ def test_analisis_ejecuta_pipeline(
     assert datos_recibidos == {
         "url": "https://example.com/terms",
         "platform": "Example",
-        "jurisdiction": "ecuador",
     }
     cuerpo = response.json()
 

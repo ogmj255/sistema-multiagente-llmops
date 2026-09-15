@@ -10,7 +10,6 @@ from app.schemas.legal_analysis import (
     ClauseAnalysisRequest,
     ClauseAnalysisResponse,
 )
-from app.schemas.legal_corpus import Jurisdiction
 from app.schemas.preprocessing import PreprocessedContract
 
 PipelineStatus = Literal[
@@ -51,7 +50,6 @@ class OrchestrationState(TypedDict):
 
     execution_id: str
     request: ExtractionRequest
-    jurisdiction: Jurisdiction
     status: PipelineStatus
     current_step: PipelineStep
     extracted_contract: ExtractedContract | None
@@ -67,14 +65,12 @@ class OrchestrationState(TypedDict):
 
 def create_initial_state(
     request: ExtractionRequest,
-    jurisdiction: Jurisdiction = "ecuador",
 ) -> OrchestrationState:
     """Crea un estado independiente para cada ejecución."""
 
     return OrchestrationState(
         execution_id=str(uuid4()),
         request=request,
-        jurisdiction=jurisdiction,
         status="pending",
         current_step="extraction",
         extracted_contract=None,

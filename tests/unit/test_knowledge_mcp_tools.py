@@ -44,8 +44,6 @@ async def test_search_legal_knowledge_tool(
             "protección de datos personales"
         )
         assert request.top_k == 3
-        assert request.jurisdiction == "ecuador"
-        assert request.document_type == "law"
 
         return KnowledgeResponse(
             status="success",
@@ -63,8 +61,6 @@ async def test_search_legal_knowledge_tool(
         knowledge_tools.search_legal_knowledge(
             query="protección de datos personales",
             top_k=3,
-            jurisdiction="ecuador",
-            document_type="law",
         )
     )
 

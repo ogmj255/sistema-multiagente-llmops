@@ -39,13 +39,12 @@ class KnowledgeQuery(BaseModel):
     """Consulta enviada al Agente de Conocimiento Jurídico."""
 
     model_config = ConfigDict(
-        str_strip_whitespace=True
+        str_strip_whitespace=True,
+        extra="forbid",
     )
 
     query: str = Field(min_length=3)
     top_k: int = Field(default=5, ge=1, le=20)
-    jurisdiction: Jurisdiction | None = None
-    document_type: LegalDocumentType | None = None
 
 
 class LegalKnowledgeMatch(LegalChunk):

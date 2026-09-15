@@ -1,0 +1,544 @@
+==========================================================================================
+DISNEYPLUS
+==========================================================================================
+URL: https://www.disneyplus.com/welcome/subscriber-agreement
+
+SCRAPER STATIC
+  TITLE: Subscriber Agreement Archive
+  METHOD: beautiful_soup
+  SECTIONS: 168
+  AREAS: {'content': 154, 'footer': 14}
+  FULL_TEXT: 111668
+  USABLE: 111362
+  SUFFICIENT: True
+
+SCRAPER DYNAMIC
+  TITLE: The page you were looking for cannot be found.
+  METHOD: playwright
+  SECTIONS: 2
+  AREAS: {'content': 2}
+  FULL_TEXT: 77
+  USABLE: 75
+  SUFFICIENT: True
+
+EXTRACCI?N SELECCIONADA
+  METHOD: static
+  USABLE: 111362
+  SUFFICIENT: True
+
+PREPROCESADOR
+  ORIGINALES: 168
+  LIMPIAS: 154
+  ELIMINADAS: 14
+  PROTECTED: 14
+  BOUNDARIES: 16
+  REGIONS: 17
+  CHUNKS: 48
+
+ANCLAS EN MAY?SCULAS NO RECONOCIDAS
+  [126] YOU AND HULU AGREE TO WAIVE CLASS ACTION PROCEDURES.
+
+REGIONES ESTRUCTURALES
+  REGION 01 | 21 secciones
+    INICIO: Disney+, ESPN, and Hulu Subscriber Agreement
+    FINAL : d. Notices . Any notices we deliver to you may be made as follows: (i) by email to the last email address provided by you or (ii) by posting a notice on the Services. You consent t
+  REGION 02 | 5 secciones
+    INICIO: 2. SUBSCRIPTION TERMS
+    FINAL : e. CANCELLATION AND REFUND POLICY. YOU CAN CANCEL YOUR SUBSCRIPTION AT ANY TIME BEFORE THE END OF THE CURRENT BILLING PERIOD, FREE TRIAL OR PROMOTION. CANCELLATION WILL TAKE EFFECT
+  REGION 03 | 21 secciones
+    INICIO: 3. COPYRIGHT LICENSE GRANT AND RESTRICTIONS
+    FINAL : d. Violations. Any attempt to perform any of the restrictions listed in Sections 3(b) and 3(c) above is a violation of the rights of Disney+, ESPN, Hulu, and the copyright holder.
+  REGION 04 | 3 secciones
+    INICIO: 4. USAGE TERMS
+    FINAL : b. Internet Connection. You must have a high speed Internet connection in order to access and use certain aspects of the Services. c. Streaming Content. The Content can be streamed
+  REGION 05 | 3 secciones
+    INICIO: 5. USE AND SHARING OF CERTAIN INFORMATION
+    FINAL : We reserve the right to, and you agree that we may, release your details to system administrators at other sites and to law enforcement agencies in order to assist them in resolvin
+  REGION 06 | 3 secciones
+    INICIO: 6. SUSPENSION AND TERMINATION
+    FINAL : You agree that we will not be liable to you or to any third party for any such restriction, suspension, or termination of your access to the Services or the Content. We also reserv
+  REGION 07 | 9 secciones
+    INICIO: 7. BINDING ARBITRATION AND CLASS ACTION WAIVER
+    FINAL : d. Fees. If we initiate an arbitration against you, we will pay all costs associated with the arbitration, including the entire filing fee. If you are the party initiating an arbit
+  REGION 08 | 3 secciones
+    INICIO: 8. ADDITIONAL PROVISIONS
+    FINAL : For any matters where specific contact procedures are not provided for elsewhere in this Agreement, you may contact us by visiting your applicable Service’s Help Center. j. DISCLAI
+  REGION 09 | 7 secciones
+    INICIO: Updated: October 21, 2024
+    FINAL : ANY DISPUTE BETWEEN YOU AND US, EXCEPT FOR SMALL CLAIMS, IS SUBJECT TO A CLASS ACTION WAIVER AND MUST BE RESOLVED BY INDIVIDUAL BINDING ARBITRATION. PLEASE READ THE ARBITRATION PRO
+  REGION 10 | 4 secciones
+    INICIO: 1. User Eligibility and Registration 2. Subscription Terms 3. Copyright License Grant and Restrictions 4. Usage Terms 5. Use and Sharing of Certain Information 6. Suspension and Te
+    FINAL : c. Notices. Any notices we deliver to you may be made as follows: (i) by email to the last email address provided by you or (ii) by posting a notice on the Services. For clarity, y
+  REGION 11 | 19 secciones
+    INICIO: a. Service Tier and Other Offerings. When purchasing your subscription to the Services, you may be presented with different plans or options (each a “Service Tier”). Different Serv
+    FINAL : o. Third Party Ads and Services. We take no responsibility for and do not endorse any third-party advertisements or any third-party material posted where the Services are available
+  REGION 12 | 8 secciones
+    INICIO: a. License. Within the United States and subject to the terms and conditions in this Agreement, we grant you a limited, personal use, non-transferable, non-assignable, revocable, n
+    FINAL : d. Violations. Any attempt to perform any of the restrictions listed in Sections 3(b) and 3(c) above is a violation of the rights of Hulu and the copyright holder.
+  REGION 13 | 9 secciones
+    INICIO: a. Compatible Devices and Software. Use of the Services requires compatible devices, and certain software may require periodic updates, and your use of the Services may be affected
+    FINAL : i. Promotional and Experimental Features. In our continued assessment of the Services, we may from time to time, with respect to any or all of our users, experiment or otherwise of
+  REGION 14 | 2 secciones
+    INICIO: For more information about our collection, use, and sharing of your information, please refer to our Privacy Policy, which can be found at https://privacy.thewaltdisneycompany.com/
+    FINAL : We reserve the right to, and you agree that we may, release your details to system administrators at other sites and to law enforcement agencies in order to assist them in resolvin
+  REGION 15 | 5 secciones
+    INICIO: You agree that we may, in our sole discretion and without notice or liability to you, restrict, suspend, or terminate your access to part or all of the Services, and to any Content
+    FINAL : UPON TERMINATION OF YOUR HULU ACCOUNT, WHETHER TERMINATED BASED ON OUR DETERMINATION OR AT YOUR REQUEST (OTHER THAN A CANCELLATION OF YOUR SUBSCRIPTION, IN WHICH CASE YOUR SUBSCRIP
+  REGION 16 | 16 secciones
+    INICIO: PLEASE READ THIS PROVISION CAREFULLY—YOU ARE AGREEING TO RESOLVE ALL DISPUTES BETWEEN US THROUGH BINDING INDIVIDUAL ARBITRATION AND INCLUDE A CLASS ACTION WAIVER AND JURY TRIAL WAI
+    FINAL : If you have questions or concerns about the meaning of any provision of this arbitration agreement, please feel free to seek the counsel of an attorney. We thank you for understand
+  REGION 17 | 16 secciones
+    INICIO: a. We aspire for the Services to provide exceptional sources of entertainment for you and your family. You understand and agree that the Content you receive through the Services is
+    FINAL : o. Entire Agreement. This Agreement and the provisions referenced herein, along with any agreements or policies that are incorporated herein by reference, constitute the entire agr
+
+CHUNKS SEM?NTICOS
+  CHUNK 01 | 6 secciones | 1867 chars
+    Disney+, ESPN, and Hulu Subscriber Agreement Updated: October 17, 2025 We welcome you! It is our pleasure to provide the Disney+, ESPN, and Hulu services described below for your personal enjoyment in accordance with thi
+  CHUNK 02 | 14 secciones | 3022 chars
+    We may amend this Agreement, effective thirty (30) days after we send you notice or post the amendment on the Services. If you do not agree to any change to this Agreement, you must discontinue using the Services. Our cu
+  CHUNK 03 | 1 secciones | 675 chars
+    d. Notices . Any notices we deliver to you may be made as follows: (i) by email to the last email address provided by you or (ii) by posting a notice on the Services. You consent to receive electronic communications from
+  CHUNK 04 | 3 secciones | 4864 chars
+    2. SUBSCRIPTION TERMS a. Service Tier and Other Offerings. When purchasing your subscription(s) to the Service(s), you may be presented with different plans or options (each a “Service Tier”). Different Service Tiers or 
+  CHUNK 05 | 1 secciones | 532 chars
+    The purchase and redemption of Disney+ gift cards are subject to the Disney+ Gift Card Terms and Conditions, which you can review at disneyterms.com/usdisneyplusgiftcard. The purchase and redemption of Hulu gift cards ar
+  CHUNK 06 | 1 secciones | 10473 chars
+    e. CANCELLATION AND REFUND POLICY. YOU CAN CANCEL YOUR SUBSCRIPTION AT ANY TIME BEFORE THE END OF THE CURRENT BILLING PERIOD, FREE TRIAL OR PROMOTION. CANCELLATION WILL TAKE EFFECT AT THE END OF THE CURRENT BILLING PERIO
+  CHUNK 07 | 8 secciones | 2467 chars
+    3. COPYRIGHT LICENSE GRANT AND RESTRICTIONS a. License. Within the Territory and subject to the terms and conditions in this Agreement, we grant you a limited, personal use, non-transferable, non-assignable, revocable, n
+  CHUNK 08 | 13 secciones | 3206 chars
+    i. move, decompile, reverse-engineer, disassemble, or otherwise reduce to human-readable form the Services and/or the video player(s), underlying technology, any digital rights management mechanism, device, or other cont
+  CHUNK 09 | 2 secciones | 960 chars
+    4. USAGE TERMS a. Compatible Devices and Software. Use of the Services requires compatible devices, and certain software may require periodic updates, and your use of the Services may be affected by the performance of th
+  CHUNK 10 | 1 secciones | 6051 chars
+    b. Internet Connection. You must have a high speed Internet connection in order to access and use certain aspects of the Services. c. Streaming Content. The Content can be streamed through the Services over an active Int
+  CHUNK 11 | 3 secciones | 487 chars
+    5. USE AND SHARING OF CERTAIN INFORMATION For more information about our collection, use, and sharing of your information, please refer to our Privacy Policy, which can be found at www.disneyplus.com/legal/privacy-policy
+  CHUNK 12 | 3 secciones | 2214 chars
+    6. SUSPENSION AND TERMINATION You agree that we may, in our sole discretion and without notice or liability to you, restrict, suspend, or terminate your access to part or all of the Services, and to any Content if we bel
+  CHUNK 13 | 7 secciones | 3878 chars
+    7. BINDING ARBITRATION AND CLASS ACTION WAIVER PLEASE READ THIS PROVISION CAREFULLY—YOU ARE AGREEING TO RESOLVE ALL DISPUTES BETWEEN US THROUGH BINDING INDIVIDUAL ARBITRATION AND INCLUDE A CLASS ACTION WAIVER AND JURY TR
+  CHUNK 14 | 1 secciones | 3371 chars
+    We will send any notice of a Dispute to you at the contact information we have available for you in connection with your account. You and we will attempt to resolve a Dispute through informal negotiation within sixty (60
+  CHUNK 15 | 1 secciones | 3361 chars
+    d. Fees. If we initiate an arbitration against you, we will pay all costs associated with the arbitration, including the entire filing fee. If you are the party initiating an arbitration, you will be responsible for the 
+  CHUNK 16 | 2 secciones | 5045 chars
+    8. ADDITIONAL PROVISIONS a. We aspire for the Services to provide exceptional sources of entertainment for you and your family. You understand and agree that the Content you receive through the Services is intended for i
+  CHUNK 17 | 1 secciones | 4224 chars
+    For any matters where specific contact procedures are not provided for elsewhere in this Agreement, you may contact us by visiting your applicable Service’s Help Center. j. DISCLAIMERS OF WARRANTY; LIABILITY LIMITATION. 
+  CHUNK 18 | 7 secciones | 1997 chars
+    Updated: October 21, 2024 We welcome you! It is our pleasure to provide the Hulu services described below for your personal enjoyment and entertainment in accordance with this Subscriber Agreement (herein, the “Agreement
+  CHUNK 19 | 4 secciones | 2670 chars
+    1. User Eligibility and Registration 2. Subscription Terms 3. Copyright License Grant and Restrictions 4. Usage Terms 5. Use and Sharing of Certain Information 6. Suspension and Termination 7. Binding Arbitration and Cla
+  CHUNK 20 | 2 secciones | 3074 chars
+    a. Service Tier and Other Offerings. When purchasing your subscription to the Services, you may be presented with different plans or options (each a “Service Tier”). Different Service Tiers or other offerings, such as Ad
+  CHUNK 21 | 1 secciones | 1534 chars
+    c. Free Trials and Promotions. Your subscription to the Services may begin with a free trial. Availability of a free trial is not guaranteed and, if one is available, is only available on the specified terms of the free 
+  CHUNK 22 | 2 secciones | 1927 chars
+    d. Hulu Gift Cards. We may make available gift cards redeemable for an eligible Service. Gift cards may not be used in conjunction with, or in addition to, any special offer unless the terms of the special offer expressl
+  CHUNK 23 | 1 secciones | 1585 chars
+    f. Payment Details. We will keep your detailed payment information, such as credit card number and expiry date, on file. In the event your account or subscriptions are configured so that you receive separate bills relati
+  CHUNK 24 | 4 secciones | 2396 chars
+    g. Subscriptions Obtained Through Third Parties. If you obtain a Hulu subscription via a third party (e.g., an app store), that subscription is also subject to the third party’s terms, and the provisions in this Agreemen
+  CHUNK 25 | 6 secciones | 2826 chars
+    j. Pay Per View Events. We may also offer one-time pay per view events not otherwise included within your subscription. You will be charged for pay per view events at the time of purchase to your chosen payment method. k
+  CHUNK 26 | 3 secciones | 1833 chars
+    n. Linked Destinations and Advertising. If we provide links or pointers to other websites or destinations, you should not infer or assume that we operate, control, or are otherwise connected with these other websites or 
+  CHUNK 27 | 5 secciones | 2138 chars
+    a. License. Within the United States and subject to the terms and conditions in this Agreement, we grant you a limited, personal use, non-transferable, non-assignable, revocable, non-exclusive and non-sublicensable right
+  CHUNK 28 | 3 secciones | 3408 chars
+    c. Restrictions on Your Use of the Services. You agree that you will not nor permit another person to do any of the following without our express written permission, and that these restrictions are a condition to your li
+  CHUNK 29 | 2 secciones | 1227 chars
+    a. Compatible Devices and Software. Use of the Services requires compatible devices, and certain software may require periodic updates, and your use of the Services may be affected by the performance of these elements. Y
+  CHUNK 30 | 2 secciones | 1236 chars
+    c. Streaming Content. The Content can be streamed through the Services over an active Internet connection. The number of concurrent streams available for use may be subject to limitations by Service Tier, and such limita
+  CHUNK 31 | 2 secciones | 2391 chars
+    e. Content Availability. The Services are not available to subscribers outside of the United States, and the content that we make available may be limited by law or by the rights that certain of our third-party content p
+  CHUNK 32 | 1 secciones | 924 chars
+    g. Cloud DVR. The Live TV Service Tier may provide the ability to record live TV Content to your cloud DVR. Hulu may limit storage capacity and the amount of time such recordings can be stored on your cloud DVR and avail
+  CHUNK 33 | 2 secciones | 1859 chars
+    h. Future Unavailability. It is possible that the Services and/or some or all Content may not be available for streaming or downloading at any given time including (i) during any maintenance or update periods; (ii) any p
+  CHUNK 34 | 2 secciones | 472 chars
+    For more information about our collection, use, and sharing of your information, please refer to our Privacy Policy, which can be found at https://privacy.thewaltdisneycompany.com/en/current-privacy-policy/ and is incorp
+  CHUNK 35 | 5 secciones | 2074 chars
+    You agree that we may, in our sole discretion and without notice or liability to you, restrict, suspend, or terminate your access to part or all of the Services, and to any Content if we believe you are using or have use
+  CHUNK 36 | 4 secciones | 1273 chars
+    PLEASE READ THIS PROVISION CAREFULLY—YOU ARE AGREEING TO RESOLVE ALL DISPUTES BETWEEN US THROUGH BINDING INDIVIDUAL ARBITRATION AND INCLUDE A CLASS ACTION WAIVER AND JURY TRIAL WAIVER. There may be instances in which dis
+  CHUNK 37 | 2 secciones | 698 chars
+    YOU AND HULU AGREE TO WAIVE CLASS ACTION PROCEDURES. No party will seek to have a dispute heard as a class action or private attorney general action or in any other proceeding in which any party acts or proposes to act i
+  CHUNK 38 | 1 secciones | 700 chars
+    a. Small Claims Court. Subject to applicable jurisdictional requirements, you or we may elect to pursue a Dispute in a local small claims court rather than through the informal dispute resolution process described below 
+  CHUNK 39 | 3 secciones | 3120 chars
+    b. Informal Dispute Resolution. In the event of a Dispute, you and we agree to attempt to avoid the costs of formal dispute resolution by giving each party a full and fair opportunity to address and resolve the Dispute i
+  CHUNK 40 | 1 secciones | 1120 chars
+    Arbitration may be conducted in person, through the submission of documents, by phone, or online. Proceedings that cannot be conducted through the submission of documents, by phone, or online, will take place in either L
+  CHUNK 41 | 1 secciones | 870 chars
+    d. Fees. If we initiate an arbitration against you, we will pay all costs associated with the arbitration, including the entire filing fee. If you are the party initiating an arbitration, you will be responsible for the 
+  CHUNK 42 | 1 secciones | 909 chars
+    e. Settlement Offers and Offers of Judgment. At least ten (10) calendar days before the date set for an arbitration hearing with respect to a Dispute, you or we may serve a written offer of judgment on the other party to
+  CHUNK 43 | 3 secciones | 1605 chars
+    f. Arbitration Agreement Survival. This arbitration agreement will survive the termination of your relationship with Disney+ and/or ESPN+, including any revocation of consent or other action by you to end your participat
+  CHUNK 44 | 4 secciones | 2090 chars
+    a. We aspire for the Services to provide exceptional sources of entertainment for you and your family. You understand and agree that the Content you receive through the Services is intended for informational and entertai
+  CHUNK 45 | 3 secciones | 1631 chars
+    e. Third-Party Services, Content, and Devices. The Services may integrate, be integrated into, or be provided in connection with third-party services, content, and devices. We do not control those third-party services, c
+  CHUNK 46 | 1 secciones | 1186 chars
+    h. Submissions and Unsolicited Ideas Policies. Our policy does not allow us to accept or consider unsolicited creative ideas, suggestions or materials. In connection with anything you submit to us, whether or not solicit
+  CHUNK 47 | 3 secciones | 2439 chars
+    i. General Contact Information. For any matters where specific contact procedures are not provided for elsewhere in this Agreement, you may contact Hulu by visiting our Help Center. j. DISCLAIMERS OF WARRANTY; LIABILITY 
+  CHUNK 48 | 5 secciones | 1651 chars
+    k. Choice of Forum. You agree that any action at law or in equity arising out of or relating to this Agreement that is not subject to arbitration shall be filed, and that venue properly lies, only in the state or federal
+
+
+==========================================================================================
+SPOTIFY
+==========================================================================================
+URL: https://www.spotify.com/ec/legal/end-user-agreement/
+
+SCRAPER STATIC
+  TITLE: Términos y Condiciones de Uso - Spotify
+  METHOD: beautiful_soup
+  SECTIONS: 139
+  AREAS: {'navigation': 36, 'content': 103}
+  FULL_TEXT: 45048
+  USABLE: 44844
+  SUFFICIENT: True
+
+SCRAPER DYNAMIC
+  TITLE: Términos y Condiciones de Uso - Spotify
+  METHOD: playwright
+  SECTIONS: 141
+  AREAS: {'navigation': 36, 'content': 103, 'interactive': 2}
+  FULL_TEXT: 45048
+  USABLE: 44844
+  SUFFICIENT: True
+
+EXTRACCI?N SELECCIONADA
+  METHOD: static
+  USABLE: 44844
+  SUFFICIENT: True
+
+PREPROCESADOR
+  ORIGINALES: 139
+  LIMPIAS: 96
+  ELIMINADAS: 43
+  PROTECTED: 0
+  BOUNDARIES: 40
+  REGIONS: 41
+  CHUNKS: 42
+
+ANCLAS EN MAY?SCULAS NO RECONOCIDAS
+  Ninguna.
+
+REGIONES ESTRUCTURALES
+  REGION 01 | 1 secciones
+    INICIO: Última actualización: 26/08/2025
+    FINAL : Última actualización: 26/08/2025
+  REGION 02 | 3 secciones
+    INICIO: Lea atentamente los Términos de uso (los " Términos ") ya que rigen el uso de (incluido el acceso a) los servicios personalizados de Spotify para escuchar música y otros contenidos
+    FINAL : Si se registra para el Servicio Spotify, o si lo utiliza, acepta estos Términos. Si no está de acuerdo con estos Términos, entonces no debe usar el Servicio Spotify ni acceder a ni
+  REGION 03 | 1 secciones
+    INICIO: Estos Términos son entre usted y Spotify AB, Regeringsgatan 19, 111 53, Estocolmo, Suecia.
+    FINAL : Estos Términos son entre usted y Spotify AB, Regeringsgatan 19, 111 53, Estocolmo, Suecia.
+  REGION 04 | 1 secciones
+    INICIO: Para utilizar el Servicio Spotify y acceder a cualquier contenido, debe (1) tener 13 años (o la edad mínima equivalente en su país de origen) o más, (2) tener el consentimiento de 
+    FINAL : Para utilizar el Servicio Spotify y acceder a cualquier contenido, debe (1) tener 13 años (o la edad mínima equivalente en su país de origen) o más, (2) tener el consentimiento de 
+  REGION 05 | 1 secciones
+    INICIO: Ofrecemos numerosas opciones de Servicio Spotify. Ciertas opciones de Servicio Spotify se ofrecen de sin costo, mientras que otras opciones deben pagarse antes de poder acceder a e
+    FINAL : Ofrecemos numerosas opciones de Servicio Spotify. Ciertas opciones de Servicio Spotify se ofrecen de sin costo, mientras que otras opciones deben pagarse antes de poder acceder a e
+  REGION 06 | 1 secciones
+    INICIO: De vez en cuando, es posible que nosotros o terceros en nuestro nombre le ofrezcan pruebas de Suscripciones pagadas durante un período específico, sin costo o a una tarifa reducida
+    FINAL : De vez en cuando, es posible que nosotros o terceros en nuestro nombre le ofrezcan pruebas de Suscripciones pagadas durante un período específico, sin costo o a una tarifa reducida
+  REGION 07 | 1 secciones
+    INICIO: El Servicio Spotify puede integrarse con aplicaciones, sitios web y servicios de terceros (" Aplicaciones de terceros ") o interactuar de otro modo con ellos, así como con computad
+    FINAL : El Servicio Spotify puede integrarse con aplicaciones, sitios web y servicios de terceros (" Aplicaciones de terceros ") o interactuar de otro modo con ellos, así como con computad
+  REGION 08 | 7 secciones
+    INICIO: Utilizamos una atención y habilidad razonables para mantener el Servicio Spotify operativo y brindarle una experiencia de audio personalizada y envolvente. Sin embargo, nuestras of
+    FINAL : Spotify no es responsable ante usted ni tiene ninguna obligación de proporcionarle un reembolso, en relación con interrupciones o fallas de servicios por Internet u otros motivos c
+  REGION 09 | 2 secciones
+    INICIO: Es posible que necesite crear una cuenta de Spotify para usar todo o parte del Servicio Spotify, y esta cuenta debe estar en su país de residencia. Su nombre de usuario y contraseñ
+    FINAL : Spotify puede recuperar su nombre de usuario o pedirle que lo cambie por cualquier motivo.
+  REGION 10 | 6 secciones
+    INICIO: Acceso al Servicio Spotify
+    FINAL : Acepta cumplir las Pautas del usuario de Spotify y las Reglas de la plataforma y no utilizar el Servicio Spotify, el contenido ni ninguna parte de este de ninguna manera que no est
+  REGION 11 | 15 secciones
+    INICIO: Suscripciones pagadas
+    FINAL : Además de cualquier otro derecho que podamos tener en virtud de estos Términos, nos reservamos el derecho de cancelar una suscripción pagada en cualquier momento, con no menos de 1
+  REGION 12 | 2 secciones
+    INICIO: Si se registra en una Prueba, acepta que el derecho de retiro de la Suscripción pagada por la cual recibe la Prueba finaliza catorce (14) días después de iniciar la Prueba. Si no c
+    FINAL : Si compra una Suscripción pagada sin Prueba, acepta que tiene catorce (14) días después de su compra para retirarse por cualquier motivo y que debe pagarnos por los servicios prest
+  REGION 13 | 1 secciones
+    INICIO: Hemos establecido pautas para el uso del Servicio Spotify, a fin de garantizar que el Servicio Spotify siga siendo agradable para todos (" Pautas del usuario de Spotify "). Al util
+    FINAL : Hemos establecido pautas para el uso del Servicio Spotify, a fin de garantizar que el Servicio Spotify siga siendo agradable para todos (" Pautas del usuario de Spotify "). Al util
+  REGION 14 | 3 secciones
+    INICIO: Si establece una cuenta de Spotify en nombre de una empresa, organización, entidad o marca (una " Marca " y dicha cuenta una " Cuenta de marca "), los términos " usted " y " su ", 
+    FINAL : Una Marca puede seguir a los usuarios y crear y compartir playlists, siempre que no tome ninguna medida que implique un respaldo o una relación comercial entre la Marca y el usuari
+  REGION 15 | 3 secciones
+    INICIO: Usted declara y garantiza que (1) no se encuentra en, no está constituido conforme a las leyes de, ni reside habitualmente en ningún país o territorio sujeto a Sanciones territoria
+    FINAL : Acepta cumplir con todas las Leyes de control comercial aplicables en el uso de los productos o servicios de Spotify. Específicamente, usted se compromete a no usar, directa o indi
+  REGION 16 | 7 secciones
+    INICIO: El contenido que publica en el servicio
+    FINAL : Spotify puede, pero no tiene la obligación de, supervisar o revisar el Contenido de usuario (ya sea publicado públicamente o compartido de manera privada). Spotify se reserva el de
+  REGION 17 | 6 secciones
+    INICIO: Contenido de usuario
+    FINAL : Usted también nos concede el derecho (1) de permitir que el Servicio Spotify utilice el procesador, el ancho de banda y el hardware de almacenamiento de su Dispositivo para facilit
+  REGION 18 | 2 secciones
+    INICIO: En Spotify, nuestro objetivo es crear experiencias únicas y grandiosas para cada usuario. Para Comprender las recomendaciones en Spotify , puede obtener más información acerca de c
+    FINAL : Es posible que algunos contenidos con licencia de Spotify, que se proporcionan a, que se crean o que se ponen a disposición por parte de Spotify (p. ej., podcasts) incorporen publi
+  REGION 19 | 1 secciones
+    INICIO: Spotify respeta los derechos de los propietarios de la propiedad intelectual. Si cree que cualquier contenido infringe sus derechos de autor, marca registrada u otros derechos de p
+    FINAL : Spotify respeta los derechos de los propietarios de la propiedad intelectual. Si cree que cualquier contenido infringe sus derechos de autor, marca registrada u otros derechos de p
+  REGION 20 | 1 secciones
+    INICIO: La Comunidad de soporte de Spotify ofrece un lugar para el debate y el intercambio de información, consejos y otros materiales relacionados con el Servicio Spotify. Al usar la Comu
+    FINAL : La Comunidad de soporte de Spotify ofrece un lugar para el debate y el intercambio de información, consejos y otros materiales relacionados con el Servicio Spotify. Al usar la Comu
+  REGION 21 | 2 secciones
+    INICIO: Para recibir asistencia con preguntas relacionadas con su cuenta o pagos (" Consultas de atención al cliente "), utilice los recursos de Atención al cliente que aparecen en la secc
+    FINAL : Si tiene preguntas sobre el Servicio Spotify o estos Términos (incluidos los términos y condiciones adicionales de Spotify incorporados en los mismos), comuníquese con el Servicio 
+  REGION 22 | 2 secciones
+    INICIO: Estos Términos continuarán aplicándose a usted hasta que usted o Spotify los finalicen. Spotify puede rescindir estos Términos (incluidos los términos y condiciones adicionales inc
+    FINAL : Las secciones 4 (Derechos de propiedad intelectual y contenido), 3 (El uso del Servicio Spotify), 2 (El Servicio Spotify que proporcionamos), 6 (Problemas y disputas), 7 (Acerca de
+  REGION 23 | 2 secciones
+    INICIO: Algunas jurisdicciones no permiten la exclusión de garantías implícitas o limitaciones de los derechos legales aplicables de un consumidor, por lo que es posible que la exclusión y
+    FINAL : Spotify proporcionará el Servicio Spotify mediante la atención y habilidad razonables y de acuerdo con cualquier especificación del Servicio Spotify proporcionada por Spotify; sin 
+  REGION 24 | 4 secciones
+    INICIO: Sujeto a la ley aplicable, acepta que su único y exclusivo recurso para cualquier problema o insatisfacción con el Servicio Spotify es desinstalar cualquier software de Spotify y d
+    FINAL : Salvo que dicha restricción esté prohibida por la ley aplicable, cualquier reclamación que surja en virtud de estos términos debe iniciarse (ya sea mediante la presentación de una 
+  REGION 25 | 2 secciones
+    INICIO: Usted reconoce y acepta que los propietarios del contenido y ciertos distribuidores (como proveedores de tiendas de aplicaciones) son beneficiarios previstos de estos Términos y ti
+    FINAL : Si ha descargado cualquiera de nuestras aplicaciones de software móvil (cada una, una " Aplicación ") del App Store de Apple Inc. (" Apple ") o si está utilizando la aplicación en 
+  REGION 26 | 1 secciones
+    INICIO: Acepta indemnizar y eximir de responsabilidad a Spotify de cualquier pérdida directa, daño y gastos razonables previsibles (incluidos los honorarios y costos razonables de abogados
+    FINAL : Acepta indemnizar y eximir de responsabilidad a Spotify de cualquier pérdida directa, daño y gastos razonables previsibles (incluidos los honorarios y costos razonables de abogados
+  REGION 27 | 2 secciones
+    INICIO: A menos que las leyes obligatorias de su país de residencia exijan lo contrario, los Acuerdos (y cualquier disputa/reclamación no contractual que surja de ellos o en relación con e
+    FINAL : Además, usted y Spotify acuerdan la jurisdicción de los tribunales que se enumeran a continuación para resolver cualquier disputa, reclamación o controversia que surja en relación 
+  REGION 28 | 1 secciones
+    INICIO: CUANDO LO PERMITA LA LEY APLICABLE, USTED Y SPOTIFY ACUERDAN QUE CADA UNO PUEDE PRESENTAR RECLAMACIONES CONTRA EL OTRO SOLO EN SU CAPACIDAD INDIVIDUAL Y NO COMO DEMANDANTE O MIEMBR
+    FINAL : CUANDO LO PERMITA LA LEY APLICABLE, USTED Y SPOTIFY ACUERDAN QUE CADA UNO PUEDE PRESENTAR RECLAMACIONES CONTRA EL OTRO SOLO EN SU CAPACIDAD INDIVIDUAL Y NO COMO DEMANDANTE O MIEMBR
+  REGION 29 | 1 secciones
+    INICIO: Si se encuentra, tiene sedes u oficinas o hace negocios en una jurisdicción en la que esta Sección 6.3. es aplicable, las siguientes disposiciones de arbitraje obligatorias se apli
+    FINAL : Si se encuentra, tiene sedes u oficinas o hace negocios en una jurisdicción en la que esta Sección 6.3. es aplicable, las siguientes disposiciones de arbitraje obligatorias se apli
+  REGION 30 | 1 secciones
+    INICIO: Usted y Spotify acuerdan que cualquier disputa, reclamación o controversia entre usted y Spotify que surja en conexión o que se relacione con estos Acuerdos o su relación con Spoti
+    FINAL : Usted y Spotify acuerdan que cualquier disputa, reclamación o controversia entre usted y Spotify que surja en conexión o que se relacione con estos Acuerdos o su relación con Spoti
+  REGION 31 | 1 secciones
+    INICIO: A pesar de la cláusula 6.3.1 anterior, usted y Spotify acuerdan que nada de lo aquí contenido se considerará como una renuncia, exclusión o limitación de cualquiera de nuestros der
+    FINAL : A pesar de la cláusula 6.3.1 anterior, usted y Spotify acuerdan que nada de lo aquí contenido se considerará como una renuncia, exclusión o limitación de cualquiera de nuestros der
+  REGION 32 | 2 secciones
+    INICIO: Usted o nosotros podemos iniciar procedimientos de arbitraje. Cualquier arbitraje entre usted y Spotify se resolverá finalmente de conformidad con las Reglas de arbitraje de la Cám
+    FINAL : Todo arbitraje se llevará a cabo en inglés y, a menos que la ley obligatoria de un estado miembro de la Unión Europea o cualquier otra jurisdicción exija lo contrario, la ley que s
+  REGION 33 | 1 secciones
+    INICIO: Cualquier arbitraje debe iniciarse mediante la presentación de una demanda de arbitraje en el plazo de UN (1) AÑO después de la fecha en que la parte que afirme la reclamación prim
+    FINAL : Cualquier arbitraje debe iniciarse mediante la presentación de una demanda de arbitraje en el plazo de UN (1) AÑO después de la fecha en que la parte que afirme la reclamación prim
+  REGION 34 | 1 secciones
+    INICIO: Una parte que pretende solicitar el arbitraje debe enviar primero un aviso por escrito de la disputa a la otra, por correo certificado o por Federal Express (se requiere firma) o, 
+    FINAL : Una parte que pretende solicitar el arbitraje debe enviar primero un aviso por escrito de la disputa a la otra, por correo certificado o por Federal Express (se requiere firma) o, 
+  REGION 35 | 1 secciones
+    INICIO: En el caso de que Spotify realice cualquier cambio futuro a esta disposición de arbitraje (que no sea un cambio en la dirección de Spotify para Aviso), puede rechazar dicho cambio 
+    FINAL : En el caso de que Spotify realice cualquier cambio futuro a esta disposición de arbitraje (que no sea un cambio en la dirección de Spotify para Aviso), puede rechazar dicho cambio 
+  REGION 36 | 1 secciones
+    INICIO: Si se determina que la renuncia a la demanda colectiva en la Sección 6.2 no es aplicable en el arbitraje o si alguna parte de esta Sección 6.3 no se considera válida o aplicable, e
+    FINAL : Si se determina que la renuncia a la demanda colectiva en la Sección 6.2 no es aplicable en el arbitraje o si alguna parte de esta Sección 6.3 no se considera válida o aplicable, e
+  REGION 37 | 1 secciones
+    INICIO: Según la ley aplicable, es posible que tenga ciertos derechos que no pueden limitarse por un contrato. Estos términos no pretenden restringir esos derechos de ninguna manera.
+    FINAL : Según la ley aplicable, es posible que tenga ciertos derechos que no pueden limitarse por un contrato. Estos términos no pretenden restringir esos derechos de ninguna manera.
+  REGION 38 | 1 secciones
+    INICIO: Podemos realizar cambios a estos Términos (incluidos los términos y condiciones adicionales de Spotify incorporados en el presente documento) periódicamente avisando dichos cambios
+    FINAL : Podemos realizar cambios a estos Términos (incluidos los términos y condiciones adicionales de Spotify incorporados en el presente documento) periódicamente avisando dichos cambios
+  REGION 39 | 1 secciones
+    INICIO: Además de lo establecido en esta sección o según lo acordado explícitamente por escrito entre usted y Spotify, estos Términos constituyen todos los términos y condiciones acordados
+    FINAL : Además de lo establecido en esta sección o según lo acordado explícitamente por escrito entre usted y Spotify, estos Términos constituyen todos los términos y condiciones acordados
+  REGION 40 | 2 secciones
+    INICIO: A menos que se indique lo contrario en estos Términos, si alguna disposición de estos Términos no se considera válida o aplicable por cualquier motivo o en cualquier medida, las di
+    FINAL : Cualquier incumplimiento por parte de Spotify o de cualquier beneficiario tercero de hacer cumplir estos Términos o cualquiera de sus disposiciones no constituirá una renuncia al d
+  REGION 41 | 1 secciones
+    INICIO: Spotify puede asignar cualquiera o todos estos Términos y puede asignar o delegar, en su totalidad o en parte, cualquiera de sus derechos u obligaciones en virtud de estos Términos
+    FINAL : Spotify puede asignar cualquiera o todos estos Términos y puede asignar o delegar, en su totalidad o en parte, cualquiera de sus derechos u obligaciones en virtud de estos Términos
+
+CHUNKS SEM?NTICOS
+  CHUNK 01 | 1 secciones | 32 chars
+    Última actualización: 26/08/2025
+  CHUNK 02 | 3 secciones | 1206 chars
+    Lea atentamente los Términos de uso (los " Términos ") ya que rigen el uso de (incluido el acceso a) los servicios personalizados de Spotify para escuchar música y otros contenidos, incluidos todos nuestros sitios web y 
+  CHUNK 03 | 1 secciones | 90 chars
+    Estos Términos son entre usted y Spotify AB, Regeringsgatan 19, 111 53, Estocolmo, Suecia.
+  CHUNK 04 | 1 secciones | 1225 chars
+    Para utilizar el Servicio Spotify y acceder a cualquier contenido, debe (1) tener 13 años (o la edad mínima equivalente en su país de origen) o más, (2) tener el consentimiento de sus padres o tutores si es menor de edad
+  CHUNK 05 | 1 secciones | 441 chars
+    Ofrecemos numerosas opciones de Servicio Spotify. Ciertas opciones de Servicio Spotify se ofrecen de sin costo, mientras que otras opciones deben pagarse antes de poder acceder a ellas (las " Suscripciones pagadas "). Ta
+  CHUNK 06 | 1 secciones | 334 chars
+    De vez en cuando, es posible que nosotros o terceros en nuestro nombre le ofrezcan pruebas de Suscripciones pagadas durante un período específico, sin costo o a una tarifa reducida (una " Prueba "). Mediante el uso de un
+  CHUNK 07 | 1 secciones | 594 chars
+    El Servicio Spotify puede integrarse con aplicaciones, sitios web y servicios de terceros (" Aplicaciones de terceros ") o interactuar de otro modo con ellos, así como con computadoras personales, teléfonos móviles, tabl
+  CHUNK 08 | 7 secciones | 2256 chars
+    Utilizamos una atención y habilidad razonables para mantener el Servicio Spotify operativo y brindarle una experiencia de audio personalizada y envolvente. Sin embargo, nuestras ofertas de servicios y su disponibilidad p
+  CHUNK 09 | 2 secciones | 630 chars
+    Es posible que necesite crear una cuenta de Spotify para usar todo o parte del Servicio Spotify, y esta cuenta debe estar en su país de residencia. Su nombre de usuario y contraseña son solo para uso personal y deben man
+  CHUNK 10 | 6 secciones | 1600 chars
+    Acceso al Servicio Spotify Sujeto a su cumplimiento de los presentes Términos (incluidos otros términos y condiciones aplicables), le otorgamos un permiso limitado, no exclusivo y revocable para hacer uso personal y no c
+  CHUNK 11 | 6 secciones | 988 chars
+    Suscripciones pagadas Puede comprar una suscripción pagada directamente desde Spotify o a través de un tercero, ya sea mediante: el pago de una tarifa de suscripción por adelantado mensualmente o en algún otro intervalo 
+  CHUNK 12 | 9 secciones | 3152 chars
+    Cambios de precio e impuestos Spotify puede modificar periódicamente el precio de las suscripciones pagadas, incluidas las tarifas de suscripción recurrentes, el período de prepago (para períodos aún no pagados) o los có
+  CHUNK 13 | 2 secciones | 1101 chars
+    Si se registra en una Prueba, acepta que el derecho de retiro de la Suscripción pagada por la cual recibe la Prueba finaliza catorce (14) días después de iniciar la Prueba. Si no cancela la Suscripción pagada antes de qu
+  CHUNK 14 | 1 secciones | 434 chars
+    Hemos establecido pautas para el uso del Servicio Spotify, a fin de garantizar que el Servicio Spotify siga siendo agradable para todos (" Pautas del usuario de Spotify "). Al utilizar el Servicio Spotify, debes cumplir 
+  CHUNK 15 | 3 secciones | 1312 chars
+    Si establece una cuenta de Spotify en nombre de una empresa, organización, entidad o marca (una " Marca " y dicha cuenta una " Cuenta de marca "), los términos " usted " y " su ", tal como se usan en estos Términos (incl
+  CHUNK 16 | 3 secciones | 2671 chars
+    Usted declara y garantiza que (1) no se encuentra en, no está constituido conforme a las leyes de, ni reside habitualmente en ningún país o territorio sujeto a Sanciones territoriales (en conjunto, " Países sancionados "
+  CHUNK 17 | 7 secciones | 2638 chars
+    El contenido que publica en el servicio Los usuarios de Spotify pueden publicar, cargar o de otro modo aportar contenido al Servicio Spotify (" Contenido de usuario "). Para evitar dudas, " Contenido del usuario " incluy
+  CHUNK 18 | 6 secciones | 2087 chars
+    Contenido de usuario Usted conserva la propiedad de su contenido de usuario cuando lo publica en el Servicio. Sin embargo, para que podamos poner su Contenido de usuario a disposición en el Servicio Spotify y brindarle c
+  CHUNK 19 | 2 secciones | 728 chars
+    En Spotify, nuestro objetivo es crear experiencias únicas y grandiosas para cada usuario. Para Comprender las recomendaciones en Spotify , puede obtener más información acerca de cómo funcionan nuestros sistemas de recom
+  CHUNK 20 | 1 secciones | 259 chars
+    Spotify respeta los derechos de los propietarios de la propiedad intelectual. Si cree que cualquier contenido infringe sus derechos de autor, marca registrada u otros derechos de propiedad intelectual, consulte la Políti
+  CHUNK 21 | 1 secciones | 246 chars
+    La Comunidad de soporte de Spotify ofrece un lugar para el debate y el intercambio de información, consejos y otros materiales relacionados con el Servicio Spotify. Al usar la Comunidad de soporte de Spotify, acepta los 
+  CHUNK 22 | 2 secciones | 501 chars
+    Para recibir asistencia con preguntas relacionadas con su cuenta o pagos (" Consultas de atención al cliente "), utilice los recursos de Atención al cliente que aparecen en la sección Acerca de nosotros de nuestro sitio 
+  CHUNK 23 | 2 secciones | 1535 chars
+    Estos Términos continuarán aplicándose a usted hasta que usted o Spotify los finalicen. Spotify puede rescindir estos Términos (incluidos los términos y condiciones adicionales incorporados en el presente documento) o su
+  CHUNK 24 | 2 secciones | 1979 chars
+    Algunas jurisdicciones no permiten la exclusión de garantías implícitas o limitaciones de los derechos legales aplicables de un consumidor, por lo que es posible que la exclusión y las limitaciones de esta sección no se 
+  CHUNK 25 | 4 secciones | 2659 chars
+    Sujeto a la ley aplicable, acepta que su único y exclusivo recurso para cualquier problema o insatisfacción con el Servicio Spotify es desinstalar cualquier software de Spotify y dejar de usar el Servicio Spotify. Usted 
+  CHUNK 26 | 2 secciones | 2478 chars
+    Usted reconoce y acepta que los propietarios del contenido y ciertos distribuidores (como proveedores de tiendas de aplicaciones) son beneficiarios previstos de estos Términos y tienen derecho a hacer cumplir estos Térmi
+  CHUNK 27 | 1 secciones | 640 chars
+    Acepta indemnizar y eximir de responsabilidad a Spotify de cualquier pérdida directa, daño y gastos razonables previsibles (incluidos los honorarios y costos razonables de abogados) sufridos o incurridos por Spotify que 
+  CHUNK 28 | 2 secciones | 856 chars
+    A menos que las leyes obligatorias de su país de residencia exijan lo contrario, los Acuerdos (y cualquier disputa/reclamación no contractual que surja de ellos o en relación con ellos) están sujetos a las leyes del esta
+  CHUNK 29 | 1 secciones | 464 chars
+    CUANDO LO PERMITA LA LEY APLICABLE, USTED Y SPOTIFY ACUERDAN QUE CADA UNO PUEDE PRESENTAR RECLAMACIONES CONTRA EL OTRO SOLO EN SU CAPACIDAD INDIVIDUAL Y NO COMO DEMANDANTE O MIEMBRO COLECTIVO EN NINGUNA MEDIDA DE DEMANDA
+  CHUNK 30 | 1 secciones | 192 chars
+    Si se encuentra, tiene sedes u oficinas o hace negocios en una jurisdicción en la que esta Sección 6.3. es aplicable, las siguientes disposiciones de arbitraje obligatorias se aplican a usted:
+  CHUNK 31 | 1 secciones | 1063 chars
+    Usted y Spotify acuerdan que cualquier disputa, reclamación o controversia entre usted y Spotify que surja en conexión o que se relacione con estos Acuerdos o su relación con Spotify como usuario del Servicio (ya sea que
+  CHUNK 32 | 1 secciones | 612 chars
+    A pesar de la cláusula 6.3.1 anterior, usted y Spotify acuerdan que nada de lo aquí contenido se considerará como una renuncia, exclusión o limitación de cualquiera de nuestros derechos, en cualquier momento, de (1) pres
+  CHUNK 33 | 2 secciones | 806 chars
+    Usted o nosotros podemos iniciar procedimientos de arbitraje. Cualquier arbitraje entre usted y Spotify se resolverá finalmente de conformidad con las Reglas de arbitraje de la Cámara de Comercio Internacional (la "ICC")
+  CHUNK 34 | 1 secciones | 598 chars
+    Cualquier arbitraje debe iniciarse mediante la presentación de una demanda de arbitraje en el plazo de UN (1) AÑO después de la fecha en que la parte que afirme la reclamación primero sepa o razonablemente debería saber 
+  CHUNK 35 | 1 secciones | 2140 chars
+    Una parte que pretende solicitar el arbitraje debe enviar primero un aviso por escrito de la disputa a la otra, por correo certificado o por Federal Express (se requiere firma) o, en caso de que no tengamos registrada su
+  CHUNK 36 | 1 secciones | 487 chars
+    En el caso de que Spotify realice cualquier cambio futuro a esta disposición de arbitraje (que no sea un cambio en la dirección de Spotify para Aviso), puede rechazar dicho cambio enviándonos un aviso por escrito en el p
+  CHUNK 37 | 1 secciones | 498 chars
+    Si se determina que la renuncia a la demanda colectiva en la Sección 6.2 no es aplicable en el arbitraje o si alguna parte de esta Sección 6.3 no se considera válida o aplicable, entonces la totalidad de esta Sección 6.3
+  CHUNK 38 | 1 secciones | 174 chars
+    Según la ley aplicable, es posible que tenga ciertos derechos que no pueden limitarse por un contrato. Estos términos no pretenden restringir esos derechos de ninguna manera.
+  CHUNK 39 | 1 secciones | 1125 chars
+    Podemos realizar cambios a estos Términos (incluidos los términos y condiciones adicionales de Spotify incorporados en el presente documento) periódicamente avisando dichos cambios por cualquier medio razonable (antes de
+  CHUNK 40 | 1 secciones | 963 chars
+    Además de lo establecido en esta sección o según lo acordado explícitamente por escrito entre usted y Spotify, estos Términos constituyen todos los términos y condiciones acordados entre usted y Spotify y sustituyen cual
+  CHUNK 41 | 2 secciones | 605 chars
+    A menos que se indique lo contrario en estos Términos, si alguna disposición de estos Términos no se considera válida o aplicable por cualquier motivo o en cualquier medida, las disposiciones restantes de estos Términos 
+  CHUNK 42 | 1 secciones | 314 chars
+    Spotify puede asignar cualquiera o todos estos Términos y puede asignar o delegar, en su totalidad o en parte, cualquiera de sus derechos u obligaciones en virtud de estos Términos. No puede ceder estos Términos, en su t
+
+
+==========================================================================================
+AMAZON_PRIME_VIDEO
+==========================================================================================
+URL: https://www.primevideo.com/help?nodeId=G202095490
+
+SCRAPER STATIC
+  TITLE: Prime Video: Amazon Prime Video Terms of Use - Global
+  METHOD: beautiful_soup
+  SECTIONS: 58
+  AREAS: {'body': 1, 'navigation': 16, 'content': 37, 'footer': 4}
+  FULL_TEXT: 25954
+  USABLE: 25880
+  SUFFICIENT: True
+
+SCRAPER DYNAMIC
+  TITLE: Prime Video: Amazon Prime Video Terms of Use - Global
+  METHOD: playwright
+  SECTIONS: 56
+  AREAS: {'body': 1, 'navigation': 14, 'content': 37, 'footer': 4}
+  FULL_TEXT: 25954
+  USABLE: 25880
+  SUFFICIENT: True
+
+EXTRACCI?N SELECCIONADA
+  METHOD: static
+  USABLE: 25880
+  SUFFICIENT: True
+
+PREPROCESADOR
+  ORIGINALES: 58
+  LIMPIAS: 38
+  ELIMINADAS: 20
+  PROTECTED: 0
+  BOUNDARIES: 7
+  REGIONS: 8
+  CHUNKS: 16
+
+ANCLAS EN MAY?SCULAS NO RECONOCIDAS
+  Ninguna.
+
+REGIONES ESTRUCTURALES
+  REGION 01 | 1 secciones
+    INICIO: sp:end-feature:start-body sp:feature:nav-inline-js sp:end-feature:nav-inline-js sp:feature:nav-skeleton sp:end-feature:nav-skeleton sp:feature:navbar sp:end-feature:navbar sp:featu
+    FINAL : sp:end-feature:start-body sp:feature:nav-inline-js sp:end-feature:nav-inline-js sp:feature:nav-skeleton sp:end-feature:nav-skeleton sp:feature:navbar sp:end-feature:navbar sp:featu
+  REGION 02 | 2 secciones
+    INICIO: Last Updated: August 26, 2026
+    FINAL : Welcome to the terms of use for Amazon Prime Video. These terms are between you and the entity providing the Amazon Prime Video service to you, which may be, depending on your loca
+  REGION 03 | 1 secciones
+    INICIO: Amazon Prime Video (the "Service") is a personalized service that offers, recommends and helps you discover digital movies, television shows and other video content (collectively, 
+    FINAL : Amazon Prime Video (the "Service") is a personalized service that offers, recommends and helps you discover digital movies, television shows and other video content (collectively, 
+  REGION 04 | 1 secciones
+    INICIO: In order to stream or download Digital Content, you will need to use a personal computer, portable media player, or other device that meets the system and compatibility requirement
+    FINAL : In order to stream or download Digital Content, you will need to use a personal computer, portable media player, or other device that meets the system and compatibility requirement
+  REGION 05 | 1 secciones
+    INICIO: Due to technical and other restrictions imposed by content providers, the Service is available only in certain locations. The Digital Content (including subtitled and dubbed audio 
+    FINAL : Due to technical and other restrictions imposed by content providers, the Service is available only in certain locations. The Digital Content (including subtitled and dubbed audio 
+  REGION 06 | 18 secciones
+    INICIO: a. General. The Service may allow you to: (i) access Digital Content on a subscription basis for viewing during a limited period of time during a subscription period (for example, 
+    FINAL : k. General Restrictions. You may not (i) transfer, copy or display the Digital Content, except as permitted in this Agreement; (ii) sell, rent, lease, distribute, or broadcast any 
+  REGION 07 | 2 secciones
+    INICIO: a. Use of the Software. We may make available software for your use in connection with the Service ("Software"). Terms contained in the Conditions of Use of your Video Marketplace 
+    FINAL : b. Information Provided to Amazon and Video Content Providers. The Service and Software may provide Amazon with information relating to your use and the performance of the Service 
+  REGION 08 | 12 secciones
+    INICIO: a. Termination. We may terminate your access to the Service, including any subscription available as part of the Service, at our discretion without notice (except as may be require
+    FINAL : k. Your legal rights. We have a legal duty to supply the Service and Digital Content in conformity with this Agreement. If there is a problem with the Service or any Digital Conten
+
+CHUNKS SEM?NTICOS
+  CHUNK 01 | 1 secciones | 682 chars
+    sp:end-feature:start-body sp:feature:nav-inline-js sp:end-feature:nav-inline-js sp:feature:nav-skeleton sp:end-feature:nav-skeleton sp:feature:navbar sp:end-feature:navbar sp:feature:configured-sitewide-before-host-atf-a
+  CHUNK 02 | 2 secciones | 1561 chars
+    Last Updated: August 26, 2026 Welcome to the terms of use for Amazon Prime Video. These terms are between you and the entity providing the Amazon Prime Video service to you, which may be, depending on your location, Amaz
+  CHUNK 03 | 1 secciones | 940 chars
+    Amazon Prime Video (the "Service") is a personalized service that offers, recommends and helps you discover digital movies, television shows and other video content (collectively, "Digital Content") and other services as
+  CHUNK 04 | 1 secciones | 1048 chars
+    In order to stream or download Digital Content, you will need to use a personal computer, portable media player, or other device that meets the system and compatibility requirements that we establish from time to time (a
+  CHUNK 05 | 1 secciones | 432 chars
+    Due to technical and other restrictions imposed by content providers, the Service is available only in certain locations. The Digital Content (including subtitled and dubbed audio versions of Digital Content) and how we 
+  CHUNK 06 | 2 secciones | 1459 chars
+    a. General. The Service may allow you to: (i) access Digital Content on a subscription basis for viewing during a limited period of time during a subscription period (for example, through Amazon Prime or other subscripti
+  CHUNK 07 | 2 secciones | 1614 chars
+    c. Subscriptions/Memberships. Offers and pricing for subscriptions (also referred to at times as memberships), the subscription services, the extent of available Subscription Digital Content, and the specific titles avai
+  CHUNK 08 | 1 secciones | 2227 chars
+    If you live in Germany or Austria (or German or Austrian law applies for other reasons) sentence 1 in this Section 4(c) does not apply and the remainder of this section 4(c) applies instead. We may increase and we will d
+  CHUNK 09 | 2 secciones | 3026 chars
+    d. Cancellation of Subscriptions/Memberships. If you signed-up for your video-only subscription or membership directly through us, you may cancel any time by visiting Your Account and adjusting your membership settings, 
+  CHUNK 10 | 7 secciones | 2167 chars
+    f. Payment Methods. If you sign up for your video-only subscription or membership through us and are billed by us, then the billing terms described below will apply to your subscription or membership. If we are unable to
+  CHUNK 11 | 4 secciones | 2358 chars
+    h. Limited License to Digital Content. Subject to payment of any charges to rent, purchase, or access Digital Content, and your compliance with all terms of this Agreement, Amazon grants you a non-exclusive, non-transfer
+  CHUNK 12 | 2 secciones | 1439 chars
+    a. Use of the Software. We may make available software for your use in connection with the Service ("Software"). Terms contained in the Conditions of Use of your Video Marketplace (noted here ) apply to your use of Softw
+  CHUNK 13 | 2 secciones | 1095 chars
+    a. Termination. We may terminate your access to the Service, including any subscription available as part of the Service, at our discretion without notice (except as may be required by applicable law). If we do so, we wi
+  CHUNK 14 | 3 secciones | 2790 chars
+    c. Communications. We may send you promotions or otherwise communicate with you electronically, which may include e-mail, push notification, or posts to your Amazon Message Center, and you hereby consent to receive those
+  CHUNK 15 | 5 secciones | 2528 chars
+    f. Reservation of Rights; Waiver. The Service, Software and the Digital Content embody intellectual property that is protected by law. Copyright owners of Digital Content are intended third-party beneficiaries under the 
+  CHUNK 16 | 2 secciones | 558 chars
+    j. Severability. If any term or condition of this Agreement is deemed invalid, void, or for any reason unenforceable, that part will be deemed severable and will not affect the validity and enforceability of any remainin
+

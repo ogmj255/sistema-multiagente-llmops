@@ -54,7 +54,7 @@ def create_assessment() -> ClauseAssessment:
 
     return ClauseAssessment(
         category="unilateral_modification",
-        classification="abusive",
+        classification="high_risk_abusiveness",
         analysis_status="classified",
         relevant_fragment=(
             "El proveedor podrá modificar unilateralmente el precio del servicio."
@@ -84,7 +84,6 @@ async def test_analyze_legal_clause_tool(
         assert str(request.source_url) == ("https://example.com/terms")
         assert request.platform == "Example SaaS"
         assert request.language == "es"
-        assert request.jurisdiction == "ecuador"
         assert request.clause == clause
         assert received_context == legal_context
 
@@ -103,7 +102,6 @@ async def test_analyze_legal_clause_tool(
         source_url="https://example.com/terms",
         platform="Example SaaS",
         language="es",
-        jurisdiction="ecuador",
         clause=clause,
         legal_context=legal_context,
     )
@@ -111,7 +109,7 @@ async def test_analyze_legal_clause_tool(
     assert result["status"] == "success"
     assert result["error"] is None
     assert result["result"] is not None
-    assert result["result"]["classification"] == "abusive"
+    assert result["result"]["classification"] == "high_risk_abusiveness"
     assert result["result"]["risk_level"] == "high"
     assert len(result["result"]["legal_basis"]) == 1
 

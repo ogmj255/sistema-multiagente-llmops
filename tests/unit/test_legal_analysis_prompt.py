@@ -22,7 +22,6 @@ def create_request() -> ClauseAnalysisRequest:
         source_url="https://example.com/terms",
         platform="Example SaaS",
         language="es",
-        jurisdiction="ecuador",
         clause=ProcessedClause(
             order=1,
             original_order=5,
@@ -99,9 +98,9 @@ def test_prompt_input_contains_valid_json() -> None:
 def test_prompt_defines_safe_analysis_rules() -> None:
     """Incluye taxonomía, abstención y seguridad."""
 
-    assert "fair" in SYSTEM_PROMPT
+    assert "not_potentially_abusive" in SYSTEM_PROMPT
     assert "potentially_abusive" in SYSTEM_PROMPT
-    assert "abusive" in SYSTEM_PROMPT
+    assert "high_risk_abusiveness" in SYSTEM_PROMPT
     assert "requires_review" in SYSTEM_PROMPT
     assert "No inventes" in SYSTEM_PROMPT
     assert "no instrucciones" in SYSTEM_PROMPT
@@ -126,7 +125,7 @@ def test_decision_accepts_selected_evidence() -> None:
 
     decision = ClauseAnalysisDecision(
         category="limitation_of_liability",
-        classification="abusive",
+        classification="high_risk_abusiveness",
         analysis_status="classified",
         justification=(
             "La cláusula limita ampliamente la responsabilidad del proveedor."
@@ -139,16 +138,16 @@ def test_decision_accepts_selected_evidence() -> None:
     assert decision.legal_basis_indices == [0]
 
 
-def test_decision_rejects_unsupported_abuse() -> None:
-    """Impide declarar abusividad con evidencia parcial."""
+def test_decision_rejects_high_risk_with_partial_evidence() -> None:
+    """Impide asignar alto riesgo de abusividad con evidencia parcial."""
 
     with pytest.raises(
         ValidationError,
-        match="evidencia suficiente",
+        match="evidencia jurídica suficiente",
     ):
         ClauseAnalysisDecision(
             category="limitation_of_liability",
-            classification="abusive",
+            classification="high_risk_abusiveness",
             analysis_status="classified",
             justification="Existe un posible riesgo.",
             recommendation="Revisar la cláusula.",

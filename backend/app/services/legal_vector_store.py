@@ -82,6 +82,18 @@ def build_chunk_metadata(
 
     return metadata
 
+def build_embedding_text(
+    chunk: LegalChunk,
+) -> str:
+    """Construye el texto semántico de un segmento jurídico."""
+
+    return "\n".join(
+        [
+            f"Título: {chunk.title}",
+            f"Temas: {chunk.topics}",
+            f"Contenido: {chunk.content}",
+        ]
+    )
 
 def index_legal_chunks(
     chunks: Sequence[LegalChunk],
@@ -146,7 +158,7 @@ def index_legal_chunks(
         try:
             vectors = generate_embeddings(
                 [
-                    chunk.content
+                    build_embedding_text(chunk)
                     for chunk in batch
                 ]
             )
@@ -209,40 +221,6 @@ def index_legal_chunks(
         chunks=indexed_chunks,
         errors=errors,
     )
-def build_query_filter(
-    request: KnowledgeQuery,
-) -> dict[str, object] | None:
-    """Construye filtros opcionales para ChromaDB."""
-
-    filters: list[dict[str, object]] = []
-
-    if request.jurisdiction is not None:
-        filters.append(
-            {
-                "jurisdiction": (
-                    request.jurisdiction
-                )
-            }
-        )
-
-    if request.document_type is not None:
-        filters.append(
-            {
-                "document_type": (
-                    request.document_type
-                )
-            }
-        )
-
-    if not filters:
-        return None
-
-    if len(filters) == 1:
-        return filters[0]
-
-    return {"$and": filters}
-
-
 def search_legal_chunks(
     query_embedding: list[float],
     request: KnowledgeQuery,
@@ -272,13 +250,12 @@ def search_legal_chunks(
 
     candidate_count = min(
         collection_size,
-        request.top_k * 2,
+        request.top_k * 4,
     )
 
     result = active_collection.query(
         query_embeddings=[query_embedding],
         n_results=candidate_count,
-        where=build_query_filter(request),
         include=[
             "documents",
             "metadatas",
@@ -302,7 +279,7 @@ def search_legal_chunks(
             "ChromaDB devolvió una respuesta incompleta."
         )
 
-    matches: list[LegalKnowledgeMatch] = []
+    candidates: list[LegalKnowledgeMatch] = []
     seen_contents: set[tuple[str, str]] = set()
 
     for (
@@ -338,6 +315,7 @@ def search_legal_chunks(
         match = LegalKnowledgeMatch.model_validate(
             payload
         )
+
         content_key = (
             match.document_id,
             match.content,
@@ -347,9 +325,6 @@ def search_legal_chunks(
             continue
 
         seen_contents.add(content_key)
-        matches.append(match)
+        candidates.append(match)
 
-        if len(matches) == request.top_k:
-            break
-
-    return matches
+    return candidates[: request.top_k]

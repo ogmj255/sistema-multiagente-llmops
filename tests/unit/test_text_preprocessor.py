@@ -222,20 +222,20 @@ def test_preserve_same_content_under_different_headings() -> None:
 
 
 def test_build_cleaned_document_text_preserves_block_order() -> None:
-    """Construye el documento sin decidir l?mites de cl?usulas."""
+    """Construye el documento sin decidir límites de cláusulas."""
 
     sections = [
         ContractSection(
             order=1,
             heading="Terms",
-            content="El usuario deber? tener",
+            content="El usuario deberá tener",
             html_tag="p",
             source_area="content",
         ),
         ContractSection(
             order=2,
             heading="Terms",
-            content="18 a?os y ser capaz de contratar.",
+            content="18 años y ser capaz de contratar.",
             html_tag="p",
             source_area="content",
         ),
@@ -251,8 +251,8 @@ def test_build_cleaned_document_text_preserves_block_order() -> None:
     text = build_cleaned_document_text(sections)
 
     assert text == (
-        "El usuario deber? tener\n\n"
-        "18 a?os y ser capaz de contratar.\n\n"
+        "El usuario deberá tener\n\n"
+        "18 años y ser capaz de contratar.\n\n"
         "PLAN PREMIUM | USD 20"
     )
 
@@ -265,11 +265,11 @@ def test_build_cleaned_document_text_does_not_inject_heading_metadata() -> None:
             order=1,
             heading="Condiciones generales",
             heading_level=1,
-            content="El usuario deber? cumplir las condiciones.",
+            content="El usuario deberá cumplir las condiciones.",
             source_area="content",
         )
     ]
 
     text = build_cleaned_document_text(sections)
 
-    assert text == "El usuario deber? cumplir las condiciones."
+    assert text == "El usuario deberá cumplir las condiciones."

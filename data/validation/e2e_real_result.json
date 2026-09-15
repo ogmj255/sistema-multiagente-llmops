@@ -1,0 +1,511 @@
+{
+  "execution_id": "4eb6f254-af68-463b-84e3-d0cd4916fb06",
+  "status": "success",
+  "source_url": "https://www.disneyplus.com/es-ec/legal/terminos-de-uso-de-disney",
+  "platform": "disney",
+  "jurisdiction": "ecuador",
+  "total_clauses": 23,
+  "analyzed_clauses": 23,
+  "successful_clauses": 23,
+  "failed_clauses": 0,
+  "results": [
+    {
+      "clause_order": 1,
+      "status": "success",
+      "result": {
+        "category": "dispute_resolution",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "Términos de Uso\n\nActualizado por última vez el 10 de julio de 2014\n\nDisney Interactive se complace en proporcionarle sus páginas web, software, aplicaciones, contenido, productos y servicios (“Servicios Disney”), pertenecientes a las marcas Disney, ABC, ESPN, Marvel, Lucasfilm, Club Penguin, Playdom u otra marca propiedad de, o bajo licencia de, The Walt Disney Company. Estos términos rigen el uso que usted hace de, y nuestra prestación de, los Servicios Disney en el sitio en el cual estos términos son publicados, así como los Servicios Disney que ponemos a disposición en páginas web y plataformas de terceros en los casos en que dichos términos le sean revelados. POR FAVOR LEA ATENTAMENTE ESTOS TÉRMINOS ANTES DE USAR LOS SERVICIOS DISNEY.\n\nCUALQUIER CONTROVERSIA ENTRE USTED Y NOSOTROS SERÁ RESUELTA MEDIANTE ARBITRAJE DE CARÁCTER INDIVIDUAL Y CUYO LAUDO SERÁ VINCULANTE. POR FAVOR, LEA LA CLÁUSULA DE ARBITRAJE CONTENIDA EN ESTOS TÉRMINOS PUESTO QUE AFECTA SUS DERECHOS CONFORME A ESTE CONTRATO.\n\nNINGUNA DISPOSICIÓN INCLUIDA EN ESTOS TÉRMINOS PRETENDE AFECTAR SUS DERECHOS CONFORME A LA LEY DE SU LUGAR DE RESIDENCIA HABITUAL. SI EXISTIERA CONFLICTO ENTRE TALES DERECHOS Y LAS PRESENTES CONDICIONES, SUS DERECHOS PREVALECERÁN DE CONFORMIDAD CON LA LEGISLACIÓN LOCAL QUE SEA APLICABLE.",
+        "justification": "La cláusula impone arbitraje individual vinculante y una cláusula de prevalencia de derechos locales. La evidencia disponible no regula específicamente el arbitraje en servicios digitales de consumo. La normativa de telecomunicaciones de Ecuador no corresponde a la materia, la DSA no es aplicable por jurisdicción y tipo de servicio, y el Reglamento 2019/1150 se limita a usuarios empresariales. Falta evidencia directa para valorar el equilibrio.",
+        "recommendation": "Obtener normativa ecuatoriana de protección al consumidor aplicable a servicios digitales y arbitraje, o cláusulas modelo, para determinar si la imposición de arbitraje individual es abusiva.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 2,
+      "status": "success",
+      "result": {
+        "category": "unilateral_modification",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "1. Contrato entre Usted y Nosotros\n\nEl presente constituye un contrato entre usted y Disney Interactive, una sociedad de California con domicilio en 500 South Buena Vista Street, Burbank, California 91521, EE. UU., o entre usted y el prestador de servicios que se identifique para la prestación de un Servicio Disney en particular, si fuera diferente a nosotros. Usted debe leer y aceptar estos términos antes de usar los Servicios Disney. Si usted no los acepta, no podrá usar los Servicios Disney. Las presentes condiciones establecen los términos limitados en los cuales los Servicios Disney se encuentran disponibles y reemplazan los contratos o acuerdos anteriores.\n\nLos términos y condiciones complementarios podrán ser de aplicación a algunos Servicios Disney, tales como reglas para un concurso, un servicio u otra actividad específicos, o condiciones que puedan acompañar determinado contenido o software accesible a través de los Servicios Disney. Los términos y condiciones complementarios le serán revelados en relación con el concurso, el servicio o la actividad pertinente. Cualesquiera términos y condiciones complementarios se adicionan a los presentes términos, y en caso de conflicto, prevalecerán sobre estos términos.\n\nNosotros podemos modificar los presentes términos. Cualquier modificación iniciará su vigencia a los treinta (30) días posteriores a la fecha de la notificación que le hayamos enviado o la fecha de la publicación que hayamos realizado respecto de la modificación de los Servicios Disney. Si usted no acepta cualquier modificación a estas condiciones, usted deberá interrumpir el uso de los Servicios Disney. Nuestros representantes de atención al cliente no están autorizados para modificar ninguna disposición aquí contenida, ya sea en forma oral o por escrito.\n\nPodemos terminar de forma inmediata el presente contrato con usted (incluido su acceso a los Servicios Disney) si usted incumple alguna disposición contenida en éstos términos.",
+        "justification": "La cláusula regula modificación unilateral con preaviso de 30 días y terminación inmediata por incumplimiento. Las evidencias recuperadas provienen de normativa europea (DSA y P2B) que no resulta directamente aplicable a un contrato de consumo en Ecuador; además, los fragmentos son considerandos o definiciones sin carácter obligatorio directo. No hay evidencia aplicable suficiente para valorar el equilibrio de la cláusula.",
+        "recommendation": "Revisar la cláusula conforme a la normativa ecuatoriana de protección al consumidor y precisar los supuestos y plazos de modificación y terminación.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 3,
+      "status": "success",
+      "result": {
+        "category": "other_contractual_risk",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "2. Los Servicios Disney\n\nLos Servicios Disney son para su uso personal y no comercial y están destinados exclusivamente para fines informativos y de entretenimiento. No constituyen asesoramiento ni diagnóstico legal, financiero, profesional, médico o de salud y no pueden utilizarse para tales efectos. A fin de respaldar el buen funcionamiento de los Servicios Disney a través de amplias zonas geográficas, algunos aspectos de ciertas actividades, como los juegos, pueden ser simulados con el objeto de evitar demoras.\n\nLos Servicios Disney son de nuestra propiedad autoral o son propiedad autoral de nuestros licenciantes o de nuestros licenciatarios y todas las marcas registradas, las marcas de servicio, los nombres comerciales, el diseño comercial u otros derechos de propiedad intelectual de los Servicios Disney son de nuestra propiedad o propiedad de nuestros licenciantes o nuestros licenciatarios. Salvo que exista nuestro consentimiento por escrito, ningún elemento de los Servicios Disney podrá utilizarse o explotarse de ninguna otra manera que no sea como parte de los Servicios Disney que se ofrecen a usted. Usted puede ser propietario de los medios físicos a través de los cuales los elementos de los Servicios Disney le son entregados, pero nosotros conservamos la titularidad plena y absoluta de los Servicios Disney. No le transferimos a usted la titularidad de ninguna porción de los Servicios Disney.",
+        "justification": "La cláusula regula el uso personal y no comercial, la finalidad informativa y de entretenimiento, y la titularidad de la propiedad intelectual de Disney. La evidencia recuperada no aborda estas materias: la Directiva 2019/770 trata restricciones de funcionalidad y conformidad; el Reglamento ecuatoriano de telecomunicaciones se refiere a derechos de usuarios de telecomunicaciones; el DSA regula obligaciones de intermediarios. No existe disposición aplicable que sustente un desequilibrio o contradicción. Falta evidencia específica sobre propiedad intelectual o protección del consumidor en servicios de streaming en Ecuador.",
+        "recommendation": "Revisar normativa ecuatoriana de protección al consumidor y propiedad intelectual aplicable a servicios digitales de streaming antes de determinar el carácter de la cláusula.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 4,
+      "status": "success",
+      "result": {
+        "category": "limitation_of_liability",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "Contenidos y licencia de software\n\nSi un Servicio Disney está configurado para habilitar el uso de software, el contenido, los bienes o artículos virtuales u otros materiales de nuestra propiedad o bajo nuestra licencia, le concedemos una licencia limitada, no exclusiva, no sublicenciable y no transferible para acceder y usar dicho software, contenido, artículo virtual u otro material únicamente para su uso personal y no comercial.\n\nUsted no deberá eludir o desactivar ninguno de los sistemas o dispositivos electrónicos de protección de contenido o tecnología de gestión de derechos digitales utilizados en los Servicios Disney; usted no deberá descompilar, utilizar técnicas para revertir la ingeniería, desensamblar o de otro modo reducir cualquier Servicio Disney a una forma legible para el ser humano; usted no deberá eliminar avisos de identificación, avisos de derechos de autor u otras notificaciones relacionadas con la propiedad; usted no podrá acceder o usar cualquier Servicio Disney de una manera no legítima o no autorizada o de una manera que sugiera una asociación con nuestros productos, servicios o marcas. Usted no deberá acceder o usar ningún Servicio Disney en contravención de las normas y requisitos en materia de control de exportaciones y sanciones económicas establecidos por los Estados Unidos de América. Al adquirir servicios, contenido o software a través de los Servicios Disney, usted declara y garantiza que cumplirá con tales medidas y requisitos.\n\nManifestaciones y limitación de responsabilidad\n\nLOS SERVICIOS DISNEY SE PROPORCIONAN “COMO ESTÁN” Y “SEGÚN ESTÉN DISPONIBLES”. NO ASUMIMOS RESPONSABILIDAD RESPECTO A CUALQUIER CONDICIÓN, DECLARACIÓN O GARANTÍA QUE NO SE ENCUENTRE EXPRESAMENTE ESTABLECIDA EN ESTOS TÉRMINOS.\n\nNO SEREMOS RESPONSABLES POR DAÑOS INDIRECTOS, INCIDENTALES, ESPECIALES O CONSECUENCIALES, INCLUIDO EL LUCRO CESANTE Y LOS DAÑOS A LA PROPIEDAD, INCLUSO SI FUÉSEMOS NOTIFICADOS DE LA POSIBILIDAD DE LA OCURRENCIA DE DICHOS DAÑOS, NI POR LA DEMORA O EL INCUMPLIMIENTO EN LA EJECUCIÓN, CUANDO DICHA DEMORA O INCUMPLIMIENTO RESULTE POR CAUSAS QUE SE ENCUENTREN RAZONABLEMENTE FUERA DE NUESTRO CONTROL. EN NINGÚN CASO NUESTRA RESPONSABILIDAD TOTAL ANTE USTED POR MOTIVO DE LA TOTALIDAD DE LOS DAÑOS, LAS PÉRDIDAS O LOS HECHOS INVOCADOS EN UNA ACCIÓN LEGAL O EXTRAJUDICIAL EXCEDERÁ LA CANTIDAD DE MIL DÓLARES ESTADOUNIDENSES (US$1,000.00).\n\nESTAS MANIFESTACIONES Y LIMITACIONES DE RESPONSABILIDAD NO AFECTAN SUS DERECHOS COMO CONSUMIDOR NI TIENEN POR OBJETO LIMITAR LA RESPONSABILIDAD QUE NO PUEDA EXCLUIRSE CONFORME A LA LEY DE SU LUGAR DE RESIDENCIA HABITUAL.",
+        "justification": "La cláusula combina restricciones de uso y licencia con una limitación de responsabilidad y un tope de US$1,000. La evidencia disponible proviene de la Directiva (UE) 2019/770, cuyo ámbito territorial es la Unión Europea y no se ha demostrado su aplicación a una relación contractual sujeta a Ecuador. Sin una norma ecuatoriana aplicable que regule estas materias, no es posible determinar si la cláusula es justa, potencialmente abusiva o abusiva. Falta evidencia sobre derechos del consumidor y responsabilidad en Ecuador.",
+        "recommendation": "Obtener evidencia normativa ecuatoriana aplicable sobre protección al consumidor, responsabilidad civil y restricciones de uso o licencia de contenidos digitales para evaluar la cláusula.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 5,
+      "status": "success",
+      "result": {
+        "category": "unilateral_modification",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "Modificaciones de los Servicios Disney\n\nLos Servicios Disney evolucionan constantemente y serán modificados a lo largo del tiempo. Si realizamos un cambio substancial a los Servicios Disney, le notificaremos dicho cambio con suficiente antelación y usted tendrá derecho a dar por terminado el presente contrato.\n\nRestricciones adicionales sobre el uso de los Servicios Disney\n\nNo permitimos el uso de los Servicios Disney para fines comerciales o de negocios, o para promocionar u ofrecer la venta de productos o servicios (tanto con ánimo de lucro o no), o para captación de terceros (incluidas las solicitudes para contribuciones o donaciones). Usted se obliga a no introducir de manera voluntaria o a causa de imprudencia un virus u otro componente perjudicial, a no falsificar, perjudicar o dañar de alguna manera cualquier Servicio Disney o red relacionada, y a no interferir con el uso o goce que de cualquier Servicio Disney haga algún tercero. Usted acuerda no usar ningún software o dispositivo que permita el juego automatizado, el juego acelerado u otra manipulación del juego o del cliente-servidor del juego, y se compromete a no engañar o de otro modo modificar un Servicio Disney o experiencia de juego con el fin de crear una ventaja para un usuario respecto a otro. Además, usted se compromete a no acceder ni vigilar o copiar o permitir que otra persona o entidad acceda, vigile o copie ningún elemento de los Servicios Disney mediante un robot, una araña web, web scraping u otro medio automatizado o proceso manual sin nuestra autorización expresa por escrito.\n\nServicios y contenido de terceros\n\nLos Servicios Disney pueden integrar, o estar integrados en, o ser provistos en conexión con servicios y contenidos de terceros. No tenemos control sobre dichos servicios y contenidos de terceros. Usted debe leer los términos de uso y los avisos de privacidad que aplican a dichos servicios y contenidos de terceros.\n\nSi usted accede a un Servicio Disney mediante un dispositivo con sistema Apple iOs, Android o Microsoft Windows o Microsoft Xbox One, Apple Inc., Google, Inc. o Microsoft Corporation, respectivamente, serán un tercero beneficiario de este contrato. Sin embargo, tales terceros beneficiarios no son parte del presente contrato y no son responsables de la prestación o asistencia de los Servicios Disney. Usted acepta que su acceso a los Servicios Disney mediante estos dispositivos también estará sujeto a las condiciones de uso establecidas en los términos de servicio aplicables del tercero beneficiario correspondiente.\n\nRedes de telefonía celular\n\nCuando usted accede a los Servicios Disney a través de una red de telefonía celular, se aplicarán los cargos y tarifas de mensajería, datos y otro tipo de su proveedor de red o roaming. La descarga, la instalación o el uso de ciertos Servicios Disney pueden estar prohibidos o restringidos por su proveedor de red y es posible que no todos los Servicios Disney funcionen con su proveedor de red o dispositivo.",
+        "justification": "La cláusula regula modificaciones unilaterales del servicio y restricciones de uso, pero la evidencia recuperada corresponde a normas de la Unión Europea (Directiva 2019/770 y Reglamento 2022/2065), cuyo ámbito territorial no cubre la relación de consumo en Ecuador. Al no existir evidencia aplicable a la jurisdicción del contrato, no es posible determinar si la cláusula es justa o abusiva.",
+        "recommendation": "Obtener evidencia normativa ecuatoriana aplicable a servicios digitales y protección de consumidores para evaluar la validez de la modificación unilateral y las restricciones de uso.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 6,
+      "status": "success",
+      "result": {
+        "category": "user_content_and_intellectual_property",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "3. Su contenido y cuenta\n\nContenido generado por el usuario\n\nLos Servicios Disney le permitirán comunicar, enviar, cargar o de otro modo poner a disposición texto, imágenes, audio, vídeo, material para participar en concursos u otro contenido (“Contenido Generado por el Usuario”), que pueden ser accesibles y visibles por el público. El acceso a estas funciones puede estar sujeto a restricciones por edad. Usted no deberá enviar o publicar Contenido Generado por el Usuario que sea difamatorio, hostil, amenazante, que promueva la intolerancia, el odio, la violencia, que sea vulgar, obsceno, pornográfico o de otro modo ofensivo o que dañe o pueda esperarse, de manera razonable, que dañará a alguna persona o entidad, independientemente de si dicho material está protegido o no por la ley.\n\nNosotros no reclamamos la titularidad de su Contenido Generado por el Usuario; no obstante, usted nos concede una licencia universal no exclusiva, sublicenciable, irrevocable, de alcance global y gratuita con relación a todos los derechos de autor, marcas registradas, patentes, secretos comerciales, derechos de imagen y publicidad y demás derechos de propiedad intelectual, para que nosotros podamos usar, reproducir, transmitir, imprimir, publicar, divulgar públicamente, exhibir, distribuir, redistribuir, copiar, indexar, comentar, modificar, adaptar, traducir, crear obras derivadas, presentar en público, poner a disposición o de otra forma explotar dicho Contenido Generado por el Usuario, total o parcialmente, en todos los formatos y canales conocidos o que en adelante se desarrollen (incluidos los relacionados con los Servicios Disney y las páginas web y plataformas de terceros como Facebook, YouTube y Twitter), en cualquier número de copias y sin límite en cuanto al tiempo, forma y frecuencia de uso, sin necesidad de notificación adicional a usted, con o sin atribución, y sin que su permiso o el pago a usted o a otra persona o entidad sean necesarios.\n\nUsted declara y garantiza que su Contenido Generado por el Usuario cumple con las presentes condiciones y que usted posee o dispone de los derechos y permisos necesarios, sin necesidad de pago a ninguna otra persona o entidad, para usar y explotar, y para autorizarnos a usar y a explotar, su Contenido Generado por el Usuario de todas las maneras contempladas en estos términos. Usted acepta eximir de responsabilidad a nosotros y a nuestras empresas subsidiarias y afiliadas, y a cada uno de sus respectivos empleados y directivos, frente cualquier demanda, pérdida, responsabilidad, reclamo o gasto (incluidos los honorarios de abogados), que sean presentados contra nosotros por un tercero, que se deriven o estén relacionados con el uso y explotación que hacemos de su Contenido Generado por el Usuario. Usted también acepta no exigir el cumplimiento de cualquier derecho moral, accesorio o similar en cuanto al Contenido Generado por el Usuario, en contra de nosotros o nuestros licenciatarios, distribuidores, agentes, representantes y demás usuarios autorizados, y acuerda obtener el mismo compromiso de otras personas que pudieran ostentar tales derechos.",
+        "justification": "La cláusula otorga a Disney una licencia amplia, irrevocable, sublicenciable y mundial sobre el contenido del usuario, con renuncia a derechos morales. La evidencia disponible no regula esta materia: las disposiciones de la UE sobre contenido digital y DSA se refieren a conformidad, terminación y moderación de contenidos, no a licencias de contenido generado por el usuario; el reglamento ecuatoriano citado es sectorial de telecomunicaciones y no aborda propiedad intelectual ni derechos morales. Falta evidencia aplicable sobre derecho de consumo ecuatoriano o propiedad intelectual para valorar el desequilibrio.",
+        "recommendation": "Revisar la cláusula a la luz de la normativa ecuatoriana de defensa del consumidor y propiedad intelectual; evaluar si la licencia irrevocable y la renuncia a derechos morales son válidas y si deben limitarse a la finalidad del servicio.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 7,
+      "status": "success",
+      "result": {
+        "category": "user_content_and_intellectual_property",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "En la medida en que le autorizamos a crear, publicar, cargar, distribuir o comunicar públicamente Contenido Generado por el Usuario que requiere el uso de nuestros materiales protegidos por el derecho de autor, le otorgamos una licencia no exclusiva para crear obras derivadas de nuestro material protegido, en la medida que el uso de nuestros materiales sea necesario para la creación de tales obras derivadas, con la salvedad de que dicha licencia se encuentra sujeta a la condición de que usted ceda en nuestro favor sus derechos respecto de todas las obras creadas por usted. Si dicha cesión no se lleva a cabo, su licencia para crear obras derivadas a partir de nuestras obras protegidas por derechos de autor será nula de pleno derecho.",
+        "justification": "La cláusula impone una cesión de derechos sobre obras derivadas creadas por el usuario a partir de materiales de Disney. Las evidencias recuperadas no abordan la cesión de derechos de propiedad intelectual del consumidor en plataformas digitales; la evidencia 3 solo regula el uso posterior de contenido tras la terminación del contrato, sin relación con la cesión anticipada exigida. Falta normativa aplicable sobre propiedad intelectual y equilibrio contractual en este ámbito.",
+        "recommendation": "Revisar la cláusula a la luz de normas de propiedad intelectual y protección del consumidor, evaluando si la cesión obligatoria de derechos sobre obras derivadas es proporcionada y no vulnera derechos irrenunciables del usuario.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 8,
+      "status": "success",
+      "result": {
+        "category": "user_content_and_intellectual_property",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "Tenemos el derecho, aunque no la obligación, de controlar, filtrar, publicar, eliminar, modificar, almacenar y revisar, en cualquier momento y por cualquier motivo, el Contenido Generado por el Usuario o las comunicaciones enviadas a través de un Servicio Disney, sin necesidad de notificarle a usted previamente la realización de estas actividades; lo anterior incluye nuestro derecho a garantizar que el Contenido Generado por el Usuario o las comunicaciones cumplan con los presentes términos. No respaldamos ni asumimos responsabilidad alguna por las opiniones, las ideas, los consejos o las recomendaciones enviados o publicados por los usuarios.",
+        "justification": "La cláusula regula la moderación del contenido generado por el usuario y la exclusión de responsabilidad por opiniones de terceros. La evidencia recuperada incluye normas de la UE no aplicables a la relación con un consumidor en Ecuador y una disposición ecuatoriana general sobre irrenunciabilidad de derechos de usuarios que no regula específicamente la moderación de contenido ni la responsabilidad por opiniones. No hay evidencia aplicable suficiente para determinar si la cláusula es abusiva o equilibrada.",
+        "recommendation": "Revisar la cláusula conforme a la normativa ecuatoriana de protección al consumidor y precisar los supuestos, límites y notificación de la moderación de contenido y de la exclusión de responsabilidad.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 9,
+      "status": "success",
+      "result": {
+        "category": "unilateral_termination",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "Cuentas\n\nAlgunos Servicios Disney permiten o requieren que usted cree una cuenta para participar en u obtener beneficios adicionales. Usted se obliga a mantener la exactitud, veracidad e integridad de los datos, incluida su información de contacto para notificaciones u otras comunicaciones que le podamos remitir, así como su información de pago. Usted se obliga a no hacerse pasar por un tercero o por una entidad, utilizando, por ejemplo, el nombre de usuario, la contraseña o los datos de la cuenta de otra persona, o el nombre o la imagen de un tercero o a proporcionar datos falsos de un padre o tutor. Usted acuerda que podremos tomar las medidas necesarias para comprobar la exactitud de la información que nos proporciona, incluida la información de contacto de un padre o tutor.\n\nHemos establecido y tenemos implementada una política que prevé, en determinadas circunstancias, el cierre de las cuentas de los usuarios que infrinjan repetidamente los derechos de autor. Además, podemos bloquear o cerrar su cuenta e interrumpir la utilización que hace de los Servicios Disney si usted participa en, fomenta o apoya conductas ilegales, o si no cumple con las presentes condiciones u otros términos complementarios aplicables.\n\nContraseñas y Seguridad\n\nUsted es responsable de tomar las medidas necesarias para mantener la confidencialidad de su nombre de usuario y contraseña, así como de todas las actividades realizadas desde su cuenta que usted pueda razonablemente controlar. Usted se obliga a notificarnos sobre cualquier uso no autorizado de su nombre de usuario, su contraseña u otros datos de su cuenta, o sobre cualquier otra brecha de seguridad que sea de su conocimiento y que se relacione con su cuenta o con los Servicios Disney.\n\nLa seguridad, la integridad y la confidencialidad de su información son de extrema importancia para nosotros. Hemos incorporado medidas de seguridad técnicas, administrativas y físicas diseñadas para evitar el acceso, la divulgación, el uso o la modificación no autorizada de su información.",
+        "justification": "La cláusula regula cuentas, verificación de datos, cierre por incumplimiento y seguridad de contraseñas. La evidencia disponible no contiene disposiciones ecuatorianas directamente aplicables a una plataforma de streaming sobre estos aspectos: la norma de telecomunicaciones se refiere a prestadores de telecomunicaciones, la resolución de datos personales no aborda el cierre de cuentas y la norma de la UE no es aplicable en Ecuador. Falta evidencia suficiente para clasificar.",
+        "recommendation": "Complementar con evidencia ecuatoriana aplicable a servicios digitales sobre terminación unilateral, verificación de datos y seguridad de cuentas, o revisar el contrato completo para evaluar el contexto de estas obligaciones.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 10,
+      "status": "success",
+      "result": {
+        "category": "consumer_rights_restriction",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "4. Transacciones pagadas\n\nIdentidad del vendedor\n\nLas ventas son realizadas por Disney Interactive o por el vendedor identificado en el momento de la venta, si fuese diferente a Disney Interactive. En caso de dudas sobre su pedido, le rogamos se contacte con el vendedor en la dirección indicada para recibir ayuda. Algunas tiendas virtuales relacionadas con los Servicios Disney son gestionadas por terceros y, en dicho caso, puede que apliquen condiciones de venta distintas o adicionales, que usted deberá leer cuando éstas le sean presentadas.\n\nContenido digital y artículos virtuales\n\nEs posible que en los Servicios Disney pongamos a su disposición aplicaciones, juegos, programas u otros contenidos digitales cuya licencia de acceso usted podrá obtener mediante la realización de un pago único. Al adquirir una licencia para acceder a dichos contenidos de un Servicio Disney, se le informará el precio correspondiente del Servicio Disney, antes de finalizar el proceso de adquisición.\n\nCuando se adquiere un artículo virtual o dinero electrónico para su uso en un juego, se realiza un pago a cambio de una licencia limitada e intransferible para acceder a dicho contenido o función, y utilizarlo en los Servicios Disney. Los artículos virtuales (incluidos los personajes o los nombres de personajes) y el dinero electrónico para su uso en un juego que son adquiridos o están a su disposición en los Servicios Disney sólo pueden utilizarse en relación con los Servicios Disney donde usted los adquirió o desarrolló como resultado de su participación en un juego. Estos artículos no son canjeables ni están sujetos a reembolso, así como tampoco pueden ser utilizados para transacciones fuera de los Servicios Disney, ya sea a título oneroso o mediante intercambio. Podremos modificar o eliminar cualquier artículo virtual o el dinero electrónico de algún juego en cualquier momento.\n\nSuscripciones\n\nEl acceso a algunos Servicios Disney exige el pago de una suscripción. Al suscribirse, usted acepta que la suscripción se renovará de manera automática y, a menos que usted cancele su suscripción, se entenderá que usted nos – autoriza para que realicemos el cargo correspondiente a la renovación del servicio al método de pago que tenemos de usted. La renovación se realizará por un período igual al periodo de suscripción inicial, a menos que se le informe lo contrario al momento de la venta. El cargo de renovación no será superior al cargo del período de suscripción inmediatamente anterior, excepto en caso de precios promocionales o descuentos, a menos que le comuniquemos un cambio en dicho importe antes de la renovación automática. . En ciertas ocasiones ofreceremos suscripciones gratuitas de prueba para un Servicio Disney. Si usted se inscribe a la suscripción gratuita de prueba, comenzaremos a cobrarle a su cuenta una vez transcurrido el período de prueba, a menos que cancele previamente la suscripción.",
+        "justification": "La cláusula regula transacciones pagadas, artículos virtuales no reembolsables y renovación automática de suscripciones. Las evidencias recuperadas son directivas de la Unión Europea sobre contenidos digitales y derechos de los consumidores, pero la relación contractual se rige por Ecuador. No se ha aportado normativa ecuatoriana aplicable ni se demuestra que estas directivas vinculen a Disney en esta jurisdicción, por lo que falta evidencia suficiente para clasificar la cláusula.",
+        "recommendation": "Obtener y analizar la normativa ecuatoriana de protección al consumidor y comercio electrónico aplicable a suscripciones, contenidos digitales y reembolsos antes de clasificar la cláusula.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 11,
+      "status": "success",
+      "result": {
+        "category": "unilateral_termination",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "relevant_fragment": "Proceso de pedido\n\nUsted tendrá la posibilidad de revisar y confirmar su pedido, incluida la dirección de entrega (si procede), el método de pago y los detalles del producto. Al aceptar su pedido le enviaremos una notificación y nuestra aceptación se considerará completa y comunicada a todos los efectos, en el momento en que le sea enviada. En dicho momento, se formalizará el contrato de venta, vinculante para ambas partes. Usted asume el riesgo de pérdida de cualquier producto y la responsabilidad de tenerlo asegurarlo en el momento en que los productos correspondientes le son entregados.\n\nNos reservamos el derecho a rechazar o cancelar cualquier pedido antes de la entrega. Algunas causas de cancelación de su pedido podrían ser: errores de sistema o tipográficos, imprecisiones en la información del producto, su disponibilidad o su precio, igualdad entre clientes si la cantidad de producto es limitada, o problemas que puedan identificar nuestros departamentos de crédito y fraude. Es posible que necesitemos realizar procesos adicionales de verificación u obtener información adicional antes de aceptar un pedido. Nos pondremos en contacto con usted si el pedido se cancela o necesitamos mayor información para aceptar su pedido. Si su pedido se cancela una vez procesado su pago, pero antes de la entrega, le reembolsaremos el importe.\n\nFacturación y Pago\n\nAl proporcionarnos su información de pago, usted manifiesta y afirma que la información es precisa, que está autorizado para usar el método de pago indicado y que nos notificará sobre cualquier cambio que se produzca en la información de pago. Nos reservamos el derecho de utilizar servicios de actualización de tarjetas de crédito de terceros para obtener las fechas de caducidad actualizadas de las tarjetas de crédito.",
+        "justification": "La cláusula faculta al proveedor a rechazar o cancelar cualquier pedido antes de la entrega por causas amplias y no taxativas, pese a que la aceptación formaliza un contrato vinculante. La Recomendación de la OCDE exige que las transacciones se procesen con consentimiento expreso e informado y que se informen las condiciones de cancelación y reembolso. Aunque se prevé reembolso, la asimetría entre el derecho del proveedor y el del consumidor genera un posible desequilibrio, sin que exista una contradicción directa con una norma vinculante recuperada.",
+        "recommendation": "Limitar las causas de cancelación a supuestos objetivos y verificables, y reconocer al consumidor un derecho equivalente a desistir del pedido con reembolso íntegro.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "int_oecd_ecommerce_2016_chunk_0030",
+            "document_id": "int_oecd_ecommerce_2016",
+            "chunk_index": 30,
+            "content": "OECD/LEGAL/0422\n_____________________________________________________________________________________________\n9\nv) Terms of delivery or performance;\nvi) Details of and conditions related to withdrawal, termination or cancellation, after -sales\nservice, return, exchange, refunds, warranties and guarantees;\nvii) Privacy policy; and\nviii) Information on available dispute resolution and redress options.\nD. Confirmation Process\n36. Businesses should ensure that the point at which consumers are asked to confirm a\ntransaction, after which time payment is due or they are otherwise contractually bound, is clear and\nunambiguous, as should the steps needed to complete the transaction, especially for new payment\nmechanisms.\n37. Businesses should provide consumers with an opportunity to review summary information\nabout the good or service, as well as any delivery and pricing information before consumers are asked\nto confirm a transaction. They should enable consumers to identify and correct errors or to modify or\nstop the transaction, as appropriate.\n38. Businesses should not process a transaction unless the consumer has provided express,\ninformed consent to it.",
+            "title": "OECD Recommendation on Consumer Protection in E-commerce",
+            "jurisdiction": "international",
+            "issuing_body": "Organisation for Economic Co-operation and Development",
+            "document_type": "guideline",
+            "binding_level": "reference",
+            "status": "in_force",
+            "language": "en",
+            "source_url": "https://legalinstruments.oecd.org/public/doc/336/336.en.pdf",
+            "official_citation": "OECD/LEGAL/0422",
+            "publication_date": null,
+            "effective_date": null,
+            "topics": "consumer protection|electronic commerce|online disclosures",
+            "checksum": "38a0129ec26aa9fdd9bfa84edd60a058fbc9131394ec8ea17b0a848c2b534971",
+            "distance": 0.44100824
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "clause_order": 12,
+      "status": "success",
+      "result": {
+        "category": "consumer_rights_restriction",
+        "classification": "potentially_abusive",
+        "risk_level": "medium",
+        "analysis_status": "classified",
+        "relevant_fragment": "Derecho de cancelación; devolución de artículos\n\nAl suscribirse a un Servicio Disney, usted tiene derecho a cancelar su contrato dentro de los catorce (14) días siguientes a la fecha en que reciba y acepte estos términos, y recibirá un reembolso íntegro de la cuota de suscripción que haya pagado. En caso de suscripciones semestrales y anuales, si se recibe notificación de cancelación dentro de los treinta (30) días siguientes al primer día de facturación inicial, usted recibirá un reembolso de los cargos de suscripción pagados. Si nosotros le reembolsamos su cargo de suscripción, usted seguirá estando obligado a pagar otros gastos que se hayan originado. Cuando usted compre una licencia para acceder a contenidos digitales o artículos virtuales, se le dará la oportunidad de dar su consentimiento a la entrega en el momento de la compra. Al dar su consentimiento a la entrega, usted reconoce que ha perdido el derecho de cancelación y el cargo de compra de licencia ya deja de ser reembolsable.\n\nUsted podrá cancelar el contrato y devolvernos los productos dentro de los treinta (30) días siguientes a la fecha de su recepción física. Este derecho no se aplica a los artículos identificados en los Servicios Disney como “no sujeto a devolución”, incluidas grabaciones de audio y vídeo, programas informáticos, CD, DVD u otros soportes físicos que hayan sido desprecintados o cuya envoltura o empaque haya sido abierta. Si usted devuelve artículos que no tienen fallas, es posible que deba pagarnos el costo de devolución de dichos artículos y nosotros podremos deducir un monto razonable si usted usa dichos artículos.\n\nSi desea cancelar, debe hacerlo siguiendo las instrucciones de cancelación para el Servicio Disney particular. Podrá encontrar un modelo de formulario de cancelación disponible aquí.\n\nArtículos personalizados\n\nLos derechos de cancelación y devolución no se aplican a los artículos personalizados. No pueden realizarse cancelaciones ni cambios de productos personalizados una vez se haya enviado el pedido, y no se aceptará devolución de los artículos personalizados a menos que exista un error de fabricación o defecto en el producto. Nos reservamos el derecho a rechazar pedidos personalizados a nuestra entera discreción. El uso indebido de nuestro servicio de personalización implicará la cancelación de su pedido y la devolución de los pagos realizados.",
+        "justification": "El Art. 45 de la Ley Orgánica de Defensa del Consumidor reconoce a quien adquiere bienes o servicios por internet un derecho de devolución de tres días y, para servicios, la cesación inmediata del contrato. La cláusula condiciona la pérdida del derecho de cancelación al consentimiento de entrega de contenidos digitales y excluye artículos personalizados, restringiendo ese derecho legal sin que la evidencia demuestre una autorización expresa para tales exclusiones. Por ello existe un posible desequilibrio, aunque no se puede afirmar una contradicción directa.",
+        "recommendation": "Alinear la cláusula con el Art. 45 de la Ley de Defensa del Consumidor, reconociendo el derecho de devolución o cancelación para compras por internet y limitando las exclusiones a los supuestos legalmente permitidos.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_defensa_consumidor_2000_chunk_0052",
+            "document_id": "ec_defensa_consumidor_2000",
+            "chunk_index": 52,
+            "content": "Concordancias:\nCODIGO CIVIL (LIBRO IV), Arts. 1505, 1576, 1800\nArt. 45.- Derecho de Devolución.- El consumidor que adquiera bienes o servicios por teléfono,\ncatálogo, televisión, internet o a domicilio, gozará del derecho de devolución, el mismo que deberá\nser ejercido dentro de los tres días posteriores a la recepción del bien o servicio, siempre y cuando lo\npermita su naturaleza y el estado del bien sea el mismo en el que lo recibió. En el caso de servicios,\nel derecho de devolución se ejercerá mediante la cesación inmediata del contrato de provisión del\nservicio.\nConcordancias:\nCODIGO CIVIL (LIBRO IV), Arts. 1763\nCODIGO DE COMERCIO, Arts. 171, 172",
+            "title": "Ley Orgánica de Defensa del Consumidor",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Congreso Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.gob.ec/sites/default/files/regulations/2018-09/Documento_Ley-Org%C3%A1nica-Defensa-Consumidor.pdf",
+            "official_citation": "Suplemento del Registro Oficial 116, 10-07-2000",
+            "publication_date": "2000-07-10",
+            "effective_date": "2000-07-10",
+            "topics": "consumidores|contratos|cláusulas abusivas",
+            "checksum": "f9fb0a29b61e36a981c6fd6fdc9d5dcc26dde421c020d8964be78305876f97d2",
+            "distance": 0.3913115
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "clause_order": 13,
+      "status": "success",
+      "result": {
+        "category": "unilateral_modification",
+        "classification": "fair",
+        "risk_level": "low",
+        "analysis_status": "classified",
+        "relevant_fragment": "Precios; Impuestos\n\nNosotros podemos realizar revisiones respecto del precio de los productos y servicios que ofrecemos. Si usted paga periódicamente una cuota por suscripción a un Servicio Disney, le notificaremos cualquier cambio en las cuotas o en los métodos de facturación con una antelación suficiente a la fecha de entrada en vigor de dicho cambio, y usted podrá cancelar su suscripción con anterioridad a dicha fecha. Cuando usted formula su pedido, nosotros hacemos una estimación aproximada de los impuestos e incluimos dicha estimación como parte del total a pagar para su información. El importe real del impuesto aplicable a su pedido y cuyo cargo se hará a su medio de pago se basa en los cálculos realizados a la fecha de envío, independientemente de la fecha en que el pedido fue realizado.\n\nEnvíos internacionales; Aduanas\n\nAl realizar pedidos para su entrega en países distintos de aquel donde se encuentre el vendedor, usted podría estar sujeto al pago de derechos de importación y otros impuestos. Estos gastos adicionales de aduana correrán por cuenta de usted. Para envíos internacionales, le advertimos que quizá no sean válidas todas las garantías de los fabricantes, las opciones del servicio del fabricante quizá no estén disponibles, los manuales e instrucciones de uso y seguridad podrían no estar traducidos al idioma del país de destino, los artículos y materiales que los acompañan podrían no estar diseñados de acuerdo con los estándares del país de destino o con los requisitos técnicos y de etiquetado; asimismo, los artículos podrían no ser compatibles con el voltaje de la red eléctrica del país de destino (por lo que necesitarían un adaptador o transformador). Usted es responsable de asegurarse de que los artículos puedan importarse legalmente en el país de destino. Al enviarnos un pedido, el receptor se considera el importador registrado, y debe cumplir con todas las leyes y reglamentos del país de destino.",
+        "justification": "La Recomendación de la OCDE exige información clara sobre precio inicial, cargos variables, costes recurrentes y formas de desistimiento. La cláusula prevé notificación previa de cambios de cuota y derecho a cancelar, e informa de impuestos estimados y gastos de aduana. No se advierte contradicción con normas vinculantes aplicables; el equilibrio se sustenta en la transparencia y la opción de cancelación.",
+        "recommendation": "Precisar criterios objetivos para las revisiones de precios y confirmar por escrito, antes de la contratación, todos los cargos variables, impuestos y gastos de importación aplicables.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": false,
+        "legal_basis": [
+          {
+            "chunk_id": "int_oecd_ecommerce_2016_chunk_0029",
+            "document_id": "int_oecd_ecommerce_2016",
+            "chunk_index": 29,
+            "content": "Consumers should be able to easily access this information at  any\nstage of the transaction.\n34. Businesses should provide consumers with a clear and ful l statement of the relevant terms\nand conditions of the transaction.\n35. Where applicable and appropriate given the transaction, such information should include the\nfollowing:\ni) Initial price, including all fixed compulsory charges collected and/or impos ed by the\nbusiness;\nii) Information on the existence of variable compulsory and optional charges collected\nand/or imposed by the business when they become known by the business and before\nconsumers confirm the transaction;\niii) Notice of the existence of o ther routinely applicable costs to the consumer that are\ncollected and/or imposed by third parties;\niv) Terms, conditions, and methods of payment, including contract duration, recurring\ncharges, such as automatic repeat purchases and subscription renewals , and ways to\nopt out from such automatic arrangements;\nOECD/LEGAL/0422\n_____________________________________________________________________________________________\n9\nv) Terms of delivery or performance;",
+            "title": "OECD Recommendation on Consumer Protection in E-commerce",
+            "jurisdiction": "international",
+            "issuing_body": "Organisation for Economic Co-operation and Development",
+            "document_type": "guideline",
+            "binding_level": "reference",
+            "status": "in_force",
+            "language": "en",
+            "source_url": "https://legalinstruments.oecd.org/public/doc/336/336.en.pdf",
+            "official_citation": "OECD/LEGAL/0422",
+            "publication_date": null,
+            "effective_date": null,
+            "topics": "consumer protection|electronic commerce|online disclosures",
+            "checksum": "38a0129ec26aa9fdd9bfa84edd60a058fbc9131394ec8ea17b0a848c2b534971",
+            "distance": 0.4947049
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "clause_order": 14,
+      "status": "success",
+      "result": {
+        "category": "other_contractual_risk",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "5. Concursos y Competiciones\n\nLos concursos en los que participe dentro de un Servicio Disney pueden regirse por términos y condiciones complementarios, pero las siguientes reglas generales se aplican a todos los concursos, a menos que se especifique lo contrario en los términos y condiciones complementarios.\n\nEnvíos y Participación\n\nSu envío para participar en los concursos constituye Contenido Generado por el Usuario y se encuentra sujeto a todas las disposiciones del presente en materia de envío de Contenido Generado por el Usuario y nuestro uso del mismo. Podremos descalificar aquellos envíos presentados fuera de término, que no hayan sido enviados a la dirección adecuada, que se encuentren incompletos o en archivos corruptos, que se hayan perdido, que sean ilegibles o inválidos o respecto los cuales no se haya proporcionado el consentimiento necesario de los padres. La participación en concursos está limitada a un envío por persona y no se permite el uso de agentes o terceros ni la utilización de múltiples identidades. El empleo de mecanismos para envíos o votos automáticos y otros programas similares se encuentra prohibido; todos los envíos (o votos) realizados mediante tales métodos serán descalificados.\n\nNos reservamos el derecho a modificar, suspender, cancelar o finalizar un concurso, así como de ampliar o reanudar el plazo de entrada en el concurso o de descalificar a cualquier participante o envío en cualquier momento y sin previo aviso. Actuaremos así en caso de que no podamos garantizar que el concurso vaya a ser llevado a cabo de manera justa o correcta por razones técnicas o legales, o por otras razones, o en caso de que tengamos sospecha de que alguna persona haya manipulado los envíos o los resultados, proporcionado información falsa, o actuado de manera poco ética. En caso de que cancelemos o finalicemos un concurso, los premios podrán ser otorgados de cualquier modo que consideremos justo y apropiado de conformidad con la legislación local que rige el concurso.",
+        "justification": "La cláusula regula concursos y competiciones dentro del servicio Disney, incluyendo descalificaciones y modificación unilateral. La evidencia recuperada se refiere a concursos públicos de telecomunicaciones (evidence_index 0) y a comercio electrónico/jurisdicción (evidence_index 1 y 3), pero no aborda concursos de consumidores en plataformas digitales. No hay evidencia aplicable que sustente o contradiga la conducta descrita. Falta evidencia sobre derechos de consumidores en concursos de plataformas digitales.",
+        "recommendation": "Revisar la cláusula a la luz de la normativa ecuatoriana de defensa del consumidor y comercio electrónico, y buscar evidencia específica sobre concursos y sorteos en plataformas digitales.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 15,
+      "status": "success",
+      "result": {
+        "category": "consumer_rights_restriction",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "Requisitos para participar\n\nPara participar en un concurso, usted debe ser un usuario registrado de los Servicios Disney y poseer una cuenta activa con información de contacto actualizada. No es necesario realizar ninguna compra para participar en un concurso y la realización de una compra no aumentará sus posibilidades de ganar. Los concursos no están abiertos a nuestros empleados (o sus familiares inmediatos) o a cualquier otra persona que esté relacionada con el concurso en virtud de su profesión. Si es menor de 18 años (o la mayoría de edad bajo la legislación aplicable) y el concurso está abierto para usted, es posible que necesitemos el consentimiento de su padre/madre o tutor antes de aceptar su participación. Nos reservamos el derecho a solicitar una prueba de identidad o a verificar las condiciones de participación de los envíos potencialmente ganadores, así como de entregar cualquier premio en persona al ganador. Los concursos resultarán nulos donde estén prohibidos o restringidos por la ley aplicable. A los potenciales ganadores que residan en jurisdicciones donde se requiere demostrar cierta habilidad para participar en un concurso, es posible que se les requiera realizar una prueba matemática para poder presentarse como potencial ganador de un premio.\n\nPremios\n\nNo habrá premios en efectivo o premios alternativos; sin embargo, nosotros (o la entidad que ofrezca el premio) nos reservamos el derecho a sustituir un premio por otro similar de igual o mayor valor. Los ganadores no pueden transferir (excepto a un hijo u otro miembro de la familia) ni vender sus premios. Únicamente estará disponible el número de premios indicado para el concurso y todos los premios se entregarán siempre y cuando se haya recibido un número suficiente de envíos válidos y los premios sean válidamente reclamados antes de la fecha indicada en el concurso; después de dicha fecha no se seleccionarán ganadores alternativos ni se entregarán los premios que no hayan sido reclamados. A menos que se indique lo contrario en la descripción del premio con anterioridad al ingreso al concurso, los ganadores son responsables de todos los costos y gastos derivados del reclamo de su premio. Todos los impuestos son responsabilidad exclusiva del ganador, aunque nos reservamos el derecho a retener los impuestos aplicables y el ganador se obliga a completar los formularios fiscales correspondientes.\n\nAl aceptar un premio, usted otorga su consentimiento para participar, de manera razonable, en publicidad relacionada con el concurso y nos otorga el derecho incondicional a utilizar su nombre, localidad o ciudad y estado, provincia o país, imagen, información sobre el premio y declaraciones acerca del concurso, con fines publicitarios o promocionales de conformidad con la legislación aplicable, todo ello sin necesidad de obtener su autorización u ofrecerle compensación adicional. Como condición para recibir un premio, es posible que se requiera a los ganadores (o a sus padres/madres o tutores) que firmen y envíen una declaración jurada que indique que cumplen con los requisitos para participar, que nos liberan de responsabilidad, y que nos ceden los derechos necesarios para llevar a cabo la publicidad.",
+        "justification": "La cláusula regula concursos y sorteos, pero la evidencia recuperada no aborda directamente los términos de participación, premios, impuestos o cesión de derechos publicitarios en plataformas digitales. El Reglamento de Telecomunicaciones se refiere a concursos públicos competitivos, no a promociones de consumo, y el fragmento de la Ley de Defensa del Consumidor solo exige información sobre premios y plazos, sin contradecir ni respaldar las condiciones específicas de la cláusula. Falta evidencia aplicable para determinar si existe desequilibrio.",
+        "recommendation": "Revisar la cláusula a la luz de la Ley Orgánica de Defensa del Consumidor y verificar que se informe claramente sobre premios, impuestos y cesión de derechos antes de la participación.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 16,
+      "status": "success",
+      "result": {
+        "category": "user_content_and_intellectual_property",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "6. Disposiciones adicionales\n\nPolíticas relativas a propuestas e ideas no solicitadas\n\nLa política corporativa tradicional de nuestra empresa no nos permite aceptar o considerar ideas creativas, sugerencias o materiales no solicitados. En relación con cualquier material que nos envíe, lo hayamos solicitado o no, usted acepta que el envío de ideas creativas, sugerencias u otros materiales no se realiza en un marco de confidencialidad, ni constituye o infiere depósito o relación de confidencialidad o custodia entre usted y nosotros, y que no espera revisión, compensación ni consideración de ningún tipo.\n\nReclamos por violación de derecho de autor\n\nLas notificaciones o reclamos relativos a la violación de derechos de autor, así como las contestaciones respecto a una acusación en relación a dicha violación, deben enviarse a nuestro agente designado:\n\nTWDC Designated Agent The Walt Disney Company 500 South Buena Vista Street Burbank, California 91521, USA Teléfono: +1 818-560-1000 Fax: +1 818-560-4299 Correo electrónico: designated.agent@dig.twdc.com\n\nÚnicamente podremos aceptar notificaciones en los idiomas en los que ponemos a su disposición estos términos y condiciones.",
+        "justification": "La cláusula regula el envío de ideas no solicitadas y los reclamos por violación de derechos de autor, materias de propiedad intelectual y contenido del usuario. La evidencia recuperada se refiere a notificación de cambios en términos (UE), protección de datos personales en Ecuador y prácticas de gatekeepers (UE), sin relación directa con la conducta descrita. Falta evidencia aplicable sobre derechos de autor, propiedad intelectual o protección del consumidor en Ecuador que permita clasificar el equilibrio de la cláusula.",
+        "recommendation": "Obtener evidencia normativa ecuatoriana o internacional aplicable sobre propiedad intelectual, contenido de usuario y derechos de autor para evaluar si la renuncia de confidencialidad y compensación por ideas no solicitadas es equilibrada.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 17,
+      "status": "success",
+      "result": {
+        "category": "dispute_resolution",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "Nosotros responderemos expeditivamente a los reclamos por infracción del derecho de autor cometidos usando los Servicios Disney que se informen a nuestro Agente de derecho de autor designado, que aparece indicado más arriba, de conformidad con lo que establece la Ley de Derecho de Autor del Milenio Digital de los EE. UU. de 1998 (Digital Millennium Copyright Act, “DMCA”) o, según corresponda, otras leyes. Con respecto a los Servicios Disney mantenidos en los Estados Unidos, estas notificaciones deben incluir la información exigida establecida en la DMCA y descrita en detalle aquí.\n\nArbitraje vinculante y Renuncia a acciones colectivas",
+        "justification": "La cláusula solo presenta el encabezado 'Arbitraje vinculante y Renuncia a acciones colectivas' sin disposiciones sustantivas que analizar. La evidencia recuperada no aborda esta materia ni la notificación de infracción de derechos de autor en el contexto ecuatoriano. Falta el contenido completo de la cláusula de arbitraje y su relación con la normativa aplicable.",
+        "recommendation": "Obtener el texto completo de la cláusula de arbitraje y renuncia a acciones colectivas para evaluar su conformidad con la legislación ecuatoriana de protección al consumidor.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 18,
+      "status": "success",
+      "result": {
+        "category": "dispute_resolution",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "Usted y Disney Interactive aceptan someter a arbitraje cualquier disputa, excepto en el caso de aquellas disputas relativas a la exigibilidad o ejecución de nuestros derechos de propiedad intelectual. El término “disputa” se refiere a cualquier disputa, acción u otra controversia que se suscite entre usted y nosotros relativa a los Servicios de Disney o a los presentes términos, ya sea en relación con un contrato, responsabilidad extracontractual, garantía, ley o regulación, así como cualquier otro sustento legal o de equidad. Usted y Disney Interactive facultan al árbitro con la autoridad exclusiva para resolver cualquier controversia relacionada con la interpretación, aplicabilidad o exigibilidad de estos términos o con la creación de este contrato, inclusive la susceptibilidad de someter a arbitraje cualquier controversia y cualquier reclamo que argumente que la totalidad o una parte de estos términos son nulos o susceptibles de ser anulados.\n\nEn caso de disputa, usted y Disney Interactive enviarán a la otra parte una notificación de disputa mediante una declaración por escrito que indique el nombre, la dirección y los datos de contacto de la parte que envía la notificación, los hechos que han dado lugar a la disputa, y la compensación solicitada. Usted deberá enviar cualquier notificación de disputa a Disney Interactive, 500 South Buena Vista Street, Burbank, California 91521, Estados Unidos de América, a la atención de: Notificaciones legales/de arbitraje. Nosotros le enviaremos cualquier notificación de disputa a la dirección de contacto que tenemos registrada para usted. Usted y Disney Interactive intentarán resolver la disputa mediante negociación informal durante un plazo de sesenta (60) días a partir de la fecha en la que se haya enviado la notificación. Transcurridos sesenta (60) días, tanto usted como nosotros podremos iniciar el arbitraje. Asimismo, usted podrá litigar una disputa en un tribunal de quejas si la disputa cumple los requisitos para ser presentada ante dicho tribunal, sea que usted se haya sometido o no primero a negociación informal previa.\n\nSi usted y Disney Interactive no resuelven la disputa mediante negociación informal o en un tribunal de quejas, cualquier intento de resolver la disputa se llevará a cabo exclusivamente mediante arbitraje de carácter vinculante. USTED RENUNCIA A SU DERECHO A LITIGAR UNA DISPUTA EN UN TRIBUNAL ANTE UN JUEZ O JURADO. En su lugar, todas las disputas se resolverán ante un árbitro neutral cuya decisión será definitiva, salvo por el derecho de apelación limitada en virtud de la Ley Federal de Arbitraje de los Estados Unidos. El arbitraje se llevará a cabo por la Asociación Americana de Arbitraje (la “AAA”) de acuerdo con su Reglamento de Arbitraje Comercial y sus Procedimientos Suplementarios para casos de Disputas Relacionadas con Consumidores. Si desea obtener más información, visite www.adr.org o llame al 800-778-7879 desde los Estados Unidos de América. El arbitraje podrá realizarse personalmente, a través del envío de documentos, por teléfono, o en línea. El árbitro podrá dictar un laudo por la misma indemnización individual por daños que le concedería un tribunal judicial, lo que incluye medida cautelar y sentencia declaratoria, pero sólo en la medida necesaria para satisfacer su reclamación individual.",
+        "justification": "La cláusula impone arbitraje vinculante en California con renuncia a litigar en tribunales. La evidencia recuperada no es aplicable: la resolución ecuatoriana regula transferencias de datos personales, no arbitraje de consumo; el fragmento del DSA se refiere a mecanismos extrajudiciales para usuarios empresariales de la UE. No existe evidencia sobre normas ecuatorianas de arbitraje o protección al consumidor que sustenten una clasificación. Falta información jurídica relevante sobre arbitraje de consumo en Ecuador.",
+        "recommendation": "Revisar la cláusula a la luz de la normativa ecuatoriana de arbitraje y defensa del consumidor, y verificar si la renuncia a tribunales es válida en esa jurisdicción.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 19,
+      "status": "success",
+      "result": {
+        "category": "dispute_resolution",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "A menos que el árbitro considere que el arbitraje carece de sustento legal o su propósito es inapropiado, Disney Interactive pagará la totalidad de los honorarios y gastos del expediente, la AAA y el árbitro. Si el árbitro dictamina un laudo por una indemnización superior al valor de nuestra última oferta de compensación por escrito realizada con anterioridad a la elección de un árbitro (o si no realizamos ninguna oferta de compensación antes de seleccionar un árbitro), le pagaremos el monto que resulte superior entre el monto determinado en el laudo y mil dólares estadounidenses (US$1,000), y asimismo pagaremos a su abogado, si lo tuviera, sus honorarios y le reembolsaremos los gastos (incluidos los honorarios y costos de peritos) en los que usted o su abogado hubieran incurrido de manera razonable en relación con la investigación, la preparación y la tramitación del arbitraje de su reclamación. Renunciamos a cualquier derecho a solicitar una indemnización por los honorarios y gastos de abogados en relación con cualquier arbitraje que no se considere carece de sustento legal entre usted y nosotros.",
+        "justification": "La cláusula regula el arbitraje y los costos asociados, materia de resolución de disputas. La evidencia recuperada no es aplicable: el Reglamento de Telecomunicaciones de Ecuador trata sobre promociones y tarifas, no sobre arbitraje; la DSA de la UE no es vinculante en Ecuador y se refiere a resolución extrajudicial, no a arbitraje. No existe evidencia que sustente un análisis de equilibrio o abusividad.",
+        "recommendation": "Revisar la normativa ecuatoriana sobre arbitraje de consumo y protección al consumidor para evaluar la cláusula.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 20,
+      "status": "success",
+      "result": {
+        "category": "dispute_resolution",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "relevant_fragment": "Si es usted residente de los Estados Unidos de América, el arbitraje tendrá lugar en cualquier lugar razonable que resulte de su conveniencia. Para los residentes fuera de los Estados Unidos de América, el arbitraje se iniciará en el distrito de Manhattan, Nueva York, Estado de Nueva York, Estados Unidos de América, y usted y Disney Interactive acuerdan someterse a la jurisdicción personal de los tribunales estatales o federales situados allí, con el fin de exigir el arbitraje, sobreseer el procedimiento arbitral pendiente o confirmar, modificar, anular o ejecutar el laudo dictado por el árbitro.",
+        "justification": "La cláusula impone arbitraje en Manhattan, Nueva York, para residentes fuera de EE.UU., incluidos consumidores ecuatorianos. La Ley de Comercio Electrónico de Ecuador (Art. 47) establece que en contratos de consumo la jurisdicción corresponde al domicilio del consumidor, norma imperativa de protección. Esta imposición contradice directamente dicha disposición, generando un desequilibrio al obligar al consumidor a litigar en un foro extranjero.",
+        "recommendation": "Modificar la cláusula para permitir que los consumidores ecuatorianos acudan a los tribunales de su domicilio o a arbitraje en Ecuador, respetando la normativa local.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_comercio_electronico_2002_chunk_0046",
+            "document_id": "ec_comercio_electronico_2002",
+            "chunk_index": 46,
+            "content": "Piense en el medio ambiente. Imprima solo de ser necesario.\nLa recepción, confirmación de recepción, o apertura del mensaje de datos, no implica\naceptación del contrato electrónico, salvo acuerdo de las partes.\nArt. 47.- Jurisdicción.- En caso de controversias las partes se someterán a la jurisdicción\nestipulada en el contrato; a falta de ésta, se sujetarán a las normas previstas por el Código\nOrgánico General de Procesos Ecuatoriano y esta ley, siempre que no se trate de un\ncontrato sometido a la Ley Orgánica de Defensa del Consumidor, en cuyo caso se\ndeterminará como domicilio el del consumidor o usuario.\nPara la identificación de la procedencia de un mensaje de datos, se utilizarán los medios\ntecnológicos disponibles, y se aplicarán las disposiciones señaladas en esta ley y demás\nnormas legales aplicables.\nCuando las partes pacten someter las controversias a un procedimiento arbitral, en la\nformalización del convenio de arbitraje como en su aplicación, podrán emplearse medios\ntelemáticos y electrónicos, siempre que ello no sea incompatible con las normas\nreguladoras del arbitraje.\nCapítulo III\nDE LOS DERECHOS DE LOS USUARIOS O CONSUMIDORES DE SERVICIOS ELECTRÓNICOS",
+            "title": "Ley de Comercio Electrónico, Firmas Electrónicas y Mensajes de Datos",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Congreso Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.consejodecomunicacion.gob.ec/wp-content/uploads/downloads/2023/10/lotaip/LEY%20DE%20COMERCIO%20ELECTR%C3%93NICO%2C%20FIRMAS%20ELECTR%C3%93NICAS%20Y%20MENSAJES%20DE%20DATOS.pdf",
+            "official_citation": "Suplemento del Registro Oficial 557, 17-04-2002",
+            "publication_date": "2002-04-17",
+            "effective_date": "2002-04-17",
+            "topics": "comercio electrónico|contratación electrónica|firmas electrónicas",
+            "checksum": "c47eb431003f844cbc3c6e60802cc9d35e6ba09d55ef14dcde7290e86121a42b",
+            "distance": 0.40794235
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "clause_order": 21,
+      "status": "success",
+      "result": {
+        "category": "dispute_resolution",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "LOS PROCEDIMIENTOS PARA RESOLVER O LITIGAR UNA DISPUTA EN CUALQUIER JURISDICCIÓN SE LLEVARÁN A CABO A TÍTULO INDIVIDUAL. Ni usted ni Disney Interactive solicitarán que una disputa sea tramitada como demanda o acción colectiva, acción de la fiscalía general del estado o cualquier otra diligencia en la que cualquiera de las partes actúe o proponga actuar en calidad de representante de otros demandantes. Ningún procedimiento de arbitraje o diligencia podrá unirse con otro sin el consentimiento previo por escrito de todas las partes de dicho arbitraje o diligencia. Si la renuncia a la posibilidad de presentar una acción colectiva se considera ilegal o inaplicable con respecto a la totalidad o parte de una disputa, la misma será separada y procederá ante un tribunal judicial, mientras que el resto de las partes procederán mediante arbitraje.",
+        "justification": "La cláusula impone tramitación individual y renuncia a acciones colectivas, pero la evidencia recuperada no contiene normas ecuatorianas sobre la validez de esa renuncia ni sobre arbitraje de consumo. El artículo 47 de la Ley de Comercio Electrónico regula jurisdicción y admite arbitraje pactado, pero no aborda la prohibición de acumulación ni la renuncia a demandas colectivas. Las demás evidencias son de la UE o sobre transferencias de datos y no resultan aplicables. Falta evidencia suficiente para clasificar.",
+        "recommendation": "Obtener evidencia adicional sobre la normativa ecuatoriana de protección al consumidor y acciones colectivas antes de determinar el carácter de la cláusula.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    },
+    {
+      "clause_order": 22,
+      "status": "success",
+      "result": {
+        "category": "dispute_resolution",
+        "classification": "abusive",
+        "risk_level": "high",
+        "analysis_status": "classified",
+        "relevant_fragment": "Elección de jurisdicción\n\nUsted acepta que toda acción conforme a derecho o en virtud del sistema de equidad que se origine o se relacione con estos términos o con los Servicios Disney y que no esté sujeta a arbitraje será presentada, y la jurisdicción recae de manera apropiada, solamente en los tribunales estatales o federales emplazados en el Municipio de Manhattan, Nueva York, Estado de Nueva York, Estados Unidos de América, y usted da su consentimiento y se somete a la jurisdicción personal de dichos tribunales a los efectos del litigio de dicha acción.\n\nElección de leyes\n\nEstos términos se rigen e interpretan de conformidad con las leyes del Estado de Nueva York y las leyes de los Estados Unidos, sin dar efecto a ningún principio de conflicto jurídico.",
+        "justification": "La cláusula impone jurisdicción exclusiva en Nueva York y ley de Nueva York para disputas con consumidores ecuatorianos. El Art. 47 de la Ley de Comercio Electrónico ecuatoriana establece que en contratos con consumidores el domicilio será el del consumidor o usuario. Esta disposición es vinculante y directamente aplicable, contradiciendo la elección de foro y ley extranjera impuesta por Disney. La cláusula desconoce la protección legal del consumidor ecuatoriano.",
+        "recommendation": "Eliminar la cláusula de jurisdicción y ley exclusiva de Nueva York, sometiendo las controversias a los tribunales ecuatorianos y a la ley del domicilio del consumidor.",
+        "evidence_sufficiency": "sufficient",
+        "requires_human_review": true,
+        "legal_basis": [
+          {
+            "chunk_id": "ec_comercio_electronico_2002_chunk_0046",
+            "document_id": "ec_comercio_electronico_2002",
+            "chunk_index": 46,
+            "content": "Piense en el medio ambiente. Imprima solo de ser necesario.\nLa recepción, confirmación de recepción, o apertura del mensaje de datos, no implica\naceptación del contrato electrónico, salvo acuerdo de las partes.\nArt. 47.- Jurisdicción.- En caso de controversias las partes se someterán a la jurisdicción\nestipulada en el contrato; a falta de ésta, se sujetarán a las normas previstas por el Código\nOrgánico General de Procesos Ecuatoriano y esta ley, siempre que no se trate de un\ncontrato sometido a la Ley Orgánica de Defensa del Consumidor, en cuyo caso se\ndeterminará como domicilio el del consumidor o usuario.\nPara la identificación de la procedencia de un mensaje de datos, se utilizarán los medios\ntecnológicos disponibles, y se aplicarán las disposiciones señaladas en esta ley y demás\nnormas legales aplicables.\nCuando las partes pacten someter las controversias a un procedimiento arbitral, en la\nformalización del convenio de arbitraje como en su aplicación, podrán emplearse medios\ntelemáticos y electrónicos, siempre que ello no sea incompatible con las normas\nreguladoras del arbitraje.\nCapítulo III\nDE LOS DERECHOS DE LOS USUARIOS O CONSUMIDORES DE SERVICIOS ELECTRÓNICOS",
+            "title": "Ley de Comercio Electrónico, Firmas Electrónicas y Mensajes de Datos",
+            "jurisdiction": "ecuador",
+            "issuing_body": "Congreso Nacional del Ecuador",
+            "document_type": "law",
+            "binding_level": "binding",
+            "status": "amended",
+            "language": "es",
+            "source_url": "https://www.consejodecomunicacion.gob.ec/wp-content/uploads/downloads/2023/10/lotaip/LEY%20DE%20COMERCIO%20ELECTR%C3%93NICO%2C%20FIRMAS%20ELECTR%C3%93NICAS%20Y%20MENSAJES%20DE%20DATOS.pdf",
+            "official_citation": "Suplemento del Registro Oficial 557, 17-04-2002",
+            "publication_date": "2002-04-17",
+            "effective_date": "2002-04-17",
+            "topics": "comercio electrónico|contratación electrónica|firmas electrónicas",
+            "checksum": "c47eb431003f844cbc3c6e60802cc9d35e6ba09d55ef14dcde7290e86121a42b",
+            "distance": 0.4584317
+          }
+        ]
+      },
+      "error": null
+    },
+    {
+      "clause_order": 23,
+      "status": "success",
+      "result": {
+        "category": "other_contractual_risk",
+        "classification": null,
+        "risk_level": null,
+        "analysis_status": "requires_review",
+        "relevant_fragment": "Divisibilidad\n\nSi alguna de las disposiciones de las presentes condiciones fuera declarada ilegal, nula o, por alguna razón, inexigible, dicha cláusula se considerará divisible del resto de los términos y no afectará la validez y aplicabilidad de las cláusulas restantes.\n\nSubsistencia de disposiciones\n\nLas disposiciones de las presentes condiciones que por su naturaleza debieran subsistir a la terminación del contrato subsistirán a dicha terminación.\n\nRenuncia\n\nNinguna renuncia por nuestra parte a cualquier disposición de las presentes condiciones se considerará como una renuncia final o permanente a dicha disposición o a cualquier otra, y el hecho de no exigir el cumplimiento de un derecho o disposición establecido en las presentes condiciones no constituirá una renuncia a dicho derecho o disposición.",
+        "justification": "La cláusula regula divisibilidad, subsistencia de disposiciones y renuncia. La evidencia recuperada no regula estas materias en el ámbito de consumo ecuatoriano: la evidencia 2 se refiere a usuarios empresarios de servicios de intermediación en línea, no a consumidores de Disney+, y las demás tratan restricciones de contenido, definiciones y protección de datos. Falta evidencia aplicable sobre validez y efectos de estas cláusulas en contratos de consumo.",
+        "recommendation": "Complementar la revisión con normativa ecuatoriana aplicable a contratos de consumo sobre divisibilidad, subsistencia y renuncia antes de determinar su carácter.",
+        "evidence_sufficiency": "insufficient",
+        "requires_human_review": true,
+        "legal_basis": []
+      },
+      "error": null
+    }
+  ],
+  "errors": [],
+  "attempts": {}
+}

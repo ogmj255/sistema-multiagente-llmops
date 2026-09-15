@@ -64,7 +64,6 @@ def main() -> None:
             ),
             platform="Validación TIT-48",
             language="es",
-            jurisdiction=dataset["jurisdiction"],
             clause=ProcessedClause(
                 order=position,
                 original_order=position,

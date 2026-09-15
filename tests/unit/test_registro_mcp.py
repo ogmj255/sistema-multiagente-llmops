@@ -286,4 +286,12 @@ def test_transmite_entorno_segun_servidor(
     assert "POSTGRES_PASSWORD" not in analizador.env
 
     assert extractor.env is None
-    assert preprocesador.env is None
+
+    assert preprocesador.env is not None
+    assert preprocesador.env["OLLAMA_BASE_URL"] == (
+        "http://ollama-prueba:11434"
+    )
+    assert "OLLAMA_MODEL" not in preprocesador.env
+    assert "CHROMA_HOST" not in preprocesador.env
+    assert "OPENROUTER_API_KEY" not in preprocesador.env
+    assert "POSTGRES_PASSWORD" not in preprocesador.env

@@ -17,7 +17,6 @@ def test_initial_state_preserves_request():
     state = create_initial_state(request)
 
     assert state["request"] == request
-    assert state["jurisdiction"] == "ecuador"
 
 
 def test_initial_state_starts_pending_extraction():
