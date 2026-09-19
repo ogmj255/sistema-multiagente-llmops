@@ -47,20 +47,16 @@ class ContractSection(BaseModel):
 
 
 class ExtractedContract(BaseModel):
-    """Contrato obtenido desde una plataforma SaaS."""
+    """Documento HTML obtenido desde una plataforma SaaS."""
 
     source_url: HttpUrl
     platform: str
-    title: str
     retrieved_at: datetime
     extraction_method: Literal[
-        "beautiful_soup",
+        "httpx",
         "playwright",
     ]
-    language: str
-
-    sections: list[ContractSection]
-    full_text: str
+    raw_html: str = Field(min_length=1)
 
 
 class ExtractionResponse(BaseModel):

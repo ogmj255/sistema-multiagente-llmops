@@ -57,12 +57,13 @@ def preparar_cliente(
     return cliente, sesion
 
 
-def test_registra_los_cuatro_servidores():
+def test_registra_los_cinco_servidores():
     assert set(SERVIDORES_MCP) == {
         "extractor_web",
         "preprocesador",
         "conocimiento_juridico",
         "analizador_legal",
+        "generador_informes",
     }
 
 
@@ -83,6 +84,10 @@ def test_registra_modulos_y_herramientas_correctos():
         "analizador_legal": (
             "app.mcp.legal_analyzer_tools",
             "analyze_legal_clause",
+        ),
+        "generador_informes": (
+            "app.mcp.report_generator_tools",
+            "generate_analysis_report",
         ),
     }
 

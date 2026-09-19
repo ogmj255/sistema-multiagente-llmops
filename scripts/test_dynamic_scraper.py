@@ -1,26 +1,39 @@
-﻿from app.schemas.contract import ExtractionRequest
+from app.schemas.contract import ExtractionRequest
 from app.services.web_scraper import extract_dynamic_contract
 
 
 def main() -> None:
-    """Prueba la extracción de un contrato mediante Playwright."""
+    """Prueba la obtencion de HTML renderizado mediante Playwright."""
 
     request = ExtractionRequest(
         url="https://slack.com/terms-of-service/user",
         platform="Slack",
     )
 
-    contract = extract_dynamic_contract(request)
-    first_section = contract.sections[0]
+    contract = extract_dynamic_contract(
+        request
+    )
 
-    print("Plataforma:", contract.platform)
-    print("Título:", contract.title)
-    print("Idioma:", contract.language)
-    print("Método:", contract.extraction_method)
-    print("Secciones extraídas:", len(contract.sections))
-    print("Caracteres extraídos:", len(contract.full_text))
-    print("Primer encabezado:", first_section.heading)
-    print("Primer contenido:", first_section.content[:200])
+    print(
+        "Plataforma:",
+        contract.platform,
+    )
+    print(
+        "Metodo:",
+        contract.extraction_method,
+    )
+    print(
+        "URL:",
+        contract.source_url,
+    )
+    print(
+        "Caracteres HTML:",
+        len(contract.raw_html),
+    )
+    print(
+        "Inicio del HTML:",
+        contract.raw_html[:500],
+    )
 
 
 if __name__ == "__main__":

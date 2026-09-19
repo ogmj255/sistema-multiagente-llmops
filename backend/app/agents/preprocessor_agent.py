@@ -7,66 +7,72 @@ from app.schemas.preprocessing import (
     ProcessedClause,
 )
 from app.services.semantic_chunking import (
-    build_chunk_text,
     build_semantic_chunks,
-    find_protected_boundaries,
 )
 from app.services.text_preprocessor import (
     build_cleaned_document_text,
     clean_contract_sections,
+    parse_contract_html,
 )
 
 MAX_CHUNK_CHARS = 3500
-MIN_CHUNK_CHARS = 500
+BREAKPOINT_PERCENTILE = 95.0
+BUFFER_SIZE = 1
 
 
 def run_preprocessor_agent(
     contract: ExtractedContract,
 ) -> PreprocessingResponse:
-    """Limpia y segmenta semánticamente un contrato."""
+    """Limpia HTML y segmenta semanticamente el contrato."""
 
     try:
-        cleaned_sections, removed_blocks = clean_contract_sections(contract.sections)
-
-        cleaned_text = build_cleaned_document_text(cleaned_sections)
-
-        chunk_indexes = build_semantic_chunks(
-            cleaned_sections,
-            max_chunk_chars=MAX_CHUNK_CHARS,
-            min_chunk_chars=MIN_CHUNK_CHARS,
+        (
+            title,
+            language,
+            extracted_sections,
+        ) = parse_contract_html(
+            contract.raw_html
         )
 
-        protected_boundaries = find_protected_boundaries(cleaned_sections)
+        (
+            cleaned_sections,
+            removed_blocks,
+        ) = clean_contract_sections(
+            extracted_sections
+        )
 
-        clauses: list[ProcessedClause] = []
+        cleaned_text = build_cleaned_document_text(
+            cleaned_sections
+        )
 
-        for order, indexes in enumerate(
-            chunk_indexes,
-            start=1,
-        ):
-            first_section = cleaned_sections[indexes[0]]
+        semantic_chunks = build_semantic_chunks(
+            cleaned_text,
+            breakpoint_percentile=(
+                BREAKPOINT_PERCENTILE
+            ),
+            buffer_size=BUFFER_SIZE,
+            max_chunk_chars=MAX_CHUNK_CHARS,
+        )
 
-            content = build_chunk_text(
-                cleaned_sections,
-                indexes,
-                protected_boundaries,
+        clauses = [
+            ProcessedClause(
+                order=order,
+                original_order=order,
+                heading=None,
+                heading_level=None,
+                content=chunk,
             )
-
-            clauses.append(
-                ProcessedClause(
-                    order=order,
-                    original_order=(first_section.order),
-                    heading=(first_section.heading or contract.title),
-                    heading_level=(first_section.heading_level or 1),
-                    content=content,
-                )
+            for order, chunk in enumerate(
+                semantic_chunks,
+                start=1,
             )
+        ]
 
         result = PreprocessedContract(
             source_url=contract.source_url,
             platform=contract.platform,
-            title=contract.title,
-            language=contract.language,
+            title=title,
+            language=language,
             cleaned_text=cleaned_text,
             clauses=clauses,
             removed_blocks=removed_blocks,
@@ -80,7 +86,10 @@ def run_preprocessor_agent(
     ) as error:
         return PreprocessingResponse(
             status="error",
-            error=(f"No se pudo preprocesar el contrato: {error}"),
+            error=(
+                "No se pudo preprocesar el contrato: "
+                f"{error}"
+            ),
         )
 
     return PreprocessingResponse(

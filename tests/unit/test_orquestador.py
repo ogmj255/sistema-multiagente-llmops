@@ -12,7 +12,6 @@ from app.agents.orquestador import (
     NodosOrquestacion,
 )
 from app.schemas.contract import (
-    ContractSection,
     ExtractedContract,
     ExtractionRequest,
     ExtractionResponse,
@@ -36,6 +35,12 @@ from app.schemas.preprocessing import (
     PreprocessedContract,
     PreprocessingResponse,
     ProcessedClause,
+)
+from app.schemas.report import (
+    AnalysisReport,
+    ReportGenerationRequest,
+    ReportGenerationResponse,
+    RiskSummary,
 )
 from langgraph.types import Send
 
@@ -156,6 +161,11 @@ def crear_orquestador_controlado(
             "legal_analysis",
             ejecutados,
         ),
+        generar_informe=crear_nodo(
+            "generar_informe",
+            "report_generation",
+            ejecutados,
+        ),
         finalizar=crear_nodo(
             "finalizar",
             "finalization",
@@ -195,21 +205,19 @@ def crear_contrato_extraido() -> ExtractedContract:
     return ExtractedContract(
         source_url="https://example.com/terms",
         platform="Example",
-        title="Terms",
         retrieved_at=datetime.now(UTC),
-        extraction_method="beautiful_soup",
-        language="es",
-        sections=[
-            ContractSection(
-                order=1,
-                heading="Condiciones",
-                heading_level=1,
-                content="Contenido contractual.",
-            ),
-        ],
-        full_text="Contenido contractual.",
+        extraction_method="httpx",
+        raw_html="""
+        <html lang="es">
+            <body>
+                <main>
+                    <h1>Terms</h1>
+                    <p>Contenido contractual.</p>
+                </main>
+            </body>
+        </html>
+        """,
     )
-
 
 def crear_contrato_preprocesado(
     cantidad: int = 2,
@@ -280,6 +288,43 @@ def crear_respuesta_legal(
     )
 
 
+
+def crear_respuesta_informe(
+    argumentos: dict[str, object],
+) -> ReportGenerationResponse:
+    datos = argumentos["request"]
+
+    assert isinstance(datos, dict)
+
+    solicitud = ReportGenerationRequest.model_validate(
+        datos
+    )
+
+    exitosas = sum(
+        item.analysis.status == "success"
+        for item in solicitud.clauses
+    )
+    fallidas = len(solicitud.clauses) - exitosas
+
+    return ReportGenerationResponse(
+        status="success",
+        report=AnalysisReport(
+            execution_id=solicitud.execution_id,
+            source_url=solicitud.source_url,
+            platform=solicitud.platform,
+            title=solicitud.title,
+            language=solicitud.language,
+            total_clauses=solicitud.total_clauses,
+            analyzed_clauses=len(solicitud.clauses),
+            successful_clauses=exitosas,
+            failed_clauses=fallidas,
+            risk_summary=RiskSummary(
+                low=exitosas,
+            ),
+            clauses=solicitud.clauses,
+        ),
+    )
+
 def obtener_orden_consulta(
     argumentos: dict[str, object],
 ) -> int:
@@ -314,6 +359,7 @@ def test_orquestador_compila_todos_los_nodos():
         "extraer",
         "preprocesar",
         "procesar_clausula",
+        "generar_informe",
         "finalizar",
     }
 
@@ -330,6 +376,7 @@ def test_orquestador_ejecuta_el_flujo_definido():
         "extraer",
         "preprocesar",
         "procesar_clausula",
+        "generar_informe",
         "finalizar",
     ]
     assert resultado["status"] == "success"
@@ -383,6 +430,11 @@ def test_coordina_cada_clausula_mediante_mcp(
             ]
 
             return crear_respuesta_legal(orden).model_dump(mode="json")
+
+        if clave == "generador_informes":
+            return crear_respuesta_informe(
+                argumentos
+            ).model_dump(mode="json")
 
         raise AssertionError(f"Servidor MCP inesperado: {clave}")
 
@@ -457,6 +509,11 @@ def test_limita_concurrencia_a_cinco_clausulas(
                 return crear_respuesta_legal(orden).model_dump(mode="json")
         finally:
             activas -= 1
+
+        if clave == "generador_informes":
+            return crear_respuesta_informe(
+                argumentos
+            ).model_dump(mode="json")
 
         raise AssertionError(f"Servidor MCP inesperado: {clave}")
 
@@ -560,6 +617,11 @@ def test_continua_despues_de_error_en_clausula(
 
             return crear_respuesta_legal(orden).model_dump(mode="json")
 
+        if clave == "generador_informes":
+            return crear_respuesta_informe(
+                argumentos
+            ).model_dump(mode="json")
+
         raise AssertionError(f"Servidor MCP inesperado: {clave}")
 
     usar_cliente_mcp_falso(monkeypatch, responder)
@@ -627,6 +689,11 @@ def test_continua_despues_de_error_de_conocimiento(
 
             return crear_respuesta_legal(orden).model_dump(mode="json")
 
+        if clave == "generador_informes":
+            return crear_respuesta_informe(
+                argumentos
+            ).model_dump(mode="json")
+
         raise AssertionError(f"Servidor MCP inesperado: {clave}")
 
     usar_cliente_mcp_falso(monkeypatch, responder)
@@ -650,3 +717,18 @@ def test_continua_despues_de_error_de_conocimiento(
         "knowledge:1": 2,
     }
     assert resultado["errors"][0]["step"] == "knowledge"
+
+
+
+def test_finalizacion_conserva_error_global():
+    estado = crear_estado()
+    estado["status"] = "error"
+    estado["preprocessed_contract"] = crear_contrato_preprocesado()
+    estado["clause_results"] = {
+        1: crear_respuesta_legal(1),
+        2: crear_respuesta_legal(2),
+    }
+
+    resultado = orquestador.finalizar_flujo(estado)
+
+    assert resultado["status"] == "error"

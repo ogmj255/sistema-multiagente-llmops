@@ -32,6 +32,7 @@ def test_initial_state_has_no_previous_results():
 
     assert state["extracted_contract"] is None
     assert state["preprocessed_contract"] is None
+    assert state["report"] is None
     assert state["clause_results"] == {}
     assert state["errors"] == []
     assert state["attempts"] == {}

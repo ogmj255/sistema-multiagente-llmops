@@ -1,14 +1,18 @@
 import os
+from html import escape
 from urllib.parse import urlparse
 
 import httpx
 import streamlit as st
 
-
 API_ANALYSIS_URL = os.getenv(
     "API_ANALYSIS_URL",
     "http://traefik/api/analisis",
 )
+
+API_BASE_URL = API_ANALYSIS_URL.rsplit("/", 1)[0]
+API_REPORT_JSON_URL = f"{API_BASE_URL}/reportes/json"
+API_REPORT_PDF_URL = f"{API_BASE_URL}/reportes/pdf"
 
 CATEGORY_LABELS = {
     "privacy_and_data_processing": "Privacidad y tratamiento de datos",
@@ -47,6 +51,31 @@ def is_valid_url(value: str) -> bool:
     """Comprueba que la entrada sea una URL HTTP o HTTPS válida."""
     parsed = urlparse(value.strip())
     return parsed.scheme in {"http", "https"} and bool(parsed.netloc)
+
+
+def render_plain_text(
+    value: object,
+    fallback: str = "No disponible.",
+) -> None:
+    """Muestra texto sin interpretarlo como Markdown o LaTeX."""
+
+    content = (
+        str(value).strip()
+        if value is not None
+        else ""
+    )
+
+    if not content:
+        content = fallback
+
+    st.markdown(
+        (
+            '<div class="plain-contract-text">'
+            f"{escape(content)}"
+            "</div>"
+        ),
+        unsafe_allow_html=True,
+    )
 
 
 def render_legal_basis(
@@ -108,7 +137,7 @@ def render_legal_basis(
 
             if content:
                 st.markdown("**Contenido recuperado:**")
-                st.write(content)
+                render_plain_text(content)
 
             if source_url:
                 st.markdown(
@@ -172,9 +201,8 @@ def render_clause(
         )
 
         st.markdown("#### Fragmento analizado")
-        st.write(
+        render_plain_text(
             assessment.get("relevant_fragment")
-            or "No disponible."
         )
 
         st.markdown("#### Clasificación")
@@ -252,6 +280,44 @@ def render_clause(
             )
 
 
+def prepare_report_downloads(
+    report: dict[str, object],
+) -> None:
+    """Solicita al backend las exportaciones del informe."""
+
+    try:
+        json_response = httpx.post(
+            API_REPORT_JSON_URL,
+            json=report,
+            timeout=30.0,
+        )
+        json_response.raise_for_status()
+
+        pdf_response = httpx.post(
+            API_REPORT_PDF_URL,
+            json=report,
+            timeout=30.0,
+        )
+        pdf_response.raise_for_status()
+
+        st.session_state.report_json = (
+            json_response.content
+        )
+        st.session_state.report_pdf = (
+            pdf_response.content
+        )
+
+    except httpx.HTTPError:
+        st.session_state.pop(
+            "report_json",
+            None,
+        )
+        st.session_state.pop(
+            "report_pdf",
+            None,
+        )
+
+
 def render_analysis_results(
     data: dict[str, object],
 ) -> None:
@@ -294,6 +360,70 @@ def render_analysis_results(
         "Fallidas",
         data.get("failed_clauses", 0),
     )
+
+    report = data.get("report")
+
+    if isinstance(report, dict):
+        risk_summary = report.get(
+            "risk_summary",
+            {},
+        )
+
+        if isinstance(risk_summary, dict):
+            st.markdown("### Resumen de riesgos")
+
+            risk_columns = st.columns(4)
+
+            risk_columns[0].metric(
+                "Riesgo bajo",
+                risk_summary.get("low", 0),
+            )
+            risk_columns[1].metric(
+                "Riesgo medio",
+                risk_summary.get("medium", 0),
+            )
+            risk_columns[2].metric(
+                "Riesgo alto",
+                risk_summary.get("high", 0),
+            )
+            risk_columns[3].metric(
+                "Requieren revisión",
+                risk_summary.get(
+                    "requires_review",
+                    0,
+                ),
+            )
+
+        report_json = st.session_state.get(
+            "report_json"
+        )
+        report_pdf = st.session_state.get(
+            "report_pdf"
+        )
+
+        if (
+            isinstance(report_json, bytes)
+            and isinstance(report_pdf, bytes)
+        ):
+            st.markdown("### Descargar informe")
+
+            download_columns = st.columns(2)
+
+            download_columns[0].download_button(
+                "Descargar JSON",
+                data=report_json,
+                file_name="informe_analisis.json",
+                mime="application/json",
+                use_container_width=True,
+            )
+
+            download_columns[1].download_button(
+                "Descargar PDF",
+                data=report_pdf,
+                file_name="informe_analisis.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+            )
 
     results = data.get("results", [])
 
@@ -374,6 +504,18 @@ st.markdown(
             border: 1px solid #dddddd;
             border-radius: 7px;
             margin-bottom: 0.55rem;
+        }
+
+        .plain-contract-text {
+            font-family: inherit;
+            font-size: 1rem;
+            font-style: normal;
+            line-height: 1.65;
+            color: #252525;
+            white-space: pre-wrap;
+            overflow-wrap: anywhere;
+            word-break: normal;
+            margin-bottom: 1rem;
         }
 
         .risk-badge {
@@ -465,6 +607,13 @@ if submitted:
 
                 analysis_result = response.json()
                 st.session_state.analysis_result = analysis_result
+
+                report = analysis_result.get("report")
+
+                if isinstance(report, dict):
+                    prepare_report_downloads(
+                        report
+                    )
 
                 pipeline_status = analysis_result.get("status")
 

@@ -31,6 +31,11 @@ from app.schemas.orquestacion import (
     create_initial_state,
 )
 from app.schemas.preprocessing import PreprocessingResponse
+from app.schemas.report import (
+    ClauseReportItem,
+    ReportGenerationRequest,
+    ReportGenerationResponse,
+)
 
 ActualizacionEstado: TypeAlias = dict[str, object]
 
@@ -74,6 +79,7 @@ POLITICA_REINTENTOS = RetryPolicy(
 ETAPA_POR_NODO: dict[str, PipelineStep] = {
     "extraer": "extraction",
     "preprocesar": "preprocessing",
+    "generar_informe": "report_generation",
 }
 
 
@@ -116,6 +122,7 @@ class NodosOrquestacion:
     extraer: NodoPipeline
     preprocesar: NodoPipeline
     procesar_clausula: NodoClausula
+    generar_informe: NodoPipeline
     finalizar: NodoPipeline
 
 
@@ -152,6 +159,12 @@ class AgenteOrquestador:
             self._nodos.procesar_clausula,
         )
         grafo.add_node(
+            "generar_informe",
+            self._nodos.generar_informe,
+            retry_policy=POLITICA_REINTENTOS,
+            error_handler=manejar_error_nodo,
+        )
+        grafo.add_node(
             "finalizar",
             self._nodos.finalizar,
         )
@@ -178,6 +191,10 @@ class AgenteOrquestador:
 
         grafo.add_edge(
             "procesar_clausula",
+            "generar_informe",
+        )
+        grafo.add_edge(
+            "generar_informe",
             "finalizar",
         )
         grafo.add_edge("finalizar", END)
@@ -446,6 +463,70 @@ def distribuir_clausulas(
     ]
 
 
+async def generar_informe(
+    state: OrchestrationState,
+    cliente: ClienteMCP,
+) -> ActualizacionEstado:
+    """Ejecuta el Agente Generador de Informes mediante MCP."""
+
+    contrato = state["preprocessed_contract"]
+
+    if contrato is None:
+        raise RuntimeError(
+            "No existe un contrato preprocesado para generar el informe."
+        )
+
+    clausulas = [
+        ClauseReportItem(
+            clause_order=orden,
+            analysis=respuesta,
+        )
+        for orden, respuesta in sorted(
+            state["clause_results"].items()
+        )
+    ]
+
+    solicitud = ReportGenerationRequest(
+        execution_id=state["execution_id"],
+        source_url=contrato.source_url,
+        platform=contrato.platform,
+        title=contrato.title,
+        language=contrato.language,
+        total_clauses=len(contrato.clauses),
+        clauses=clausulas,
+    )
+
+    contenido = await cliente.invocar(
+        "generador_informes",
+        {
+            "request": solicitud.model_dump(
+                mode="json"
+            )
+        },
+    )
+
+    try:
+        respuesta = ReportGenerationResponse.model_validate(
+            contenido
+        )
+    except ValidationError as error:
+        raise RuntimeError(
+            "El Agente Generador de Informes devolvió "
+            "una respuesta inválida."
+        ) from error
+
+    if respuesta.status == "error" or respuesta.report is None:
+        raise RuntimeError(
+            respuesta.error
+            or "No se pudo generar el informe."
+        )
+
+    return {
+        "current_step": "report_generation",
+        "report": respuesta.report,
+    }
+
+
 def finalizar_flujo(
     state: OrchestrationState,
 ) -> ActualizacionEstado:
@@ -456,7 +537,9 @@ def finalizar_flujo(
 
     estado: PipelineStatus
 
-    if exitosas == len(respuestas) and respuestas:
+    if state["status"] == "error":
+        estado = "error"
+    elif exitosas == len(respuestas) and respuestas:
         estado = "success"
     elif exitosas > 0:
         estado = "partial"
@@ -489,6 +572,10 @@ def crear_orquestador(
         ),
         procesar_clausula=partial(
             procesar_clausula,
+            cliente=cliente,
+        ),
+        generar_informe=partial(
+            generar_informe,
             cliente=cliente,
         ),
         finalizar=finalizar_flujo,

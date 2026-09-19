@@ -88,6 +88,12 @@ SERVIDORES_MCP: dict[str, ServidorMCP] = {
             "OPENROUTER_SITE_URL",
         ),
     ),
+    "generador_informes": ServidorMCP(
+        nombre="Agente Generador de Informes",
+        modulo="app.mcp.report_generator_tools",
+        herramienta="generate_analysis_report",
+    ),
+
 }
 
 

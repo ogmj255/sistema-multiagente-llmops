@@ -11,6 +11,7 @@ from app.schemas.legal_analysis import (
     ClauseAnalysisResponse,
 )
 from app.schemas.preprocessing import PreprocessedContract
+from app.schemas.report import AnalysisReport
 
 PipelineStatus = Literal[
     "pending",
@@ -25,6 +26,7 @@ PipelineStep = Literal[
     "preprocessing",
     "knowledge",
     "legal_analysis",
+    "report_generation",
     "finalization",
 ]
 
@@ -54,6 +56,7 @@ class OrchestrationState(TypedDict):
     current_step: PipelineStep
     extracted_contract: ExtractedContract | None
     preprocessed_contract: PreprocessedContract | None
+    report: AnalysisReport | None
     current_clause_index: int
     clause_results: Annotated[
         dict[int, ClauseAnalysisResponse],
@@ -75,6 +78,7 @@ def create_initial_state(
         current_step="extraction",
         extracted_contract=None,
         preprocessed_contract=None,
+        report=None,
         current_clause_index=0,
         clause_results={},
         errors=[],

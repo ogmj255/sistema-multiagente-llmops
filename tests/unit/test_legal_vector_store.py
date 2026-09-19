@@ -181,11 +181,8 @@ class FakeSearchCollection:
         *,
         query_embeddings: list[list[float]],
         n_results: int,
-        where: dict[str, object] | None,
         include: list[str],
     ) -> dict[str, object]:
-        self.where = where
-
         assert query_embeddings == [[0.1, 0.2, 0.3]]
         assert n_results == 1
         assert include == [
@@ -219,10 +216,10 @@ class FakeSearchCollection:
         }
 
 
-def test_search_legal_chunks_with_filters(
+def test_search_legal_chunks_without_filters(
     monkeypatch,
 ) -> None:
-    """Recupera y valida resultados con filtros."""
+    """Recupera resultados sin aplicar filtros duros."""
 
     monkeypatch.setattr(
         legal_vector_store.settings,
@@ -231,11 +228,10 @@ def test_search_legal_chunks_with_filters(
     )
 
     collection = FakeSearchCollection()
+
     request = KnowledgeQuery(
-        query="protección de datos",
+        query="proteccion de datos",
         top_k=3,
-        jurisdiction="ecuador",
-        document_type="law",
     )
 
     matches = legal_vector_store.search_legal_chunks(
@@ -245,14 +241,10 @@ def test_search_legal_chunks_with_filters(
     )
 
     assert len(matches) == 1
-    assert matches[0].document_id == ("ec_test_law")
+    assert matches[0].document_id == "ec_test_law"
     assert matches[0].distance == 0.12
-    assert collection.where == {
-        "$and": [
-            {"jurisdiction": "ecuador"},
-            {"document_type": "law"},
-        ]
-    }
+    assert collection.where is None
+
 
 
 def test_search_removes_exact_duplicates(
@@ -273,12 +265,10 @@ def test_search_removes_exact_duplicates(
         *,
         query_embeddings: list[list[float]],
         n_results: int,
-        where: dict[str, object] | None,
         include: list[str],
     ) -> dict[str, object]:
         assert query_embeddings == [[0.1, 0.2, 0.3]]
         assert n_results == 3
-        assert where is None
         assert include == [
             "documents",
             "metadatas",

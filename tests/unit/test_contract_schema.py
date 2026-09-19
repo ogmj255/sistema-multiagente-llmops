@@ -1,4 +1,4 @@
-﻿from datetime import UTC, datetime
+from datetime import UTC, datetime
 
 import pytest
 from app.schemas.contract import ContractSection, ExtractedContract
@@ -6,26 +6,28 @@ from pydantic import ValidationError
 
 
 def test_create_extracted_contract() -> None:
-    section = ContractSection(
-        order=1,
-        heading="Condiciones de uso",
-        content="El usuario deberá cumplir las condiciones establecidas.",
-    )
+    raw_html = """
+    <html lang="es">
+        <body>
+            <main>
+                <h1>Términos de servicio</h1>
+                <p>Contenido contractual de prueba.</p>
+            </main>
+        </body>
+    </html>
+    """
 
     contract = ExtractedContract(
         source_url="https://example.com/terms",
         platform="Plataforma de prueba",
-        title="Términos de servicio",
         retrieved_at=datetime.now(UTC),
-        extraction_method="beautiful_soup",
-        language="es",
-        sections=[section],
-        full_text=section.content,
+        extraction_method="httpx",
+        raw_html=raw_html,
     )
 
     assert contract.platform == "Plataforma de prueba"
-    assert len(contract.sections) == 1
-    assert contract.sections[0].order == 1
+    assert contract.extraction_method == "httpx"
+    assert "Contenido contractual de prueba." in contract.raw_html
 
 
 def test_reject_section_with_invalid_order() -> None:

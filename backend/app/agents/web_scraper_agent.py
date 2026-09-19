@@ -5,45 +5,64 @@ from app.schemas.contract import ExtractionRequest, ExtractionResponse
 from app.services.web_scraper import (
     extract_dynamic_contract,
     extract_static_contract,
-    get_usable_content_length,
-    has_sufficient_contract_content,
+    has_sufficient_html_content,
 )
 
 
 def run_web_scraper_agent(
     request: ExtractionRequest,
 ) -> ExtractionResponse:
-    """Extrae y selecciona el contrato más completo disponible."""
+    """Obtiene el HTML del contrato mediante extracción estática o dinámica."""
 
     errors: list[str] = []
 
     try:
-        static_contract = extract_static_contract(request)
+        static_contract = extract_static_contract(
+            request
+        )
+
+        if has_sufficient_html_content(
+            static_contract.raw_html
+        ):
+            return ExtractionResponse(
+                status="success",
+                contract=static_contract,
+            )
+
+        errors.append(
+            "El HTML estático no contiene suficiente texto visible."
+        )
+
     except (httpx.HTTPError, ValueError) as error:
-        static_contract = None
         errors.append(str(error))
 
     try:
-        dynamic_contract = extract_dynamic_contract(request)
+        dynamic_contract = extract_dynamic_contract(
+            request
+        )
+
+        if has_sufficient_html_content(
+            dynamic_contract.raw_html
+        ):
+            return ExtractionResponse(
+                status="success",
+                contract=dynamic_contract,
+            )
+
+        errors.append(
+            "El HTML din?mico no contiene suficiente texto visible."
+        )
+
     except (PlaywrightError, ValueError) as error:
-        dynamic_contract = None
         errors.append(str(error))
 
-    usable_contracts = [
-        contract
-        for contract in (static_contract, dynamic_contract)
-        if contract is not None and has_sufficient_contract_content(contract)
-    ]
+    detail = (
+        errors[-1]
+        if errors
+        else "No se pudo obtener el documento HTML."
+    )
 
-    if not usable_contracts:
-        detail = (
-            errors[-1] if errors else "No se encontró contenido contractual utilizable."
-        )
-        return ExtractionResponse(
-            status="error",
-            error=f"No se pudo extraer el contrato: {detail}",
-        )
-
-    contract = max(usable_contracts, key=get_usable_content_length)
-
-    return ExtractionResponse(status="success", contract=contract)
+    return ExtractionResponse(
+        status="error",
+        error=f"No se pudo extraer el HTML: {detail}",
+    )
