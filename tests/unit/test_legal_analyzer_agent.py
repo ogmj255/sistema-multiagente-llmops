@@ -79,8 +79,8 @@ def create_execution() -> ClassificationExecution:
             legal_basis_indices=[0],
         ),
         model_response=ModelResponse(
-            provider="ollama",
-            model="qwen3:4b",
+            provider="openrouter",
+            model="deepseek/deepseek-v4-flash-0731",
             content="{}",
         ),
     )

@@ -4,7 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
-from app.mcp.registro import (
+from app.mcp.registry import (
     RUTA_BACKEND,
     SERVIDORES_MCP,
     ClienteMCP,
@@ -70,7 +70,7 @@ def test_registra_los_cinco_servidores():
 def test_registra_modulos_y_herramientas_correctos():
     esperados = {
         "extractor_web": (
-            "app.mcp.tools",
+            "app.mcp.web_scraper_tools",
             "extract_saas_terms",
         ),
         "preprocesador": (
@@ -256,10 +256,6 @@ def test_transmite_entorno_segun_servidor(
         "http://ollama-prueba:11434",
     )
     monkeypatch.setenv(
-        "OLLAMA_MODEL",
-        "modelo-prueba",
-    )
-    monkeypatch.setenv(
         "CHROMA_HOST",
         "chroma-prueba",
     )
@@ -284,8 +280,7 @@ def test_transmite_entorno_segun_servidor(
     assert "POSTGRES_PASSWORD" not in conocimiento.env
 
     assert analizador.env is not None
-    assert analizador.env["OLLAMA_BASE_URL"] == ("http://ollama-prueba:11434")
-    assert analizador.env["OLLAMA_MODEL"] == ("modelo-prueba")
+    assert "OLLAMA_BASE_URL" not in analizador.env
     assert analizador.env["OPENROUTER_API_KEY"] == ("clave-prueba")
     assert "CHROMA_HOST" not in analizador.env
     assert "POSTGRES_PASSWORD" not in analizador.env
@@ -296,7 +291,6 @@ def test_transmite_entorno_segun_servidor(
     assert preprocesador.env["OLLAMA_BASE_URL"] == (
         "http://ollama-prueba:11434"
     )
-    assert "OLLAMA_MODEL" not in preprocesador.env
     assert "CHROMA_HOST" not in preprocesador.env
     assert "OPENROUTER_API_KEY" not in preprocesador.env
     assert "POSTGRES_PASSWORD" not in preprocesador.env

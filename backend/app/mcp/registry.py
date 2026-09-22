@@ -42,7 +42,7 @@ class ServidorMCP:
 SERVIDORES_MCP: dict[str, ServidorMCP] = {
     "extractor_web": ServidorMCP(
         nombre="Agente Web Scraper",
-        modulo="app.mcp.tools",
+        modulo="app.mcp.web_scraper_tools",
         herramienta="extract_saas_terms",
     ),
     "preprocesador": ServidorMCP(
@@ -75,12 +75,8 @@ SERVIDORES_MCP: dict[str, ServidorMCP] = {
         modulo="app.mcp.legal_analyzer_tools",
         herramienta="analyze_legal_clause",
         variables_entorno=(
-            "LEGAL_ANALYZER_MODE",
             "LLM_TIMEOUT_SECONDS",
             "LLM_TEMPERATURE",
-            "OLLAMA_BASE_URL",
-            "OLLAMA_MODEL",
-            "OLLAMA_CONTEXT_LENGTH",
             "OPENROUTER_BASE_URL",
             "OPENROUTER_API_KEY",
             "OPENROUTER_MODEL",

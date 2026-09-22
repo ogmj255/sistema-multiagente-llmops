@@ -301,18 +301,8 @@ def main() -> None:
         "p95_successful_seconds": p95_seconds,
     }
 
-    if settings.legal_analyzer_mode == "local":
-        provider = "ollama"
-        model = settings.ollama_model
-    elif settings.legal_analyzer_mode == "remote":
-        provider = "openrouter"
-        model = settings.openrouter_model
-    else:
-        provider = "auto"
-        model = (
-            f"{settings.openrouter_model} -> "
-            f"{settings.ollama_model}"
-        )
+    provider = "openrouter"
+    model = settings.openrouter_model
 
     report = {
         "dataset_id": dataset["dataset_id"],

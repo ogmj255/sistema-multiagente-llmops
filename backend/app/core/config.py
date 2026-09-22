@@ -1,5 +1,4 @@
 from pathlib import Path
-from typing import Literal
 
 from pydantic import Field, SecretStr
 from pydantic_settings import (
@@ -24,18 +23,11 @@ class Settings(BaseSettings):
     )
 
     ollama_base_url: str = "http://localhost:11434"
-    ollama_model: str = "qwen3:4b"
     ollama_embedding_model: str = (
         "qwen3-embedding:0.6b"
     )
     ollama_embedding_dimensions: int = 1024
-    ollama_context_length: int = 8192
 
-    legal_analyzer_mode: Literal[
-        "local",
-        "remote",
-        "auto",
-    ] = "local"
     llm_timeout_seconds: float = Field(
         default=120.0,
         gt=0,

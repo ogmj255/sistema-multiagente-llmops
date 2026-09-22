@@ -6,8 +6,8 @@ from datetime import UTC, datetime
 from types import TracebackType
 from typing import Self, TypeAlias
 
-from app.agents import orquestador
-from app.agents.orquestador import (
+from app.agents import orchestrator_agent
+from app.agents.orchestrator_agent import (
     AgenteOrquestador,
     NodosOrquestacion,
 )
@@ -25,7 +25,7 @@ from app.schemas.legal_analysis import (
     ClauseAnalysisResponse,
     ClauseAssessment,
 )
-from app.schemas.orquestacion import (
+from app.schemas.orchestration import (
     OrchestrationState,
     PipelineStatus,
     PipelineStep,
@@ -53,7 +53,7 @@ RespondedorMCP: TypeAlias = Callable[
 
 
 class ClienteMCPFalso:
-    """Simula los servidores MCP del orquestador."""
+    """Simula los servidores MCP del orchestrator_agent."""
 
     def __init__(
         self,
@@ -100,7 +100,7 @@ def usar_cliente_mcp_falso(
         return cliente
 
     monkeypatch.setattr(
-        orquestador,
+        orchestrator_agent,
         "ClienteMCP",
         crear_cliente,
     )
@@ -440,7 +440,7 @@ def test_coordina_cada_clausula_mediante_mcp(
 
     usar_cliente_mcp_falso(monkeypatch, responder)
 
-    resultado = orquestador.ejecutar_orquestacion(
+    resultado = orchestrator_agent.ejecutar_orquestacion(
         ExtractionRequest(
             url="https://example.com/terms",
             platform="Example",
@@ -519,15 +519,15 @@ def test_limita_concurrencia_a_cinco_clausulas(
 
     usar_cliente_mcp_falso(monkeypatch, responder)
 
-    resultado = orquestador.ejecutar_orquestacion(
+    resultado = orchestrator_agent.ejecutar_orquestacion(
         ExtractionRequest(
             url="https://example.com/terms",
             platform="Example",
         )
     )
 
-    assert orquestador.MAX_CLAUSULAS_CONCURRENTES == 5
-    assert maximo_activas == 5
+    assert orchestrator_agent.MAX_CLAUSULAS_CONCURRENTES == 1
+    assert maximo_activas == 1
     assert len(resultado["clause_results"]) == 8
     assert resultado["status"] == "success"
 
@@ -553,7 +553,7 @@ def test_registra_error_al_agotar_reintentos(
 
     usar_cliente_mcp_falso(monkeypatch, responder)
 
-    resultado = orquestador.ejecutar_orquestacion(
+    resultado = orchestrator_agent.ejecutar_orquestacion(
         ExtractionRequest(
             url="https://example.com/terms",
             platform="Example",
@@ -626,7 +626,7 @@ def test_continua_despues_de_error_en_clausula(
 
     usar_cliente_mcp_falso(monkeypatch, responder)
 
-    resultado = orquestador.ejecutar_orquestacion(
+    resultado = orchestrator_agent.ejecutar_orquestacion(
         ExtractionRequest(
             url="https://example.com/terms",
             platform="Example",
@@ -698,7 +698,7 @@ def test_continua_despues_de_error_de_conocimiento(
 
     usar_cliente_mcp_falso(monkeypatch, responder)
 
-    resultado = orquestador.ejecutar_orquestacion(
+    resultado = orchestrator_agent.ejecutar_orquestacion(
         ExtractionRequest(
             url="https://example.com/terms",
             platform="Example",
@@ -729,6 +729,6 @@ def test_finalizacion_conserva_error_global():
         2: crear_respuesta_legal(2),
     }
 
-    resultado = orquestador.finalizar_flujo(estado)
+    resultado = orchestrator_agent.finalizar_flujo(estado)
 
     assert resultado["status"] == "error"

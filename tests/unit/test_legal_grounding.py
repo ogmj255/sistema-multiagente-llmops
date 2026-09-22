@@ -81,8 +81,8 @@ def create_execution(
     return ClassificationExecution(
         decision=decision,
         model_response=ModelResponse(
-            provider="ollama",
-            model="qwen3:4b",
+            provider="openrouter",
+            model="deepseek/deepseek-v4-flash-0731",
             content="{}",
         ),
     )
@@ -153,8 +153,8 @@ def test_builds_review_without_legal_basis() -> None:
     execution = ClassificationExecution(
         decision=decision,
         model_response=ModelResponse(
-            provider="ollama",
-            model="qwen3:4b",
+            provider="openrouter",
+            model="deepseek/deepseek-v4-flash-0731",
             content="{}",
         ),
     )

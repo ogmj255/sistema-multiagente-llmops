@@ -13,7 +13,7 @@ from app.agents.legal_analyzer_agent import (
     LEGAL_CONTEXT_RESULTS,
     build_legal_search_query,
 )
-from app.mcp.registro import ClienteMCP
+from app.mcp.registry import ClienteMCP
 from app.schemas.contract import (
     ExtractionRequest,
     ExtractionResponse,
@@ -23,7 +23,7 @@ from app.schemas.legal_analysis import (
     ClauseAnalysisRequest,
     ClauseAnalysisResponse,
 )
-from app.schemas.orquestacion import (
+from app.schemas.orchestration import (
     ClauseTaskState,
     OrchestrationState,
     PipelineStatus,
@@ -68,7 +68,7 @@ OperacionAsincrona: TypeAlias = Callable[
 ]
 
 MAX_INTENTOS = 2
-MAX_CLAUSULAS_CONCURRENTES = 5
+MAX_CLAUSULAS_CONCURRENTES = 1
 
 POLITICA_REINTENTOS = RetryPolicy(
     max_attempts=MAX_INTENTOS,

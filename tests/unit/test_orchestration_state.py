@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from app.schemas.contract import ExtractionRequest
-from app.schemas.orquestacion import create_initial_state
+from app.schemas.orchestration import create_initial_state
 
 
 def make_request() -> ExtractionRequest:

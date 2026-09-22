@@ -1,5 +1,5 @@
 ﻿import pytest
-from app.mcp import tools
+from app.mcp import web_scraper_tools
 from app.schemas.contract import ExtractionRequest, ExtractionResponse
 
 
@@ -19,12 +19,12 @@ async def test_extract_saas_terms_tool(monkeypatch) -> None:
         )
 
     monkeypatch.setattr(
-        tools,
+        web_scraper_tools,
         "run_web_scraper_agent",
         fake_agent,
     )
 
-    result = await tools.extract_saas_terms(
+    result = await web_scraper_tools.extract_saas_terms(
         url="https://example.com/terms",
         platform="Example",
     )

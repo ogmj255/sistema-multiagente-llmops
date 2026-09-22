@@ -1,10 +1,17 @@
-import re
+﻿import re
 from math import floor, sqrt
+
+import pysbd
 
 from app.services.embeddings import generate_embeddings
 
-SENTENCE_SPLIT_PATTERN = re.compile(
-    r"(?<=[.!?])\s+|\n{2,}"
+SENTENCE_SEGMENTER = pysbd.Segmenter(
+    language="en",
+    clean=False,
+)
+
+ROMAN_ENUMERATION_END = re.compile(
+    r"(?:^|\s)(?:i|ii|iii|iv|v|vi|vii|viii|ix|x)\.$"
 )
 
 
@@ -52,83 +59,55 @@ def cosine_distance(
     return 1.0 - similarity
 
 
-def _split_long_sentence(
-    text: str,
-    max_chars: int,
+def _merge_roman_enumeration_breaks(
+    sentences: list[str],
 ) -> list[str]:
-    """Divide texto excepcionalmente largo por palabras."""
+    """Repara cortes de pySBD tras numerales romanos de lista."""
 
-    if len(text) <= max_chars:
-        return [text]
+    merged: list[str] = []
+    index = 0
 
-    words = text.split()
+    while index < len(sentences):
+        current = sentences[index]
 
-    if not words:
-        return []
-
-    parts: list[str] = []
-    current: list[str] = []
-
-    for word in words:
-        candidate = " ".join(
-            current + [word]
-        )
-
-        if current and len(candidate) > max_chars:
-            parts.append(
-                " ".join(current)
+        while (
+            index + 1 < len(sentences)
+            and ROMAN_ENUMERATION_END.search(current)
+        ):
+            index += 1
+            current = (
+                f"{current} {sentences[index]}"
             )
-            current = [word]
-        else:
-            current.append(word)
 
-    if current:
-        parts.append(
-            " ".join(current)
-        )
+        merged.append(current)
+        index += 1
 
-    return parts
+    return merged
 
 
 def split_into_sentences(
     text: str,
-    *,
-    max_sentence_chars: int = 3500,
 ) -> list[str]:
     """Separa el texto limpio en unidades oracionales."""
-
-    if max_sentence_chars <= 0:
-        raise ValueError(
-            "max_sentence_chars debe ser mayor que cero."
-        )
 
     normalized = text.strip()
 
     if not normalized:
         return []
 
-    raw_sentences = SENTENCE_SPLIT_PATTERN.split(
+    raw_sentences = SENTENCE_SEGMENTER.segment(
         normalized
     )
 
-    sentences: list[str] = []
+    sentences = [
+        " ".join(sentence.split())
+        for sentence in raw_sentences
+        if sentence.strip()
+    ]
 
-    for sentence in raw_sentences:
-        clean = " ".join(
-            sentence.split()
-        )
-
-        if not clean:
-            continue
-
-        sentences.extend(
-            _split_long_sentence(
-                clean,
-                max_sentence_chars,
-            )
-        )
-
-    return sentences
+    return _merge_roman_enumeration_breaks(
+        sentences
+    )
 
 
 def build_context_groups(
@@ -252,67 +231,16 @@ def _chunk_text(
     )
 
 
-def _split_oversized_range(
-    sentences: list[str],
-    distances: list[float],
-    start: int,
-    end: int,
-    max_chunk_chars: int,
-) -> list[tuple[int, int]]:
-    """Divide un rango grande por su mayor cambio semantico."""
-
-    text = _chunk_text(
-        sentences,
-        start,
-        end,
-    )
-
-    if len(text) <= max_chunk_chars:
-        return [(start, end)]
-
-    if start == end:
-        return [(start, end)]
-
-    boundary = max(
-        range(start, end),
-        key=distances.__getitem__,
-    )
-
-    return (
-        _split_oversized_range(
-            sentences,
-            distances,
-            start,
-            boundary,
-            max_chunk_chars,
-        )
-        + _split_oversized_range(
-            sentences,
-            distances,
-            boundary + 1,
-            end,
-            max_chunk_chars,
-        )
-    )
-
-
 def build_semantic_chunks(
     text: str,
     *,
-    breakpoint_percentile: float = 95,
+    breakpoint_percentile: float = 80,
     buffer_size: int = 1,
-    max_chunk_chars: int = 3500,
 ) -> list[str]:
     """Segmenta texto mediante embeddings y breakpoints por percentil."""
 
-    if max_chunk_chars <= 0:
-        raise ValueError(
-            "max_chunk_chars debe ser mayor que cero."
-        )
-
     sentences = split_into_sentences(
-        text,
-        max_sentence_chars=max_chunk_chars,
+        text
     )
 
     if not sentences:
@@ -345,54 +273,28 @@ def build_semantic_chunks(
             if distance > threshold
         }
 
-    ranges: list[tuple[int, int]] = []
+    chunks: list[str] = []
     start = 0
 
     for index in range(
         len(sentences) - 1
     ):
         if index in breakpoints:
-            ranges.append(
-                (start, index)
+            chunks.append(
+                _chunk_text(
+                    sentences,
+                    start,
+                    index,
+                )
             )
             start = index + 1
 
-    ranges.append(
-        (
+    chunks.append(
+        _chunk_text(
+            sentences,
             start,
             len(sentences) - 1,
         )
     )
-
-    final_ranges: list[tuple[int, int]] = []
-
-    for range_start, range_end in ranges:
-        final_ranges.extend(
-            _split_oversized_range(
-                sentences,
-                distances,
-                range_start,
-                range_end,
-                max_chunk_chars,
-            )
-        )
-
-    chunks = [
-        _chunk_text(
-            sentences,
-            start,
-            end,
-        )
-        for start, end in final_ranges
-    ]
-
-    if any(
-        len(chunk) > max_chunk_chars
-        for chunk in chunks
-    ):
-        raise RuntimeError(
-            "La segmentacion genero un chunk "
-            "mayor que el limite."
-        )
 
     return chunks

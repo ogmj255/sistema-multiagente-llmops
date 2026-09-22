@@ -3,7 +3,6 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 LLMProvider = Literal[
-    "ollama",
     "openrouter",
 ]
 
@@ -39,7 +38,6 @@ class ModelResponse(BaseModel):
         default=None,
         ge=0,
     )
-    fallback_used: bool = False
 
 
 class ModelProviderError(RuntimeError):

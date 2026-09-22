@@ -1,5 +1,5 @@
 import pytest
-from app.mcp.registro import (
+from app.mcp.registry import (
     ServidorMCP,
     listar_servidores,
 )

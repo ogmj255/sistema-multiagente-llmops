@@ -15,8 +15,7 @@ from app.services.text_preprocessor import (
     parse_contract_html,
 )
 
-MAX_CHUNK_CHARS = 3500
-BREAKPOINT_PERCENTILE = 95.0
+BREAKPOINT_PERCENTILE = 80.0
 BUFFER_SIZE = 1
 
 
@@ -51,7 +50,6 @@ def run_preprocessor_agent(
                 BREAKPOINT_PERCENTILE
             ),
             buffer_size=BUFFER_SIZE,
-            max_chunk_chars=MAX_CHUNK_CHARS,
         )
 
         clauses = [

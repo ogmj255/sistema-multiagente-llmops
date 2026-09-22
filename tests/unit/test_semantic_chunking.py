@@ -46,24 +46,45 @@ def test_split_into_sentences() -> None:
     ]
 
 
-def test_split_long_sentence_respects_maximum() -> None:
+
+def test_roman_enumeration_stays_with_following_text() -> None:
+    text = (
+        "El usuario acepta: iv. "
+        "cancelar las tarifas correspondientes."
+    )
+
+    assert split_into_sentences(text) == [
+        (
+            "El usuario acepta: iv. "
+            "cancelar las tarifas correspondientes."
+        )
+    ]
+
+
+def test_us_abbreviation_is_not_split() -> None:
+    text = (
+        "The U.S. Government may impose "
+        "additional requirements."
+    )
+
+    assert split_into_sentences(text) == [
+        (
+            "The U.S. Government may impose "
+            "additional requirements."
+        )
+    ]
+
+
+def test_long_sentence_is_not_split_by_character_limit() -> None:
     text = " ".join(
-        ["contractual"] * 30
+        ["contractual"] * 300
     )
 
     sentences = split_into_sentences(
-        text,
-        max_sentence_chars=40,
+        text
     )
 
-    assert len(sentences) > 1
-    assert all(
-        len(sentence) <= 40
-        for sentence in sentences
-    )
-
-    assert " ".join(sentences) == text
-
+    assert sentences == [text]
 
 def test_build_context_groups() -> None:
     sentences = [
@@ -201,50 +222,8 @@ def test_percentile_creates_semantic_breakpoint(
     ]
 
 
-def test_oversized_chunks_are_split(
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    text = (
-        "Alpha contractual condition applies. "
-        "Beta contractual condition applies. "
-        "Gamma contractual condition applies. "
-        "Delta contractual condition applies."
-    )
-
-    monkeypatch.setattr(
-        semantic_chunking,
-        "calculate_semantic_distances",
-        lambda sentences, buffer_size=1: [
-            0.5,
-            0.5,
-            0.5,
-        ],
-    )
-
-    chunks = build_semantic_chunks(
-        text,
-        max_chunk_chars=45,
-    )
-
-    assert len(chunks) > 1
-
-    assert all(
-        len(chunk) <= 45
-        for chunk in chunks
-    )
-
-    assert " ".join(chunks) == text
-
 
 def test_empty_text_returns_no_chunks() -> None:
     assert build_semantic_chunks(
         "   "
     ) == []
-
-
-def test_invalid_maximum_size_is_rejected() -> None:
-    with pytest.raises(ValueError):
-        build_semantic_chunks(
-            "Some contractual text.",
-            max_chunk_chars=0,
-        )

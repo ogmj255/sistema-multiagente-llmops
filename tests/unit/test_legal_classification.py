@@ -80,8 +80,8 @@ def create_model_response(
     """Simula una respuesta estructurada del modelo."""
 
     return ModelResponse(
-        provider="ollama",
-        model="qwen3:4b",
+        provider="openrouter",
+        model="deepseek/deepseek-v4-flash-0731",
         content=json.dumps(
             payload,
             ensure_ascii=False,
@@ -132,7 +132,7 @@ def test_classify_clause_returns_valid_decision(
 
     assert execution.decision.classification == "high_risk_abusiveness"
     assert execution.decision.legal_basis_indices == [0]
-    assert execution.model_response.provider == "ollama"
+    assert execution.model_response.provider == "openrouter"
     assert execution.model_response.prompt_tokens == 120
 
 
@@ -171,8 +171,8 @@ def test_classification_rejects_invalid_json(
         response_schema: dict[str, object] | None,
     ) -> ModelResponse:
         return ModelResponse(
-            provider="ollama",
-            model="qwen3:4b",
+            provider="openrouter",
+            model="deepseek/deepseek-v4-flash-0731",
             content="respuesta no estructurada",
         )
 

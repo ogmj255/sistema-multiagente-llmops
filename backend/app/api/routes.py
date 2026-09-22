@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Response
 from fastapi.encoders import jsonable_encoder
 
-from app.agents.orquestador import ejecutar_orquestacion
+from app.agents.orchestrator_agent import ejecutar_orquestacion
 from app.schemas.contract import ExtractionRequest
 from app.schemas.report import AnalysisReport
 from app.services.report_export import (
