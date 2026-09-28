@@ -1,8 +1,8 @@
 ﻿from app.schemas.report import (
     AnalysisReport,
+    ClassificationSummary,
     ReportGenerationRequest,
     ReportGenerationResponse,
-    RiskSummary,
 )
 
 
@@ -22,7 +22,7 @@ def run_report_generator_agent(
     )
     failed_clauses = len(clauses) - successful_clauses
 
-    risk_summary = RiskSummary()
+    classification_summary = ClassificationSummary()
 
     for item in clauses:
         assessment = item.analysis.result
@@ -30,16 +30,20 @@ def run_report_generator_agent(
         if assessment is None:
             continue
 
-        if assessment.analysis_status == "requires_review":
-            risk_summary.requires_review += 1
+
+        if assessment.analysis_status == "not_applicable":
+            classification_summary.not_applicable += 1
             continue
 
-        if assessment.risk_level == "low":
-            risk_summary.low += 1
-        elif assessment.risk_level == "medium":
-            risk_summary.medium += 1
-        elif assessment.risk_level == "high":
-            risk_summary.high += 1
+        if assessment.classification == "not_potentially_abusive":
+            classification_summary.not_potentially_abusive += 1
+        elif assessment.classification == "potentially_abusive":
+            classification_summary.potentially_abusive += 1
+        elif (
+            assessment.classification
+            == "strong_indications_of_abusiveness"
+        ):
+            classification_summary.strong_indications_of_abusiveness += 1
 
     report = AnalysisReport(
         execution_id=request.execution_id,
@@ -51,7 +55,7 @@ def run_report_generator_agent(
         analyzed_clauses=len(clauses),
         successful_clauses=successful_clauses,
         failed_clauses=failed_clauses,
-        risk_summary=risk_summary,
+        classification_summary=classification_summary,
         clauses=clauses,
     )
 

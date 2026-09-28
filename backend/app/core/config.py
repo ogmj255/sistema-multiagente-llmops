@@ -50,6 +50,14 @@ class Settings(BaseSettings):
     )
     openrouter_site_url: str = ""
 
+    langfuse_public_key: SecretStr = SecretStr("")
+    langfuse_secret_key: SecretStr = SecretStr("")
+    langfuse_base_url: str = (
+        "https://us.cloud.langfuse.com"
+    )
+    langfuse_tracing_enabled: bool = True
+    langfuse_capture_content: bool = False
+
     chroma_host: str = "localhost"
     chroma_port: int = 8001
     chroma_collection: str = "legal_knowledge"

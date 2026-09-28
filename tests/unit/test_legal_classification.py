@@ -7,9 +7,7 @@ from app.llm.models import (
     ModelResponse,
 )
 from app.schemas.knowledge import LegalKnowledgeMatch
-from app.schemas.legal_analysis import (
-    ClauseAnalysisRequest,
-)
+from app.schemas.legal_analysis import ClauseAnalysisRequest
 from app.schemas.preprocessing import ProcessedClause
 from app.services import analysis
 
@@ -27,7 +25,8 @@ def create_request() -> ClauseAnalysisRequest:
             heading="Limitación de responsabilidad",
             heading_level=2,
             content=(
-                "El proveedor no será responsable por ningún daño causado al usuario."
+                "El proveedor no será responsable por "
+                "ningún daño causado al usuario."
             ),
         ),
     )
@@ -37,13 +36,14 @@ def create_match() -> LegalKnowledgeMatch:
     """Crea evidencia jurídica para la clasificación."""
 
     return LegalKnowledgeMatch(
-        chunk_id=("ec_defensa_consumidor_2000_chunk_0048"),
+        chunk_id="ec_defensa_consumidor_2000_chunk_0048",
         document_id="ec_defensa_consumidor_2000",
         chunk_index=48,
         content=(
-            "Son nulas las cláusulas que limiten la responsabilidad del proveedor."
+            "Son nulas las cláusulas que limiten "
+            "la responsabilidad del proveedor."
         ),
-        title=("Ley Orgánica de Defensa del Consumidor"),
+        title="Ley Orgánica de Defensa del Consumidor",
         jurisdiction="ecuador",
         issuing_body="Congreso Nacional del Ecuador",
         document_type="law",
@@ -51,7 +51,7 @@ def create_match() -> LegalKnowledgeMatch:
         status="amended",
         language="es",
         source_url="https://example.com/consumer-law",
-        official_citation=("Suplemento del Registro Oficial 116"),
+        official_citation="Suplemento del Registro Oficial 116",
         topics="consumidores|cláusulas abusivas",
         checksum="a" * 64,
         distance=0.18,
@@ -62,13 +62,20 @@ def create_decision_payload() -> dict[str, object]:
     """Crea una decisión estructurada válida."""
 
     return {
-        "category": "limitation_of_liability",
-        "classification": "high_risk_abusiveness",
+        "category": "Responsabilidad contractual",
+        "clause_type": "Exclusión amplia de responsabilidad",
+        "target": "Proveedor",
+        "consequence": (
+            "El usuario podría asumir daños "
+            "que el proveedor excluye."
+        ),
+        "classification": "strong_indications_of_abusiveness",
         "analysis_status": "classified",
         "justification": (
-            "La cláusula excluye ampliamente la responsabilidad del proveedor."
+            "La cláusula presenta indicios claros "
+            "de posible desequilibrio."
         ),
-        "recommendation": ("Solicitar revisión jurídica."),
+        "recommendation": "Solicitar revisión jurídica.",
         "evidence_sufficiency": "sufficient",
         "legal_basis_indices": [0],
     }
@@ -130,23 +137,65 @@ def test_classify_clause_returns_valid_decision(
         [create_match()],
     )
 
-    assert execution.decision.classification == "high_risk_abusiveness"
+    assert execution.decision.classification == (
+        "strong_indications_of_abusiveness"
+    )
+    assert execution.decision.category == "Responsabilidad contractual"
+    assert execution.decision.target == "Proveedor"
     assert execution.decision.legal_basis_indices == [0]
     assert execution.model_response.provider == "openrouter"
     assert execution.model_response.prompt_tokens == 120
 
 
-def test_classification_allows_review_without_evidence(
+def test_classification_allows_insufficient_evidence(
     monkeypatch,
 ) -> None:
-    """Permite abstenerse cuando falta evidencia."""
+    """Permite clasificar aunque no exista evidencia suficiente."""
 
     payload = {
-        "category": "other_contractual_risk",
+        "category": "Responsabilidad contractual",
+        "clause_type": "Limitación de responsabilidad",
+        "target": "Proveedor",
+        "consequence": None,
+        "classification": "potentially_abusive",
+        "analysis_status": "classified",
+        "justification": (
+            "El fragmento presenta indicios de desequilibrio, "
+            "pero no existe respaldo jurídico suficiente recuperado."
+        ),
+        "recommendation": "Solicitar revisión jurídica.",
+        "evidence_sufficiency": "insufficient",
+        "legal_basis_indices": [],
+    }
+    configure_model_response(monkeypatch, payload)
+
+    execution = analysis.classify_clause(
+        create_request(),
+        [],
+    )
+
+    assert execution.decision.classification == "potentially_abusive"
+    assert execution.decision.analysis_status == "classified"
+    assert execution.decision.evidence_sufficiency == "insufficient"
+    assert execution.decision.legal_basis_indices == []
+
+
+def test_classification_allows_not_applicable(
+    monkeypatch,
+) -> None:
+    """Permite excluir fragmentos sin contenido contractual."""
+
+    payload = {
+        "category": "Encabezado contractual",
+        "clause_type": "Título sin contenido normativo",
+        "target": "No aplica",
+        "consequence": None,
         "classification": None,
-        "analysis_status": "requires_review",
-        "justification": ("No existe evidencia jurídica suficiente."),
-        "recommendation": ("Solicitar revisión jurídica."),
+        "analysis_status": "not_applicable",
+        "justification": (
+            "El fragmento corresponde únicamente a un encabezado."
+        ),
+        "recommendation": None,
         "evidence_sufficiency": "insufficient",
         "legal_basis_indices": [],
     }
@@ -158,7 +207,7 @@ def test_classification_allows_review_without_evidence(
     )
 
     assert execution.decision.classification is None
-    assert execution.decision.analysis_status == "requires_review"
+    assert execution.decision.analysis_status == "not_applicable"
 
 
 def test_classification_rejects_invalid_json(
@@ -198,7 +247,9 @@ def test_classification_rejects_unexpected_field(
     """Rechaza campos que no pertenecen a la decisión."""
 
     payload = create_decision_payload()
-    payload["relevant_fragment"] = "El usuario renuncia a todos sus derechos."
+    payload["relevant_fragment"] = (
+        "El usuario renuncia a todos sus derechos."
+    )
     configure_model_response(monkeypatch, payload)
 
     with pytest.raises(

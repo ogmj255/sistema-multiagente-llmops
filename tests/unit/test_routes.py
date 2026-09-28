@@ -1,7 +1,11 @@
+from types import SimpleNamespace
+from uuid import uuid4
+
 from app.api import routes
 from app.main import app
 from app.schemas.contract import ExtractionRequest
-from app.schemas.report import AnalysisReport, RiskSummary
+from app.schemas.observability import ObservabilitySummary
+from app.schemas.report import AnalysisReport, ClassificationSummary
 from fastapi.testclient import TestClient
 
 client = TestClient(app)
@@ -21,6 +25,42 @@ def test_health() -> None:
     assert response.json()["status"] == "ok"
 
 
+def test_llmops_dashboard(
+    monkeypatch,
+) -> None:
+    recibido: dict[str, int] = {}
+
+    def listar(
+        *,
+        limit: int,
+    ) -> list[object]:
+        recibido["limit"] = limit
+        return []
+
+    monkeypatch.setattr(
+        routes,
+        "list_recent_observability_runs",
+        listar,
+    )
+
+    response = client.get(
+        "/llmops?limit=25"
+    )
+
+    assert response.status_code == 200
+    assert recibido["limit"] == 25
+
+    assert response.json() == {
+        "total_executions": 0,
+        "average_latency_ms": 0.0,
+        "total_tokens": 0,
+        "total_cost_usd": None,
+        "error_rate_percent": 0.0,
+        "total_errors": 0,
+        "executions": [],
+    }
+
+
 def test_analisis_ejecuta_pipeline(
     monkeypatch,
 ) -> None:
@@ -36,12 +76,24 @@ def test_analisis_ejecuta_pipeline(
             "execution_id": "ejecucion-prueba",
             "request": request,
             "status": "success",
+            "reused_analysis": False,
+            "reused_analysis_at": None,
             "current_step": "finalization",
             "extracted_contract": None,
             "preprocessed_contract": None,
             "current_clause_index": 0,
             "knowledge_response": None,
             "clause_results": {},
+            "observability_summary": ObservabilitySummary(
+                status="success",
+                duration_ms=1250.0,
+                prompt_tokens=100,
+                completion_tokens=25,
+                total_tokens=125,
+                cost_usd=0.0035,
+                error_count=0,
+                llm_invocation_count=1,
+            ),
             "errors": [],
             "attempts": {},
         }
@@ -76,6 +128,16 @@ def test_analisis_ejecuta_pipeline(
     assert cuerpo["failed_clauses"] == 0
     assert cuerpo["results"] == []
     assert cuerpo["report"] is None
+    assert cuerpo["observability_summary"] == {
+        "status": "success",
+        "duration_ms": 1250.0,
+        "prompt_tokens": 100,
+        "completion_tokens": 25,
+        "total_tokens": 125,
+        "cost_usd": 0.0035,
+        "error_count": 0,
+        "llm_invocation_count": 1,
+    }
     assert "extracted_contract" not in cuerpo
     assert "preprocessed_contract" not in cuerpo
 
@@ -91,6 +153,8 @@ def test_analisis_usa_informe_generado(
             "execution_id": "ejecucion-informe",
             "request": request,
             "status": "success",
+            "reused_analysis": False,
+            "reused_analysis_at": None,
             "current_step": "finalization",
             "extracted_contract": None,
             "preprocessed_contract": None,
@@ -104,12 +168,22 @@ def test_analisis_usa_informe_generado(
                 analyzed_clauses=0,
                 successful_clauses=0,
                 failed_clauses=0,
-                risk_summary=RiskSummary(),
+                classification_summary=ClassificationSummary(),
                 clauses=[],
             ),
             "current_clause_index": 0,
             "knowledge_response": None,
             "clause_results": {},
+            "observability_summary": ObservabilitySummary(
+                status="success",
+                duration_ms=1250.0,
+                prompt_tokens=100,
+                completion_tokens=25,
+                total_tokens=125,
+                cost_usd=0.0035,
+                error_count=0,
+                llm_invocation_count=1,
+            ),
             "errors": [],
             "attempts": {},
         }
@@ -145,13 +219,95 @@ def test_analisis_usa_informe_generado(
     assert cuerpo["report"]["execution_id"] == (
         "ejecucion-informe"
     )
-    assert cuerpo["report"]["risk_summary"] == {
-        "low": 0,
-        "medium": 0,
-        "high": 0,
-        "requires_review": 0,
+    assert cuerpo["report"]["classification_summary"] == {
+        "not_potentially_abusive": 0,
+        "potentially_abusive": 0,
+        "strong_indications_of_abusiveness": 0,
+        "not_applicable": 0,
     }
+    assert cuerpo["observability_summary"]["total_tokens"] == 125
+    assert cuerpo["observability_summary"]["cost_usd"] == 0.0035
 
+
+
+def test_recupera_analisis_por_execution_id(
+    monkeypatch,
+) -> None:
+    execution_id = uuid4()
+
+    informe = AnalysisReport(
+        execution_id=str(execution_id),
+        source_url="https://example.com/terms",
+        platform="Example",
+        title="Terms of Service",
+        language="es",
+        total_clauses=0,
+        analyzed_clauses=0,
+        successful_clauses=0,
+        failed_clauses=0,
+        classification_summary=ClassificationSummary(),
+        clauses=[],
+    )
+
+    registro = SimpleNamespace(
+        execution_id=execution_id,
+        status="success",
+        report_data=informe.model_dump(
+            mode="json"
+        ),
+        errors=[],
+        attempts={},
+    )
+
+    monkeypatch.setattr(
+        routes,
+        "get_analysis_by_execution_id",
+        lambda _execution_id: registro,
+    )
+
+    response = client.get(
+        f"/analisis/{execution_id}"
+    )
+
+    assert response.status_code == 200
+
+    cuerpo = response.json()
+
+    assert cuerpo["execution_id"] == str(execution_id)
+    assert cuerpo["status"] == "success"
+    assert cuerpo["source_url"] == (
+        "https://example.com/terms"
+    )
+    assert cuerpo["platform"] == "Example"
+    assert cuerpo["total_clauses"] == 0
+    assert cuerpo["results"] == []
+    assert cuerpo["errors"] == []
+    assert cuerpo["attempts"] == {}
+    assert cuerpo["report"]["execution_id"] == (
+        str(execution_id)
+    )
+
+
+def test_recuperar_analisis_inexistente_devuelve_404(
+    monkeypatch,
+) -> None:
+    execution_id = uuid4()
+
+    monkeypatch.setattr(
+        routes,
+        "get_analysis_by_execution_id",
+        lambda _execution_id: None,
+    )
+
+    response = client.get(
+        f"/analisis/{execution_id}"
+    )
+
+    assert response.status_code == 404
+    assert response.json()["detail"] == (
+        "No se encontró un análisis asociado "
+        "al identificador indicado."
+    )
 
 
 def crear_informe_vacio() -> AnalysisReport:
@@ -165,7 +321,7 @@ def crear_informe_vacio() -> AnalysisReport:
         analyzed_clauses=0,
         successful_clauses=0,
         failed_clauses=0,
-        risk_summary=RiskSummary(),
+        classification_summary=ClassificationSummary(),
         clauses=[],
     )
 

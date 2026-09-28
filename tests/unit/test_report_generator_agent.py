@@ -1,4 +1,4 @@
-﻿from app.agents.report_generator_agent import (
+from app.agents.report_generator_agent import (
     run_report_generator_agent,
 )
 from app.schemas.knowledge import LegalKnowledgeMatch
@@ -13,6 +13,8 @@ from app.schemas.report import (
 
 
 def crear_evidencia() -> LegalKnowledgeMatch:
+    """Crea evidencia jurídica para las pruebas."""
+
     return LegalKnowledgeMatch(
         chunk_id="ec_ley_chunk_0001",
         document_id="ec_ley",
@@ -35,18 +37,16 @@ def crear_evidencia() -> LegalKnowledgeMatch:
 def crear_analisis(
     classification: str,
 ) -> ClauseAnalysisResponse:
-    riesgos = {
-        "not_potentially_abusive": "low",
-        "potentially_abusive": "medium",
-        "high_risk_abusiveness": "high",
-    }
+    """Crea un análisis contractual clasificado."""
 
     return ClauseAnalysisResponse(
         status="success",
         result=ClauseAssessment(
-            category="other_contractual_risk",
+            category="Condiciones contractuales",
+            clause_type="Disposición contractual",
+            target="Usuario",
+            consequence="Produce efectos sobre el usuario.",
             classification=classification,
-            risk_level=riesgos[classification],
             analysis_status="classified",
             relevant_fragment="Contenido contractual.",
             justification="Justificación de prueba.",
@@ -57,16 +57,26 @@ def crear_analisis(
     )
 
 
-def crear_revision() -> ClauseAnalysisResponse:
+def crear_no_aplicable() -> ClauseAnalysisResponse:
+    """Crea un resultado para un fragmento no sustantivo."""
+
     return ClauseAnalysisResponse(
         status="success",
         result=ClauseAssessment(
-            category="other_contractual_risk",
-            analysis_status="requires_review",
-            relevant_fragment="Contenido contractual.",
-            justification="Falta evidencia suficiente.",
-            recommendation="Revisar manualmente.",
+            category="Encabezado contractual",
+            clause_type="Título sin contenido normativo",
+            target="No aplica",
+            consequence=None,
+            classification=None,
+            analysis_status="not_applicable",
+            relevant_fragment="Condiciones generales",
+            justification=(
+                "El fragmento corresponde únicamente "
+                "a un encabezado."
+            ),
+            recommendation=None,
             evidence_sufficiency="insufficient",
+            legal_basis=[],
         ),
     )
 
@@ -90,7 +100,7 @@ def test_genera_resumen_y_ordena_clausulas() -> None:
             ClauseReportItem(
                 clause_order=3,
                 analysis=crear_analisis(
-                    "high_risk_abusiveness"
+                    "strong_indications_of_abusiveness"
                 ),
             ),
             ClauseReportItem(
@@ -101,7 +111,7 @@ def test_genera_resumen_y_ordena_clausulas() -> None:
             ),
             ClauseReportItem(
                 clause_order=4,
-                analysis=crear_revision(),
+                analysis=crear_no_aplicable(),
             ),
             ClauseReportItem(
                 clause_order=2,
@@ -125,10 +135,12 @@ def test_genera_resumen_y_ordena_clausulas() -> None:
     assert report.successful_clauses == 4
     assert report.failed_clauses == 1
 
-    assert report.risk_summary.low == 1
-    assert report.risk_summary.medium == 1
-    assert report.risk_summary.high == 1
-    assert report.risk_summary.requires_review == 1
+    summary = report.classification_summary
+
+    assert summary.not_potentially_abusive == 1
+    assert summary.potentially_abusive == 1
+    assert summary.strong_indications_of_abusiveness == 1
+    assert summary.not_applicable == 1
 
     assert [
         item.clause_order

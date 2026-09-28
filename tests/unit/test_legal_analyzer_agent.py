@@ -31,7 +31,8 @@ def create_request() -> ClauseAnalysisRequest:
             heading="Modificación unilateral",
             heading_level=2,
             content=(
-                "El proveedor podrá modificar unilateralmente el precio del servicio."
+                "El proveedor podrá modificar "
+                "unilateralmente el precio del servicio."
             ),
         ),
     )
@@ -41,14 +42,14 @@ def create_match() -> LegalKnowledgeMatch:
     """Crea evidencia jurídica recuperada."""
 
     return LegalKnowledgeMatch(
-        chunk_id=("ec_defensa_consumidor_2000_chunk_0048"),
+        chunk_id="ec_defensa_consumidor_2000_chunk_0048",
         document_id="ec_defensa_consumidor_2000",
         chunk_index=48,
         content=(
             "Son nulas las cláusulas que permiten al "
             "proveedor variar unilateralmente el precio."
         ),
-        title=("Ley Orgánica de Defensa del Consumidor"),
+        title="Ley Orgánica de Defensa del Consumidor",
         jurisdiction="ecuador",
         issuing_body="Congreso Nacional del Ecuador",
         document_type="law",
@@ -63,20 +64,33 @@ def create_match() -> LegalKnowledgeMatch:
     )
 
 
-def create_execution() -> ClassificationExecution:
-    """Crea una clasificación respaldada."""
+def create_execution(
+    *,
+    evidence_sufficiency: str = "sufficient",
+    indices: list[int] | None = None,
+) -> ClassificationExecution:
+    """Crea una clasificación generada por el modelo."""
+
+    if indices is None:
+        indices = [0] if evidence_sufficiency != "insufficient" else []
 
     return ClassificationExecution(
         decision=ClauseAnalysisDecision(
-            category="unilateral_modification",
-            classification="high_risk_abusiveness",
+            category="Modificación de condiciones",
+            clause_type="Facultad unilateral del proveedor",
+            target="Proveedor",
+            consequence=(
+                "El precio del servicio puede cambiar para el usuario."
+            ),
+            classification="strong_indications_of_abusiveness",
             analysis_status="classified",
             justification=(
-                "La cláusula permite una modificación unilateral prohibida."
+                "La cláusula presenta indicios fuertes "
+                "de modificación unilateral."
             ),
-            recommendation=("Eliminar la facultad unilateral."),
-            evidence_sufficiency="sufficient",
-            legal_basis_indices=[0],
+            recommendation="Revisar la facultad unilateral.",
+            evidence_sufficiency=evidence_sufficiency,
+            legal_basis_indices=indices,
         ),
         model_response=ModelResponse(
             provider="openrouter",
@@ -86,20 +100,40 @@ def create_execution() -> ClassificationExecution:
     )
 
 
-def create_assessment() -> ClauseAssessment:
+def create_assessment(
+    *,
+    evidence_sufficiency: str = "sufficient",
+    legal_basis: list[LegalKnowledgeMatch] | None = None,
+) -> ClauseAssessment:
     """Crea la valoración jurídica final."""
 
+    if legal_basis is None:
+        legal_basis = (
+            [create_match()]
+            if evidence_sufficiency != "insufficient"
+            else []
+        )
+
     return ClauseAssessment(
-        category="unilateral_modification",
-        classification="high_risk_abusiveness",
+        category="Modificación de condiciones",
+        clause_type="Facultad unilateral del proveedor",
+        target="Proveedor",
+        consequence=(
+            "El precio del servicio puede cambiar para el usuario."
+        ),
+        classification="strong_indications_of_abusiveness",
         analysis_status="classified",
         relevant_fragment=(
-            "El proveedor podrá modificar unilateralmente el precio del servicio."
+            "El proveedor podrá modificar "
+            "unilateralmente el precio del servicio."
         ),
-        justification=("La cláusula permite una modificación unilateral prohibida."),
-        recommendation=("Eliminar la facultad unilateral."),
-        evidence_sufficiency="sufficient",
-        legal_basis=[create_match()],
+        justification=(
+            "La cláusula presenta indicios fuertes "
+            "de modificación unilateral."
+        ),
+        recommendation="Revisar la facultad unilateral.",
+        evidence_sufficiency=evidence_sufficiency,
+        legal_basis=legal_basis,
     )
 
 
@@ -131,7 +165,7 @@ def test_agent_runs_complete_analysis(
     def fake_knowledge(
         knowledge_request: KnowledgeQuery,
     ) -> KnowledgeResponse:
-        assert request.clause.content in (knowledge_request.query)
+        assert request.clause.content in knowledge_request.query
         assert knowledge_request.top_k == 5
 
         return KnowledgeResponse(
@@ -174,67 +208,149 @@ def test_agent_runs_complete_analysis(
         fake_grounding,
     )
 
-    response = legal_analyzer_agent.run_legal_analyzer_agent(request)
+    response = legal_analyzer_agent.run_legal_analyzer_agent(
+        request
+    )
 
     assert response.status == "success"
     assert response.error is None
     assert response.result == assessment
-    assert response.result.risk_level == "high"
+    assert response.result.classification == (
+        "strong_indications_of_abusiveness"
+    )
 
 
-def test_agent_controls_knowledge_error(
+def test_agent_continues_when_knowledge_fails(
     monkeypatch,
 ) -> None:
-    """Detiene el flujo si falla el RAG."""
+    """Clasifica aunque el RAG presente un error técnico."""
+
+    request = create_request()
+    execution = create_execution(
+        evidence_sufficiency="insufficient"
+    )
+    assessment = create_assessment(
+        evidence_sufficiency="insufficient"
+    )
 
     def fake_knowledge(
-        request: KnowledgeQuery,
+        knowledge_request: KnowledgeQuery,
     ) -> KnowledgeResponse:
         return KnowledgeResponse(
             status="error",
-            query=request.query,
+            query=knowledge_request.query,
             error="ChromaDB no disponible.",
         )
 
+    def fake_classification(
+        received_request: ClauseAnalysisRequest,
+        legal_context: list[LegalKnowledgeMatch],
+    ) -> ClassificationExecution:
+        assert received_request == request
+        assert legal_context == []
+        return execution
+
+    def fake_grounding(
+        received_execution: ClassificationExecution,
+        received_request: ClauseAnalysisRequest,
+        legal_context: list[LegalKnowledgeMatch],
+    ) -> ClauseAssessment:
+        assert received_execution == execution
+        assert received_request == request
+        assert legal_context == []
+        return assessment
+
     monkeypatch.setattr(
         legal_analyzer_agent,
         "run_knowledge_agent",
         fake_knowledge,
     )
+    monkeypatch.setattr(
+        legal_analyzer_agent,
+        "classify_clause",
+        fake_classification,
+    )
+    monkeypatch.setattr(
+        legal_analyzer_agent,
+        "build_grounded_assessment",
+        fake_grounding,
+    )
 
-    response = legal_analyzer_agent.run_legal_analyzer_agent(create_request())
+    response = legal_analyzer_agent.run_legal_analyzer_agent(
+        request
+    )
 
-    assert response.status == "error"
-    assert response.result is None
-    assert response.error is not None
-    assert "ChromaDB no disponible" in response.error
+    assert response.status == "success"
+    assert response.error is None
+    assert response.result == assessment
+    assert response.result.evidence_sufficiency == "insufficient"
+    assert response.result.legal_basis == []
 
 
-def test_agent_rejects_empty_knowledge(
+def test_agent_continues_without_knowledge_matches(
     monkeypatch,
 ) -> None:
-    """Controla una recuperación sin evidencias."""
+    """Clasifica aunque el RAG no recupere evidencias."""
+
+    request = create_request()
+    execution = create_execution(
+        evidence_sufficiency="insufficient"
+    )
+    assessment = create_assessment(
+        evidence_sufficiency="insufficient"
+    )
 
     def fake_knowledge(
-        request: KnowledgeQuery,
+        knowledge_request: KnowledgeQuery,
     ) -> KnowledgeResponse:
         return KnowledgeResponse(
             status="success",
-            query=request.query,
+            query=knowledge_request.query,
+            matches=[],
         )
+
+    def fake_classification(
+        received_request: ClauseAnalysisRequest,
+        legal_context: list[LegalKnowledgeMatch],
+    ) -> ClassificationExecution:
+        assert received_request == request
+        assert legal_context == []
+        return execution
+
+    def fake_grounding(
+        received_execution: ClassificationExecution,
+        received_request: ClauseAnalysisRequest,
+        legal_context: list[LegalKnowledgeMatch],
+    ) -> ClauseAssessment:
+        assert received_execution == execution
+        assert received_request == request
+        assert legal_context == []
+        return assessment
 
     monkeypatch.setattr(
         legal_analyzer_agent,
         "run_knowledge_agent",
         fake_knowledge,
     )
+    monkeypatch.setattr(
+        legal_analyzer_agent,
+        "classify_clause",
+        fake_classification,
+    )
+    monkeypatch.setattr(
+        legal_analyzer_agent,
+        "build_grounded_assessment",
+        fake_grounding,
+    )
 
-    response = legal_analyzer_agent.run_legal_analyzer_agent(create_request())
+    response = legal_analyzer_agent.run_legal_analyzer_agent(
+        request
+    )
 
-    assert response.status == "error"
-    assert response.result is None
-    assert response.error is not None
-    assert "no recuperó evidencia" in response.error
+    assert response.status == "success"
+    assert response.error is None
+    assert response.result == assessment
+    assert response.result.evidence_sufficiency == "insufficient"
 
 
 def test_agent_controls_classification_error(
@@ -257,7 +373,9 @@ def test_agent_controls_classification_error(
         request: ClauseAnalysisRequest,
         legal_context: list[LegalKnowledgeMatch],
     ) -> ClassificationExecution:
-        raise ClauseClassificationError("Respuesta JSON inválida.")
+        raise ClauseClassificationError(
+            "Respuesta JSON inválida."
+        )
 
     monkeypatch.setattr(
         legal_analyzer_agent,
@@ -270,7 +388,9 @@ def test_agent_controls_classification_error(
         fail_classification,
     )
 
-    response = legal_analyzer_agent.run_legal_analyzer_agent(create_request())
+    response = legal_analyzer_agent.run_legal_analyzer_agent(
+        create_request()
+    )
 
     assert response.status == "error"
     assert response.error is not None
@@ -322,7 +442,9 @@ def test_agent_controls_grounding_error(
         fail_grounding,
     )
 
-    response = legal_analyzer_agent.run_legal_analyzer_agent(create_request())
+    response = legal_analyzer_agent.run_legal_analyzer_agent(
+        create_request()
+    )
 
     assert response.status == "error"
     assert response.result is None
@@ -343,7 +465,9 @@ def test_agent_uses_received_context_without_new_search(
     def fail_knowledge(
         _: KnowledgeQuery,
     ) -> KnowledgeResponse:
-        raise AssertionError("No debe consultar nuevamente el RAG.")
+        raise AssertionError(
+            "No debe consultar nuevamente el RAG."
+        )
 
     def fake_classification(
         received_request: ClauseAnalysisRequest,
@@ -379,9 +503,11 @@ def test_agent_uses_received_context_without_new_search(
         fake_grounding,
     )
 
-    response = legal_analyzer_agent.run_legal_analyzer_with_context(
-        request,
-        [match],
+    response = (
+        legal_analyzer_agent.run_legal_analyzer_with_context(
+            request,
+            [match],
+        )
     )
 
     assert response.status == "success"

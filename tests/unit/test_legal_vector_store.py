@@ -352,6 +352,106 @@ def test_search_removes_exact_duplicates(
     ]
 
 
+
+def test_search_diversifies_documents(
+    monkeypatch,
+) -> None:
+    """Prioriza documentos distintos entre los resultados finales."""
+
+    monkeypatch.setattr(
+        legal_vector_store.settings,
+        "ollama_embedding_dimensions",
+        3,
+    )
+
+    collection = FakeSearchCollection()
+    collection.count = lambda: 5
+
+    def diverse_query(
+        *,
+        query_embeddings: list[list[float]],
+        n_results: int,
+        include: list[str],
+    ) -> dict[str, object]:
+        assert query_embeddings == [[0.1, 0.2, 0.3]]
+        assert n_results == 5
+        assert include == [
+            "documents",
+            "metadatas",
+            "distances",
+        ]
+
+        def metadata(
+            document_id: str,
+            chunk_index: int,
+        ) -> dict[str, object]:
+            return {
+                "document_id": document_id,
+                "chunk_index": chunk_index,
+                "title": document_id,
+                "jurisdiction": "ecuador",
+                "issuing_body": "Institución",
+                "document_type": "law",
+                "binding_level": "binding",
+                "status": "in_force",
+                "language": "es",
+                "source_url": "https://example.com/law",
+                "topics": "contratos",
+                "checksum": "a" * 64,
+            }
+
+        return {
+            "ids": [[
+                "doc_a_chunk_0000",
+                "doc_a_chunk_0001",
+                "doc_a_chunk_0002",
+                "doc_b_chunk_0000",
+                "doc_c_chunk_0000",
+            ]],
+            "documents": [[
+                "Contenido A1.",
+                "Contenido A2.",
+                "Contenido A3.",
+                "Contenido B1.",
+                "Contenido C1.",
+            ]],
+            "metadatas": [[
+                metadata("doc_a", 0),
+                metadata("doc_a", 1),
+                metadata("doc_a", 2),
+                metadata("doc_b", 0),
+                metadata("doc_c", 0),
+            ]],
+            "distances": [[
+                0.10,
+                0.11,
+                0.12,
+                0.13,
+                0.14,
+            ]],
+        }
+
+    monkeypatch.setattr(
+        collection,
+        "query",
+        diverse_query,
+    )
+
+    matches = legal_vector_store.search_legal_chunks(
+        [0.1, 0.2, 0.3],
+        KnowledgeQuery(
+            query="modificación contractual",
+            top_k=3,
+        ),
+        collection=collection,
+    )
+
+    assert [match.document_id for match in matches] == [
+        "doc_a",
+        "doc_b",
+        "doc_c",
+    ]
+
 def test_search_rejects_empty_collection(
     monkeypatch,
 ) -> None:

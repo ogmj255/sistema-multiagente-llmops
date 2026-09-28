@@ -10,6 +10,12 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from mcp.types import CallToolResult, TextContent
 
+from app.core.observability import (
+    mark_operation_error,
+    start_mcp_tool_observation,
+    update_operation_observation,
+)
+
 RUTA_BACKEND = Path(__file__).resolve().parents[2]
 
 
@@ -82,12 +88,22 @@ SERVIDORES_MCP: dict[str, ServidorMCP] = {
             "OPENROUTER_MODEL",
             "OPENROUTER_APP_NAME",
             "OPENROUTER_SITE_URL",
+            "LANGFUSE_PUBLIC_KEY",
+            "LANGFUSE_SECRET_KEY",
+            "LANGFUSE_BASE_URL",
+            "LANGFUSE_TRACING_ENABLED",
+            "LANGFUSE_CAPTURE_CONTENT",
         ),
     ),
     "generador_informes": ServidorMCP(
         nombre="Agente Generador de Informes",
         modulo="app.mcp.report_generator_tools",
         herramienta="generate_analysis_report",
+    ),
+    "observabilidad": ServidorMCP(
+        nombre="Agente de Observabilidad",
+        modulo="app.mcp.observability_tools",
+        herramienta="build_execution_observability",
     ),
 
 }
@@ -174,25 +190,52 @@ class ClienteMCP:
     ) -> dict[str, object]:
         servidor = obtener_servidor(clave)
 
-        try:
-            sesion = await self._obtener_sesion(clave)
-            resultado = await sesion.call_tool(
-                servidor.herramienta,
-                argumentos,
+        with start_mcp_tool_observation(
+            servidor.nombre,
+            servidor.herramienta,
+        ) as observation:
+            try:
+                sesion = await self._obtener_sesion(clave)
+                resultado = await sesion.call_tool(
+                    servidor.herramienta,
+                    argumentos,
+                )
+            except Exception as error:
+                invocation_error = ErrorInvocacionMCP(
+                    f"No se pudo invocar {servidor.nombre}: {error}"
+                )
+                mark_operation_error(
+                    observation,
+                    invocation_error,
+                )
+                raise invocation_error from error
+
+            if resultado.isError:
+                invocation_error = ErrorInvocacionMCP(
+                    _obtener_detalle_error(resultado)
+                )
+                mark_operation_error(
+                    observation,
+                    invocation_error,
+                )
+                raise invocation_error
+
+            contenido = resultado.structuredContent
+
+            if not isinstance(contenido, dict):
+                invocation_error = ErrorInvocacionMCP(
+                    "La herramienta MCP no devolvió "
+                    "una respuesta estructurada."
+                )
+                mark_operation_error(
+                    observation,
+                    invocation_error,
+                )
+                raise invocation_error
+
+            update_operation_observation(
+                observation,
+                status="success",
             )
-        except Exception as error:
-            raise ErrorInvocacionMCP(
-                f"No se pudo invocar {servidor.nombre}: {error}"
-            ) from error
 
-        if resultado.isError:
-            raise ErrorInvocacionMCP(_obtener_detalle_error(resultado))
-
-        contenido = resultado.structuredContent
-
-        if not isinstance(contenido, dict):
-            raise ErrorInvocacionMCP(
-                "La herramienta MCP no devolvió una respuesta estructurada."
-            )
-
-        return contenido
+            return contenido

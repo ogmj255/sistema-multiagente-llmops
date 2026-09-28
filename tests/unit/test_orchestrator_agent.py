@@ -2,15 +2,19 @@ import asyncio
 import inspect
 import re
 from collections.abc import Awaitable, Callable
+from contextlib import nullcontext
 from datetime import UTC, datetime
-from types import TracebackType
+from types import SimpleNamespace, TracebackType
 from typing import Self, TypeAlias
+from uuid import uuid4
 
+import pytest
 from app.agents import orchestrator_agent
 from app.agents.orchestrator_agent import (
     AgenteOrquestador,
     NodosOrquestacion,
 )
+from app.core import observability as core_observability
 from app.schemas.contract import (
     ExtractedContract,
     ExtractionRequest,
@@ -38,9 +42,9 @@ from app.schemas.preprocessing import (
 )
 from app.schemas.report import (
     AnalysisReport,
+    ClassificationSummary,
     ReportGenerationRequest,
     ReportGenerationResponse,
-    RiskSummary,
 )
 from langgraph.types import Send
 
@@ -94,7 +98,33 @@ def usar_cliente_mcp_falso(
 ) -> None:
     """Reemplaza el cliente real sin iniciar procesos."""
 
-    cliente = ClienteMCPFalso(responder)
+    def responder_con_observabilidad(
+        clave: str,
+        argumentos: dict[str, object],
+    ) -> RespuestaMCP:
+        if clave == "observabilidad":
+            metricas = [
+                orchestrator_agent.LLMInvocationMetrics.model_validate(
+                    metrica
+                )
+                for metrica in argumentos["llm_metrics"]
+            ]
+
+            return orchestrator_agent.build_observability_summary(
+                status=argumentos["status"],
+                duration_ms=argumentos["duration_ms"],
+                llm_metrics=metricas,
+                error_count=argumentos["error_count"],
+            ).model_dump(mode="json")
+
+        return responder(
+            clave,
+            argumentos,
+        )
+
+    cliente = ClienteMCPFalso(
+        responder_con_observabilidad
+    )
 
     def crear_cliente() -> ClienteMCPFalso:
         return cliente
@@ -103,6 +133,49 @@ def usar_cliente_mcp_falso(
         orchestrator_agent,
         "ClienteMCP",
         crear_cliente,
+    )
+
+
+@pytest.fixture(autouse=True)
+def aislar_persistencia(
+    monkeypatch,
+) -> None:
+    """Evita que los tests unitarios dependan de PostgreSQL real."""
+
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "find_successful_analysis",
+        lambda _source_url, _content_hash: None,
+    )
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "save_analysis",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "save_observability_run",
+        lambda **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "start_pipeline_observation",
+        lambda _execution_id: nullcontext(None),
+    )
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "update_pipeline_observation",
+        lambda _observation, **_kwargs: None,
+    )
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "get_current_trace_context",
+        lambda: None,
+    )
+    monkeypatch.setattr(
+        core_observability,
+        "get_observability_client",
+        lambda: None,
     )
 
 
@@ -153,6 +226,11 @@ def crear_orquestador_controlado(
         ),
         preprocesar=crear_nodo(
             "preprocesar",
+            "knowledge",
+            ejecutados,
+        ),
+        verificar_analisis_previo=crear_nodo(
+            "verificar_analisis_previo",
             "knowledge",
             ejecutados,
         ),
@@ -272,11 +350,16 @@ def crear_respuesta_legal(
     orden: int,
 ) -> ClauseAnalysisResponse:
     valoracion = ClauseAssessment(
-        category="other_contractual_risk",
+        category="Condiciones contractuales",
+        clause_type="Disposición contractual",
+        target="Usuario",
+        consequence=None,
         classification="not_potentially_abusive",
         analysis_status="classified",
         relevant_fragment=f"Contenido contractual {orden}.",
-        justification="No se identificó un riesgo.",
+        justification=(
+            "No se identificaron indicios de abusividad."
+        ),
         recommendation="Mantener la redacción.",
         evidence_sufficiency="sufficient",
         legal_basis=[crear_evidencia()],
@@ -286,7 +369,6 @@ def crear_respuesta_legal(
         status="success",
         result=valoracion,
     )
-
 
 
 def crear_respuesta_informe(
@@ -318,12 +400,13 @@ def crear_respuesta_informe(
             analyzed_clauses=len(solicitud.clauses),
             successful_clauses=exitosas,
             failed_clauses=fallidas,
-            risk_summary=RiskSummary(
-                low=exitosas,
+            classification_summary=ClassificationSummary(
+                not_potentially_abusive=exitosas,
             ),
             clauses=solicitud.clauses,
         ),
     )
+
 
 def obtener_orden_consulta(
     argumentos: dict[str, object],
@@ -358,6 +441,7 @@ def test_orquestador_compila_todos_los_nodos():
     nodos_esperados = {
         "extraer",
         "preprocesar",
+        "verificar_analisis_previo",
         "procesar_clausula",
         "generar_informe",
         "finalizar",
@@ -375,6 +459,7 @@ def test_orquestador_ejecuta_el_flujo_definido():
     assert ejecutados == [
         "extraer",
         "preprocesar",
+        "verificar_analisis_previo",
         "procesar_clausula",
         "generar_informe",
         "finalizar",
@@ -679,22 +764,33 @@ def test_continua_despues_de_error_de_conocimiento(
                     error="Error temporal de conocimiento.",
                 ).model_dump(mode="json")
 
-            return crear_respuesta_conocimiento(str(argumentos["query"])).model_dump(
-                mode="json"
-            )
+            return crear_respuesta_conocimiento(
+                str(argumentos["query"])
+            ).model_dump(mode="json")
 
         if clave == "analizador_legal":
             orden = obtener_orden_analisis(argumentos)
             llamadas.append(f"analizador_legal:{orden}")
 
-            return crear_respuesta_legal(orden).model_dump(mode="json")
+            if orden == 1:
+                assert argumentos["legal_context"] == []
+            else:
+                assert argumentos["legal_context"] == [
+                    crear_evidencia().model_dump(mode="json")
+                ]
+
+            return crear_respuesta_legal(
+                orden
+            ).model_dump(mode="json")
 
         if clave == "generador_informes":
             return crear_respuesta_informe(
                 argumentos
             ).model_dump(mode="json")
 
-        raise AssertionError(f"Servidor MCP inesperado: {clave}")
+        raise AssertionError(
+            f"Servidor MCP inesperado: {clave}"
+        )
 
     usar_cliente_mcp_falso(monkeypatch, responder)
 
@@ -706,18 +802,20 @@ def test_continua_despues_de_error_de_conocimiento(
     )
 
     assert llamadas.count("conocimiento_juridico:1") == 2
-    assert "analizador_legal:1" not in llamadas
+    assert llamadas.count("analizador_legal:1") == 1
     assert llamadas.count("conocimiento_juridico:2") == 1
     assert llamadas.count("analizador_legal:2") == 1
+
     assert resultado["current_clause_index"] == 2
-    assert resultado["status"] == "partial"
-    assert resultado["clause_results"][1].status == "error"
+    assert resultado["status"] == "success"
+    assert resultado["clause_results"][1].status == "success"
     assert resultado["clause_results"][2].status == "success"
+
     assert resultado["attempts"] == {
         "knowledge:1": 2,
     }
     assert resultado["errors"][0]["step"] == "knowledge"
-
+    assert resultado["errors"][0]["clause_order"] == 1
 
 
 def test_finalizacion_conserva_error_global():
@@ -732,3 +830,449 @@ def test_finalizacion_conserva_error_global():
     resultado = orchestrator_agent.finalizar_flujo(estado)
 
     assert resultado["status"] == "error"
+
+
+def test_reutiliza_analisis_previo_sin_repetir_agentes(
+    monkeypatch,
+):
+    execution_id = uuid4()
+
+    reporte_previo = AnalysisReport(
+        execution_id=str(execution_id),
+        source_url="https://example.com/terms",
+        platform="Example",
+        title="Terms",
+        language="es",
+        total_clauses=2,
+        analyzed_clauses=2,
+        successful_clauses=2,
+        failed_clauses=0,
+        classification_summary=ClassificationSummary(
+            not_potentially_abusive=2,
+        ),
+        clauses=[],
+    )
+
+    created_at = datetime.now(UTC)
+
+    registro = SimpleNamespace(
+        execution_id=execution_id,
+        report_data=reporte_previo.model_dump(
+            mode="json"
+        ),
+        created_at=created_at,
+    )
+
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "find_successful_analysis",
+        lambda _source_url, _content_hash: registro,
+    )
+
+    def no_guardar(**_kwargs) -> None:
+        raise AssertionError(
+            "Un análisis reutilizado no debe guardarse nuevamente."
+        )
+
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "save_analysis",
+        no_guardar,
+    )
+
+    llamadas: list[str] = []
+
+    def responder(
+        clave: str,
+        _: dict[str, object],
+    ) -> dict[str, object]:
+        llamadas.append(clave)
+
+        if clave == "extractor_web":
+            return ExtractionResponse(
+                status="success",
+                contract=crear_contrato_extraido(),
+            ).model_dump(mode="json")
+
+        if clave == "preprocesador":
+            return PreprocessingResponse(
+                status="success",
+                result=crear_contrato_preprocesado(),
+            ).model_dump(mode="json")
+
+        raise AssertionError(
+            f"No debía ejecutarse el servidor MCP: {clave}"
+        )
+
+    usar_cliente_mcp_falso(
+        monkeypatch,
+        responder,
+    )
+
+    observabilidad_guardada: list[
+        dict[str, object]
+    ] = []
+
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "save_observability_run",
+        lambda **kwargs: observabilidad_guardada.append(
+            kwargs
+        ),
+    )
+
+    resultado = orchestrator_agent.ejecutar_orquestacion(
+        ExtractionRequest(
+            url="https://example.com/terms",
+            platform="Example",
+        )
+    )
+
+    assert llamadas == [
+        "extractor_web",
+        "preprocesador",
+    ]
+    assert resultado["execution_id"] == str(execution_id)
+    assert resultado["status"] == "success"
+    assert resultado["reused_analysis"] is True
+    assert observabilidad_guardada == []
+    assert resultado["reused_analysis_at"] == created_at
+    assert resultado["report"] == reporte_previo
+    assert resultado["clause_results"] == {}
+
+
+def test_persiste_analisis_nuevo_exitoso(
+    monkeypatch,
+):
+    guardados: list[dict[str, object]] = []
+
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "find_successful_analysis",
+        lambda _source_url, _content_hash: None,
+    )
+
+    def guardar(**kwargs) -> None:
+        guardados.append(kwargs)
+
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "save_analysis",
+        guardar,
+    )
+
+    def responder(
+        clave: str,
+        argumentos: dict[str, object],
+    ) -> dict[str, object]:
+        if clave == "extractor_web":
+            return ExtractionResponse(
+                status="success",
+                contract=crear_contrato_extraido(),
+            ).model_dump(mode="json")
+
+        if clave == "preprocesador":
+            return PreprocessingResponse(
+                status="success",
+                result=crear_contrato_preprocesado(),
+            ).model_dump(mode="json")
+
+        if clave == "conocimiento_juridico":
+            return crear_respuesta_conocimiento(
+                str(argumentos["query"])
+            ).model_dump(mode="json")
+
+        if clave == "analizador_legal":
+            orden = obtener_orden_analisis(argumentos)
+            return crear_respuesta_legal(
+                orden
+            ).model_dump(mode="json")
+
+        if clave == "generador_informes":
+            return crear_respuesta_informe(
+                argumentos
+            ).model_dump(mode="json")
+
+        raise AssertionError(
+            f"Servidor MCP inesperado: {clave}"
+        )
+
+    usar_cliente_mcp_falso(
+        monkeypatch,
+        responder,
+    )
+
+    resultado = orchestrator_agent.ejecutar_orquestacion(
+        ExtractionRequest(
+            url="https://example.com/terms",
+            platform="Example",
+        )
+    )
+
+    assert resultado["status"] == "success"
+    assert resultado["reused_analysis"] is False
+    assert len(guardados) == 1
+
+    guardado = guardados[0]
+
+    assert guardado["execution_id"] == resultado["execution_id"]
+    assert guardado["source_url"] == "https://example.com/terms"
+    assert guardado["status"] == "success"
+    assert guardado["report"] == resultado["report"]
+    assert guardado["errors"] == []
+    assert guardado["content_hash"] == (
+        orchestrator_agent.calculate_content_hash(
+            crear_contrato_preprocesado().cleaned_text
+        )
+    )
+
+
+def test_persiste_analisis_parcial(
+    monkeypatch,
+):
+    guardados: list[dict[str, object]] = []
+
+    def guardar(**kwargs) -> None:
+        guardados.append(kwargs)
+
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "save_analysis",
+        guardar,
+    )
+
+    def responder(
+        clave: str,
+        argumentos: dict[str, object],
+    ) -> dict[str, object]:
+        if clave == "extractor_web":
+            return ExtractionResponse(
+                status="success",
+                contract=crear_contrato_extraido(),
+            ).model_dump(mode="json")
+
+        if clave == "preprocesador":
+            return PreprocessingResponse(
+                status="success",
+                result=crear_contrato_preprocesado(),
+            ).model_dump(mode="json")
+
+        if clave == "conocimiento_juridico":
+            return crear_respuesta_conocimiento(
+                str(argumentos["query"])
+            ).model_dump(mode="json")
+
+        if clave == "analizador_legal":
+            orden = obtener_orden_analisis(argumentos)
+
+            if orden == 1:
+                return ClauseAnalysisResponse(
+                    status="error",
+                    error="Error temporal de análisis.",
+                ).model_dump(mode="json")
+
+            return crear_respuesta_legal(
+                orden
+            ).model_dump(mode="json")
+
+        if clave == "generador_informes":
+            return crear_respuesta_informe(
+                argumentos
+            ).model_dump(mode="json")
+
+        raise AssertionError(
+            f"Servidor MCP inesperado: {clave}"
+        )
+
+    usar_cliente_mcp_falso(
+        monkeypatch,
+        responder,
+    )
+
+    resultado = orchestrator_agent.ejecutar_orquestacion(
+        ExtractionRequest(
+            url="https://example.com/terms",
+            platform="Example",
+        )
+    )
+
+    assert resultado["status"] == "partial"
+    assert resultado["reused_analysis"] is False
+    assert len(guardados) == 1
+
+    guardado = guardados[0]
+
+    assert guardado["status"] == "partial"
+    assert guardado["execution_id"] == resultado["execution_id"]
+    assert guardado["report"] == resultado["report"]
+    assert guardado["errors"] == resultado["errors"]
+    assert guardado["errors"][0]["clause_order"] == 1
+
+
+
+
+def test_analizador_legal_prioriza_contexto_activo_del_agente(
+    monkeypatch,
+) -> None:
+    """Propaga al MCP el contexto activo del agente legal."""
+
+    contexto_raiz = {
+        "trace_id": "a" * 32,
+        "parent_span_id": "root-span",
+    }
+    contexto_agente = {
+        "trace_id": "a" * 32,
+        "parent_span_id": "legal-agent-span",
+    }
+    capturado: dict[str, object] = {}
+
+    async def responder(
+        clave: str,
+        argumentos: dict[str, object],
+    ) -> dict[str, object]:
+        assert clave == "analizador_legal"
+        capturado.update(argumentos)
+
+        return crear_respuesta_legal(1).model_dump(
+            mode="json"
+        )
+
+    cliente = ClienteMCPFalso(responder)
+
+    monkeypatch.setattr(
+        orchestrator_agent,
+        "get_current_trace_context",
+        lambda: contexto_agente,
+    )
+
+    analizar_sin_decorador = (
+        orchestrator_agent.analizar_clausula.__wrapped__
+    )
+
+    respuesta = asyncio.run(
+        analizar_sin_decorador(
+            crear_solicitud_analisis(),
+            crear_respuesta_conocimiento("consulta"),
+            cliente,
+            trace_context=contexto_raiz,
+        )
+    )
+
+    assert respuesta.status == "success"
+    assert capturado["trace_context"] == contexto_agente
+
+
+def test_analizador_legal_conserva_metricas_del_envelope_mcp():
+    async def responder(
+        clave: str,
+        argumentos: dict[str, object],
+    ) -> dict[str, object]:
+        assert clave == "analizador_legal"
+
+        return {
+            "analysis": crear_respuesta_legal(1).model_dump(
+                mode="json"
+            ),
+            "observability": {
+                "provider": "openrouter",
+                "model": "model-test",
+                "prompt_tokens": 120,
+                "completion_tokens": 30,
+                "total_tokens": 150,
+                "cost_usd": 0.0042,
+            },
+        }
+
+    cliente = ClienteMCPFalso(responder)
+    metricas_llm = []
+
+    analizar_sin_decorador = (
+        orchestrator_agent.analizar_clausula.__wrapped__
+    )
+
+    respuesta = asyncio.run(
+        analizar_sin_decorador(
+            crear_solicitud_analisis(),
+            crear_respuesta_conocimiento("consulta"),
+            cliente,
+            metricas_llm=metricas_llm,
+        )
+    )
+
+    assert respuesta.status == "success"
+    assert len(metricas_llm) == 1
+
+    metrica = metricas_llm[0]
+
+    assert metrica.provider == "openrouter"
+    assert metrica.model == "model-test"
+    assert metrica.prompt_tokens == 120
+    assert metrica.completion_tokens == 30
+    assert metrica.total_tokens == 150
+    assert metrica.cost_usd == 0.0042
+
+
+def test_consolida_observabilidad_mediante_mcp():
+    capturado: dict[str, object] = {}
+
+    async def responder(
+        clave: str,
+        argumentos: dict[str, object],
+    ) -> dict[str, object]:
+        assert clave == "observabilidad"
+        capturado.update(argumentos)
+
+        return {
+            "status": "partial",
+            "duration_ms": 1250.0,
+            "prompt_tokens": 100,
+            "completion_tokens": 25,
+            "total_tokens": 125,
+            "cost_usd": 0.0035,
+            "error_count": 1,
+            "llm_invocation_count": 1,
+        }
+
+    cliente = ClienteMCPFalso(responder)
+
+    metricas = [
+        orchestrator_agent.LLMInvocationMetrics(
+            provider="openrouter",
+            model="model-test",
+            prompt_tokens=100,
+            completion_tokens=25,
+            total_tokens=125,
+            cost_usd=0.0035,
+        )
+    ]
+
+    consolidar_sin_decorador = (
+        orchestrator_agent.consolidar_observabilidad.__wrapped__
+    )
+
+    resumen = asyncio.run(
+        consolidar_sin_decorador(
+            status="partial",
+            duration_ms=1250.0,
+            llm_metrics=metricas,
+            error_count=1,
+            cliente=cliente,
+        )
+    )
+
+    assert capturado["status"] == "partial"
+    assert capturado["duration_ms"] == 1250.0
+    assert capturado["error_count"] == 1
+
+    metricas_enviadas = capturado["llm_metrics"]
+    assert isinstance(metricas_enviadas, list)
+    assert len(metricas_enviadas) == 1
+    assert metricas_enviadas[0]["total_tokens"] == 125
+    assert metricas_enviadas[0]["cost_usd"] == 0.0035
+
+    assert resumen.status == "partial"
+    assert resumen.duration_ms == 1250.0
+    assert resumen.total_tokens == 125
+    assert resumen.cost_usd == 0.0035
+    assert resumen.error_count == 1
+    assert resumen.llm_invocation_count == 1

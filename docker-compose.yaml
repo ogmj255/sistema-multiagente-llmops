@@ -32,7 +32,6 @@ services:
     env_file:
       - ./backend/.env
     environment:
-      DATABASE_URL: "postgresql+psycopg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}"
       CHROMA_HOST: chroma
       CHROMA_PORT: 8000
       CHROMA_COLLECTION: legal_knowledge

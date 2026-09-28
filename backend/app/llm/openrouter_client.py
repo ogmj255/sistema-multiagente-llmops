@@ -1,6 +1,11 @@
 import httpx
 
 from app.core.config import settings
+from app.core.observability import (
+    mark_llm_generation_error,
+    start_llm_generation,
+    update_llm_generation,
+)
 from app.llm.models import (
     ChatMessage,
     ModelProviderError,
@@ -15,6 +20,7 @@ class OpenRouterClientError(ModelProviderError):
 def generate_with_openrouter(
     messages: list[ChatMessage],
     response_schema: dict[str, object] | None = None,
+    trace_context: dict[str, str] | None = None,
 ) -> ModelResponse:
     """Genera una respuesta mediante OpenRouter."""
 
@@ -41,6 +47,9 @@ def generate_with_openrouter(
             for message in messages
         ],
         "temperature": settings.llm_temperature,
+        "usage": {
+            "include": True,
+        },
     }
 
     if response_schema is not None:
@@ -64,68 +73,113 @@ def generate_with_openrouter(
             settings.openrouter_site_url
         )
 
-    try:
-        response = httpx.post(
-            (
-                f"{settings.openrouter_base_url.rstrip('/')}"
-                "/chat/completions"
-            ),
-            json=payload,
-            headers=headers,
-            timeout=settings.llm_timeout_seconds,
+    with start_llm_generation(
+        trace_context,
+        model=settings.openrouter_model,
+        input_data=payload,
+    ) as generation:
+        try:
+            response = httpx.post(
+                (
+                    f"{settings.openrouter_base_url.rstrip('/')}"
+                    "/chat/completions"
+                ),
+                json=payload,
+                headers=headers,
+                timeout=settings.llm_timeout_seconds,
+            )
+            response.raise_for_status()
+            body = response.json()
+            content = body["choices"][0]["message"][
+                "content"
+            ]
+        except (
+            httpx.HTTPError,
+            IndexError,
+            KeyError,
+            TypeError,
+            ValueError,
+        ) as error:
+            mark_llm_generation_error(
+                generation,
+                error,
+            )
+            raise OpenRouterClientError(
+                "OpenRouter no pudo generar la respuesta: "
+                f"{error}"
+            ) from error
+
+        if (
+            not isinstance(content, str)
+            or not content.strip()
+        ):
+            error = OpenRouterClientError(
+                "OpenRouter devolvió una respuesta vacía."
+            )
+            mark_llm_generation_error(
+                generation,
+                error,
+            )
+            raise error
+
+        returned_model = body.get(
+            "model",
+            settings.openrouter_model,
         )
-        response.raise_for_status()
-        body = response.json()
-        content = body["choices"][0]["message"][
-            "content"
-        ]
-    except (
-        httpx.HTTPError,
-        IndexError,
-        KeyError,
-        TypeError,
-        ValueError,
-    ) as error:
-        raise OpenRouterClientError(
-            "OpenRouter no pudo generar la respuesta: "
-            f"{error}"
-        ) from error
 
-    if not isinstance(content, str) or not content.strip():
-        raise OpenRouterClientError(
-            "OpenRouter devolvió una respuesta vacía."
+        if not isinstance(returned_model, str):
+            returned_model = settings.openrouter_model
+
+        usage = body.get("usage", {})
+
+        if not isinstance(usage, dict):
+            usage = {}
+
+        raw_prompt_tokens = usage.get(
+            "prompt_tokens"
+        )
+        raw_completion_tokens = usage.get(
+            "completion_tokens"
+        )
+        raw_cost = usage.get("cost")
+
+        prompt_tokens = (
+            raw_prompt_tokens
+            if isinstance(raw_prompt_tokens, int)
+            else None
+        )
+        completion_tokens = (
+            raw_completion_tokens
+            if isinstance(
+                raw_completion_tokens,
+                int,
+            )
+            else None
+        )
+        cost_usd = (
+            float(raw_cost)
+            if isinstance(
+                raw_cost,
+                (int, float),
+            )
+            and not isinstance(raw_cost, bool)
+            else None
         )
 
-    returned_model = body.get(
-        "model",
-        settings.openrouter_model,
-    )
-
-    if not isinstance(returned_model, str):
-        returned_model = settings.openrouter_model
-
-    usage = body.get("usage", {})
-
-    if not isinstance(usage, dict):
-        usage = {}
-
-    prompt_tokens = usage.get("prompt_tokens")
-    completion_tokens = usage.get(
-        "completion_tokens"
-    )
+        update_llm_generation(
+            generation,
+            model=returned_model,
+            prompt_tokens=prompt_tokens,
+            completion_tokens=completion_tokens,
+            cost_usd=cost_usd,
+            output_content=content,
+        )
 
     return ModelResponse(
         provider="openrouter",
         model=returned_model,
         content=content,
-        prompt_tokens=(
-            prompt_tokens
-            if isinstance(prompt_tokens, int)
-            else None
-        ),
-        completion_tokens=(
-            completion_tokens
-            if isinstance(completion_tokens, int)
-            else None
-        ),
+        prompt_tokens=prompt_tokens,
+        completion_tokens=completion_tokens,
+        cost_usd=cost_usd,
     )

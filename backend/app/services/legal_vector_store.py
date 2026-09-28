@@ -327,4 +327,25 @@ def search_legal_chunks(
         seen_contents.add(content_key)
         candidates.append(match)
 
-    return candidates[: request.top_k]
+    diversified: list[LegalKnowledgeMatch] = []
+    repeated: list[LegalKnowledgeMatch] = []
+    seen_documents: set[str] = set()
+
+    for match in candidates:
+        if match.document_id in seen_documents:
+            repeated.append(match)
+            continue
+
+        seen_documents.add(match.document_id)
+        diversified.append(match)
+
+        if len(diversified) == request.top_k:
+            return diversified
+
+    for match in repeated:
+        diversified.append(match)
+
+        if len(diversified) == request.top_k:
+            break
+
+    return diversified

@@ -45,6 +45,7 @@ class ClassificationExecution:
 def classify_clause(
     request: ClauseAnalysisRequest,
     legal_context: list[LegalKnowledgeMatch],
+    trace_context: dict[str, str] | None = None,
 ) -> ClassificationExecution:
     """Clasifica una cláusula mediante el modelo configurado."""
 
@@ -57,10 +58,17 @@ def classify_clause(
     )
 
     try:
-        model_response = generate_model_response(
-            messages,
-            response_schema,
-        )
+        if trace_context is None:
+            model_response = generate_model_response(
+                messages,
+                response_schema,
+            )
+        else:
+            model_response = generate_model_response(
+                messages,
+                response_schema,
+                trace_context=trace_context,
+            )
     except ModelProviderError as error:
         raise ClauseClassificationError(
             "El proveedor de lenguaje no pudo "
@@ -148,6 +156,9 @@ def build_grounded_assessment(
     try:
         return ClauseAssessment(
             category=decision.category,
+            clause_type=decision.clause_type,
+            target=decision.target,
+            consequence=decision.consequence,
             classification=decision.classification,
             analysis_status=decision.analysis_status,
             relevant_fragment=request.clause.content,

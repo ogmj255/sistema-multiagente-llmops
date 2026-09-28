@@ -32,12 +32,40 @@ def main() -> None:
         type=int,
         default=None,
     )
-    limit = parser.parse_args().limit
+    parser.add_argument(
+        "--case-id",
+        action="append",
+        default=[],
+    )
+    args = parser.parse_args()
+    limit = args.limit
+    case_ids = set(args.case_id)
 
     dataset = json.loads(
-        DATASET_PATH.read_text(encoding="utf-8")
+        DATASET_PATH.read_text(
+            encoding="utf-8"
+        )
     )
     cases = dataset["cases"]
+
+    if case_ids:
+        cases = [
+            case
+            for case in cases
+            if case["case_id"] in case_ids
+        ]
+
+        found_ids = {
+            case["case_id"]
+            for case in cases
+        }
+        missing_ids = case_ids - found_ids
+
+        if missing_ids:
+            raise ValueError(
+                "Casos no encontrados: "
+                + ", ".join(sorted(missing_ids))
+            )
 
     if limit is not None:
         if limit < 1:
@@ -79,6 +107,7 @@ def main() -> None:
             response = run_legal_analyzer_agent(
                 request
             )
+
             elapsed = round(
                 perf_counter() - started,
                 3,
@@ -112,18 +141,40 @@ def main() -> None:
                 else None
             )
 
+            semantic_structure = all(
+                isinstance(value, str)
+                and bool(value.strip())
+                for value in (
+                    assessment.category,
+                    assessment.clause_type,
+                    assessment.target,
+                )
+            )
+
+            if (
+                assessment.analysis_status
+                == "not_applicable"
+            ):
+                basis_structure = (
+                    assessment.classification is None
+                    and not assessment.legal_basis
+                )
+            elif (
+                assessment.evidence_sufficiency
+                in {"sufficient", "partial"}
+            ):
+                basis_structure = bool(
+                    assessment.legal_basis
+                )
+            else:
+                basis_structure = (
+                    not assessment.legal_basis
+                )
+
             checks = {
-                "category": (
-                    assessment.category
-                    == expected["category"]
-                ),
                 "classification": (
                     assessment.classification
                     == expected["classification"]
-                ),
-                "risk_level": (
-                    assessment.risk_level
-                    == expected["risk_level"]
                 ),
                 "analysis_status": (
                     assessment.analysis_status
@@ -132,18 +183,19 @@ def main() -> None:
                 "expected_document_coverage": (
                     document_coverage
                 ),
+                "semantic_structure": (
+                    semantic_structure
+                ),
                 "basis_structure": (
-                    bool(assessment.legal_basis)
-                    if assessment.analysis_status
-                    == "classified"
-                    else not assessment.legal_basis
+                    basis_structure
                 ),
             }
 
-            evaluated_checks = [
-                value
-                for value in checks.values()
-                if value is not None
+            core_checks = [
+                checks["classification"],
+                checks["analysis_status"],
+                checks["semantic_structure"],
+                checks["basis_structure"],
             ]
 
             result = {
@@ -151,7 +203,7 @@ def main() -> None:
                 "duration_seconds": elapsed,
                 "execution_success": True,
                 "field_match": all(
-                    evaluated_checks
+                    core_checks
                 ),
                 "expected": expected,
                 "actual": assessment.model_dump(
@@ -203,7 +255,7 @@ def main() -> None:
             "segundos",
         )
 
-        durations = [
+    durations = [
         result["duration_seconds"]
         for result in results
     ]
@@ -220,7 +272,9 @@ def main() -> None:
         p95_index = max(
             ceil(
                 0.95
-                * len(ordered_successful_durations)
+                * len(
+                    ordered_successful_durations
+                )
             )
             - 1,
             0,
@@ -234,7 +288,9 @@ def main() -> None:
             3,
         )
         p95_seconds = (
-            ordered_successful_durations[p95_index]
+            ordered_successful_durations[
+                p95_index
+            ]
         )
     else:
         average_seconds = None
@@ -261,17 +317,14 @@ def main() -> None:
             result["field_match"]
             for result in results
         ),
-        "category_matches": count_check(
-            "category"
-        ),
         "classification_matches": count_check(
             "classification"
         ),
-        "risk_matches": count_check(
-            "risk_level"
-        ),
         "status_matches": count_check(
             "analysis_status"
+        ),
+        "semantic_structure_valid": count_check(
+            "semantic_structure"
         ),
         "expected_document_coverage_matches": (
             count_check(
@@ -298,23 +351,25 @@ def main() -> None:
         "median_successful_seconds": (
             median_seconds
         ),
-        "p95_successful_seconds": p95_seconds,
+        "p95_successful_seconds": (
+            p95_seconds
+        ),
     }
-
-    provider = "openrouter"
-    model = settings.openrouter_model
 
     report = {
         "dataset_id": dataset["dataset_id"],
         "executed_at": (
             datetime.now(UTC).isoformat()
         ),
-        "provider": provider,
-        "model": model,
+        "provider": "openrouter",
+        "model": settings.openrouter_model,
         "metric_scope": (
-            "Comparación automática de campos estructurados "
-            "y presencia de fundamentos. La pertinencia y "
-            "corrección jurídica requieren revisión manual."
+            "Comparación automática de la "
+            "clasificación y el estado esperados, "
+            "estructura semántica de la valoración "
+            "y coherencia de los fundamentos recuperados. "
+            "La pertinencia y corrección jurídica "
+            "requieren revisión manual."
         ),
         "summary": summary,
         "results": results,
@@ -325,7 +380,8 @@ def main() -> None:
             report,
             ensure_ascii=False,
             indent=2,
-        ),
+        )
+        + "\n",
         encoding="utf-8",
     )
 
@@ -333,9 +389,14 @@ def main() -> None:
     print("RESUMEN")
 
     for key, value in summary.items():
-        print(f"{key}: {value}")
+        print(
+            f"{key}: {value}"
+        )
 
-    print("Resultados:", RESULTS_PATH)
+    print(
+        "Resultados:",
+        RESULTS_PATH,
+    )
 
 
 if __name__ == "__main__":

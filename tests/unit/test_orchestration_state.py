@@ -34,6 +34,8 @@ def test_initial_state_has_no_previous_results():
     assert state["preprocessed_contract"] is None
     assert state["report"] is None
     assert state["clause_results"] == {}
+    assert state["llm_metrics"] == []
+    assert state["observability_summary"] is None
     assert state["errors"] == []
     assert state["attempts"] == {}
 
@@ -51,7 +53,7 @@ def test_mutable_containers_are_not_shared():
     first = create_initial_state(make_request())
     second = create_initial_state(make_request())
 
-    for field in ("clause_results", "errors", "attempts"):
+    for field in ("clause_results", "llm_metrics", "errors", "attempts"):
         assert first[field] is not second[field]
 
     first["attempts"]["extraction"] = 1

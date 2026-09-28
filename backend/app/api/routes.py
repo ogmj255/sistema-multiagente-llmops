@@ -1,9 +1,21 @@
-from fastapi import APIRouter, Response
+﻿from uuid import UUID
+
+from fastapi import APIRouter, HTTPException, Query, Response
 from fastapi.encoders import jsonable_encoder
 
 from app.agents.orchestrator_agent import ejecutar_orquestacion
 from app.schemas.contract import ExtractionRequest
+from app.schemas.observability import LLMOpsDashboardResponse
 from app.schemas.report import AnalysisReport
+from app.services.analysis_persistence import (
+    get_analysis_by_execution_id,
+)
+from app.services.observability_dashboard import (
+    build_llmops_dashboard,
+)
+from app.services.observability_persistence import (
+    list_recent_observability_runs,
+)
 from app.services.report_export import (
     export_report_json,
     export_report_pdf,
@@ -91,6 +103,8 @@ def analizar_terminos(
         {
             "execution_id": estado["execution_id"],
             "status": estado["status"],
+            "reused_analysis": estado["reused_analysis"],
+            "reused_analysis_at": estado["reused_analysis_at"],
             "source_url": source_url,
             "platform": platform,
             "total_clauses": total_clauses,
@@ -99,11 +113,89 @@ def analizar_terminos(
             "failed_clauses": failed_clauses,
             "results": resultados,
             "report": informe,
+            "observability_summary": estado[
+                "observability_summary"
+            ],
             "errors": estado["errors"],
             "attempts": estado["attempts"],
         }
     )
 
+
+
+@router.get(
+    "/analisis/{execution_id}",
+    tags=["Analisis"],
+)
+def obtener_analisis(
+    execution_id: UUID,
+) -> dict[str, object]:
+    """Recupera un an?lisis persistido mediante su identificador."""
+
+    registro = get_analysis_by_execution_id(
+        execution_id
+    )
+
+    if registro is None:
+        raise HTTPException(
+            status_code=404,
+            detail=(
+                "No se encontró un análisis asociado "
+                "al identificador indicado."
+            ),
+        )
+
+    informe = AnalysisReport.model_validate(
+        registro.report_data
+    )
+
+    resultados = [
+        {
+            "clause_order": item.clause_order,
+            **jsonable_encoder(item.analysis),
+        }
+        for item in informe.clauses
+    ]
+
+    return jsonable_encoder(
+        {
+            "execution_id": str(registro.execution_id),
+            "status": registro.status,
+            "source_url": informe.source_url,
+            "platform": informe.platform,
+            "total_clauses": informe.total_clauses,
+            "analyzed_clauses": informe.analyzed_clauses,
+            "successful_clauses": informe.successful_clauses,
+            "failed_clauses": informe.failed_clauses,
+            "results": resultados,
+            "report": informe,
+            "errors": registro.errors,
+            "attempts": registro.attempts,
+        }
+    )
+
+
+@router.get(
+    "/llmops",
+    tags=["LLMOps"],
+    response_model=LLMOpsDashboardResponse,
+)
+def obtener_dashboard_llmops(
+    limit: int = Query(
+        default=50,
+        ge=1,
+        le=200,
+    ),
+) -> LLMOpsDashboardResponse:
+    """Devuelve métricas históricas reales para el dashboard."""
+
+    runs = list_recent_observability_runs(
+        limit=limit
+    )
+
+    return build_llmops_dashboard(
+        runs
+    )
 
 
 @router.post("/reportes/json", tags=["Reportes"])

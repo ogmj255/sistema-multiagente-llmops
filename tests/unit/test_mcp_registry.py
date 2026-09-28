@@ -4,6 +4,9 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from mcp.types import TextContent
+
+from app.mcp import registry as mcp_registry
 from app.mcp.registry import (
     RUTA_BACKEND,
     SERVIDORES_MCP,
@@ -12,7 +15,6 @@ from app.mcp.registry import (
     listar_servidores,
     obtener_servidor,
 )
-from mcp.types import TextContent
 
 
 class SesionMCPFalsa:
@@ -57,13 +59,14 @@ def preparar_cliente(
     return cliente, sesion
 
 
-def test_registra_los_cinco_servidores():
+def test_registra_los_seis_servidores():
     assert set(SERVIDORES_MCP) == {
         "extractor_web",
         "preprocesador",
         "conocimiento_juridico",
         "analizador_legal",
         "generador_informes",
+        "observabilidad",
     }
 
 
@@ -294,3 +297,171 @@ def test_transmite_entorno_segun_servidor(
     assert "CHROMA_HOST" not in preprocesador.env
     assert "OPENROUTER_API_KEY" not in preprocesador.env
     assert "POSTGRES_PASSWORD" not in preprocesador.env
+
+
+
+def test_cliente_registra_invocacion_mcp_exitosa(
+    monkeypatch,
+) -> None:
+    """Registra como exitosa una herramienta MCP ejecutada."""
+
+    resultado = SimpleNamespace(
+        isError=False,
+        structuredContent={
+            "status": "success",
+        },
+        content=[],
+    )
+    cliente, _ = preparar_cliente(
+        monkeypatch,
+        resultado,
+    )
+
+    observation = object()
+    started: dict[str, object] = {}
+    updated: dict[str, object] = {}
+
+    class FakeContext:
+        def __enter__(self) -> object:
+            return observation
+
+        def __exit__(
+            self,
+            exc_type,
+            exc_value,
+            traceback,
+        ) -> None:
+            return None
+
+    def fake_start(
+        server: str,
+        tool: str,
+    ) -> FakeContext:
+        started.update(
+            {
+                "server": server,
+                "tool": tool,
+            }
+        )
+        return FakeContext()
+
+    def fake_update(
+        received_observation: object,
+        *,
+        status: str,
+    ) -> None:
+        updated.update(
+            {
+                "observation": received_observation,
+                "status": status,
+            }
+        )
+
+    monkeypatch.setattr(
+        mcp_registry,
+        "start_mcp_tool_observation",
+        fake_start,
+    )
+    monkeypatch.setattr(
+        mcp_registry,
+        "update_operation_observation",
+        fake_update,
+    )
+
+    respuesta = asyncio.run(
+        cliente.invocar(
+            "extractor_web",
+            {
+                "url": "https://example.com/terms",
+            },
+        )
+    )
+
+    servidor = obtener_servidor("extractor_web")
+
+    assert respuesta == {
+        "status": "success",
+    }
+    assert started == {
+        "server": servidor.nombre,
+        "tool": servidor.herramienta,
+    }
+    assert updated == {
+        "observation": observation,
+        "status": "success",
+    }
+
+
+def test_cliente_registra_error_mcp_real(
+    monkeypatch,
+) -> None:
+    """Registra el error real devuelto por una herramienta MCP."""
+
+    resultado = SimpleNamespace(
+        isError=True,
+        structuredContent=None,
+        content=[
+            TextContent(
+                type="text",
+                text="Error MCP observado.",
+            )
+        ],
+    )
+    cliente, _ = preparar_cliente(
+        monkeypatch,
+        resultado,
+    )
+
+    observation = object()
+    captured: dict[str, object] = {}
+
+    class FakeContext:
+        def __enter__(self) -> object:
+            return observation
+
+        def __exit__(
+            self,
+            exc_type,
+            exc_value,
+            traceback,
+        ) -> None:
+            return None
+
+    monkeypatch.setattr(
+        mcp_registry,
+        "start_mcp_tool_observation",
+        lambda *_args: FakeContext(),
+    )
+
+    def fake_mark_error(
+        received_observation: object,
+        error: Exception,
+    ) -> None:
+        captured["observation"] = received_observation
+        captured["error"] = error
+
+    monkeypatch.setattr(
+        mcp_registry,
+        "mark_operation_error",
+        fake_mark_error,
+    )
+
+    with pytest.raises(
+        ErrorInvocacionMCP,
+        match="Error MCP observado",
+    ):
+        asyncio.run(
+            cliente.invocar(
+                "extractor_web",
+                {},
+            )
+        )
+
+    assert captured["observation"] is observation
+    assert isinstance(
+        captured["error"],
+        ErrorInvocacionMCP,
+    )
+    assert "Error MCP observado" in str(
+        captured["error"]
+    )

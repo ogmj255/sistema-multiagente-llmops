@@ -27,18 +27,14 @@ def create_legal_basis() -> LegalKnowledgeMatch:
     """Crea un fundamento jurídico recuperado."""
 
     return LegalKnowledgeMatch(
-        chunk_id=(
-            "ec_defensa_consumidor_2000_chunk_0048"
-        ),
+        chunk_id="ec_defensa_consumidor_2000_chunk_0048",
         document_id="ec_defensa_consumidor_2000",
         chunk_index=48,
         content=(
             "Son nulas las cláusulas que limiten "
             "la responsabilidad del proveedor."
         ),
-        title=(
-            "Ley Orgánica de Defensa del Consumidor"
-        ),
+        title="Ley Orgánica de Defensa del Consumidor",
         jurisdiction="ecuador",
         issuing_body="Congreso Nacional del Ecuador",
         document_type="law",
@@ -46,9 +42,7 @@ def create_legal_basis() -> LegalKnowledgeMatch:
         status="amended",
         language="es",
         source_url="https://example.com/consumer-law",
-        official_citation=(
-            "Suplemento del Registro Oficial 116"
-        ),
+        official_citation="Suplemento del Registro Oficial 116",
         topics="consumidores|cláusulas abusivas",
         checksum="a" * 64,
         distance=0.18,
@@ -71,9 +65,7 @@ def test_analysis_request_uses_processed_clause() -> None:
 def test_analysis_request_rejects_unknown_jurisdiction() -> None:
     """Rechaza campos obsoletos en la solicitud de análisis."""
 
-    with pytest.raises(
-        ValidationError,
-    ) as exc_info:
+    with pytest.raises(ValidationError) as exc_info:
         ClauseAnalysisRequest(
             source_url="https://example.com/terms",
             platform="Example SaaS",
@@ -89,108 +81,124 @@ def test_analysis_request_rejects_unknown_jurisdiction() -> None:
     assert errors[0]["loc"] == ("jurisdiction",)
 
 
-def test_fair_clause_derives_low_risk() -> None:
-    """Deriva riesgo bajo para una cláusula justa."""
+def test_classified_clause_accepts_free_descriptions() -> None:
+    """Acepta descripciones contractuales generadas por el LLM."""
 
     assessment = ClauseAssessment(
-        category="limitation_of_liability",
+        category="Responsabilidad por daños",
+        clause_type="Limitación de responsabilidad del proveedor",
+        target="Proveedor",
+        consequence=(
+            "El usuario podría asumir daños que el proveedor excluye."
+        ),
         classification="not_potentially_abusive",
         analysis_status="classified",
         relevant_fragment=create_clause().content,
         justification=(
-            "La limitación es proporcional y conserva "
-            "los derechos legales del usuario."
+            "La disposición conserva los derechos legales del usuario."
         ),
-        recommendation=(
-            "No se requieren acciones adicionales."
-        ),
+        recommendation="No se requieren acciones adicionales.",
         evidence_sufficiency="sufficient",
         legal_basis=[create_legal_basis()],
     )
 
-    assert assessment.risk_level == "low"
-    assert assessment.requires_human_review is False
+    assert assessment.category == "Responsabilidad por daños"
+    assert assessment.clause_type == (
+        "Limitación de responsabilidad del proveedor"
+    )
+    assert assessment.target == "Proveedor"
 
 
-def test_abusive_clause_derives_high_risk() -> None:
-    """Deriva riesgo alto y revisión humana."""
+def test_strong_indications_require_human_review() -> None:
+    """Marca revisión humana cuando existen indicios fuertes."""
 
     assessment = ClauseAssessment(
-        category="limitation_of_liability",
-        classification="high_risk_abusiveness",
+        category="Responsabilidad contractual",
+        clause_type="Exclusión amplia de responsabilidad",
+        target="Proveedor",
+        consequence="El proveedor excluye responsabilidad por daños.",
+        classification="strong_indications_of_abusiveness",
         analysis_status="classified",
         relevant_fragment=create_clause().content,
         justification=(
-            "La cláusula excluye ampliamente la "
-            "responsabilidad del proveedor."
+            "La exclusión presenta indicios claros de desequilibrio."
         ),
-        recommendation=(
-            "Solicitar revisión jurídica especializada."
-        ),
+        recommendation="Revisar jurídicamente la disposición.",
         evidence_sufficiency="sufficient",
         legal_basis=[create_legal_basis()],
     )
 
-    assert assessment.risk_level == "high"
-    assert assessment.requires_human_review is True
+    assert assessment.classification == (
+        "strong_indications_of_abusiveness"
+    )
 
 
-def test_abusive_clause_requires_sufficient_evidence() -> None:
-    """Impide declarar abusividad con evidencia parcial."""
+def test_insufficient_evidence_does_not_block_classification() -> None:
+    """Permite clasificar aunque el RAG sea insuficiente."""
+
+    assessment = ClauseAssessment(
+        category="Responsabilidad contractual",
+        clause_type="Exclusión de responsabilidad",
+        target="Proveedor",
+        consequence="El usuario asume posibles daños.",
+        classification="potentially_abusive",
+        analysis_status="classified",
+        relevant_fragment=create_clause().content,
+        justification=(
+            "El contenido presenta indicios de desequilibrio, "
+            "pero no existe respaldo jurídico suficiente "
+            "en la evidencia recuperada."
+        ),
+        recommendation="Revisar la disposición jurídicamente.",
+        evidence_sufficiency="insufficient",
+        legal_basis=[],
+    )
+
+    assert assessment.classification == "potentially_abusive"
+    assert assessment.evidence_sufficiency == "insufficient"
+    assert assessment.legal_basis == []
+
+
+def test_partial_evidence_requires_legal_basis() -> None:
+    """Exige fundamento cuando se declara evidencia parcial."""
 
     with pytest.raises(
         ValidationError,
-        match="evidencia jurídica suficiente",
+        match="fundamento jurídico",
     ):
         ClauseAssessment(
-            category="limitation_of_liability",
-            classification="high_risk_abusiveness",
+            category="Responsabilidad contractual",
+            clause_type="Limitación de responsabilidad",
+            target="Proveedor",
+            consequence=None,
+            classification="potentially_abusive",
             analysis_status="classified",
             relevant_fragment=create_clause().content,
-            justification="Existe un posible riesgo.",
-            recommendation="Revisar la cláusula.",
+            justification="Existen indicios de posible desequilibrio.",
+            recommendation="Revisar la disposición.",
             evidence_sufficiency="partial",
-            legal_basis=[create_legal_basis()],
+            legal_basis=[],
         )
 
 
-def test_insufficient_evidence_requires_review() -> None:
-    """Permite abstenerse cuando falta evidencia."""
+def test_not_applicable_fragment_has_no_classification() -> None:
+    """Permite excluir un fragmento sin contenido contractual."""
 
     assessment = ClauseAssessment(
-        category="other_contractual_risk",
-        analysis_status="requires_review",
-        relevant_fragment=create_clause().content,
+        category="Encabezado contractual",
+        clause_type="Título sin contenido normativo",
+        target="No aplica",
+        consequence=None,
+        classification=None,
+        analysis_status="not_applicable",
+        relevant_fragment="Limitación de responsabilidad",
         justification=(
-            "La evidencia recuperada no permite "
-            "realizar una clasificación."
+            "El fragmento corresponde únicamente a un encabezado."
         ),
-        recommendation=(
-            "Solicitar revisión jurídica especializada."
-        ),
+        recommendation=None,
         evidence_sufficiency="insufficient",
+        legal_basis=[],
     )
 
     assert assessment.classification is None
-    assert assessment.risk_level is None
-    assert assessment.requires_human_review is True
-
-
-def test_rejects_inconsistent_risk_level() -> None:
-    """Rechaza contradicciones entre clase y riesgo."""
-
-    with pytest.raises(
-        ValidationError,
-        match="no corresponde",
-    ):
-        ClauseAssessment(
-            category="unilateral_modification",
-            classification="not_potentially_abusive",
-            risk_level="high",
-            analysis_status="classified",
-            relevant_fragment=create_clause().content,
-            justification="No se identificaron indicios.",
-            recommendation="No se requieren acciones.",
-            evidence_sufficiency="sufficient",
-            legal_basis=[create_legal_basis()],
-        )
+    assert assessment.analysis_status == "not_applicable"

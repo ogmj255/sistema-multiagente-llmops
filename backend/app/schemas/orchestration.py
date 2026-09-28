@@ -1,5 +1,6 @@
+﻿from datetime import datetime
 from operator import add, or_
-from typing import Annotated, Literal, TypedDict
+from typing import Annotated, Literal, NotRequired, TypedDict
 from uuid import uuid4
 
 from app.schemas.contract import (
@@ -9,6 +10,10 @@ from app.schemas.contract import (
 from app.schemas.legal_analysis import (
     ClauseAnalysisRequest,
     ClauseAnalysisResponse,
+)
+from app.schemas.observability import (
+    LLMInvocationMetrics,
+    ObservabilitySummary,
 )
 from app.schemas.preprocessing import PreprocessedContract
 from app.schemas.report import AnalysisReport
@@ -45,6 +50,7 @@ class ClauseTaskState(TypedDict):
     """Entrada independiente enviada para analizar una cláusula."""
 
     analysis_request: ClauseAnalysisRequest
+    trace_context: NotRequired[dict[str, str] | None]
 
 
 class OrchestrationState(TypedDict):
@@ -56,12 +62,20 @@ class OrchestrationState(TypedDict):
     current_step: PipelineStep
     extracted_contract: ExtractedContract | None
     preprocessed_contract: PreprocessedContract | None
+    content_hash: str | None
+    reused_analysis: bool
+    reused_analysis_at: datetime | None
     report: AnalysisReport | None
     current_clause_index: int
     clause_results: Annotated[
         dict[int, ClauseAnalysisResponse],
         or_,
     ]
+    llm_metrics: Annotated[
+        list[LLMInvocationMetrics],
+        add,
+    ]
+    observability_summary: ObservabilitySummary | None
     errors: Annotated[list[PipelineError], add]
     attempts: Annotated[dict[str, int], or_]
 
@@ -78,9 +92,14 @@ def create_initial_state(
         current_step="extraction",
         extracted_contract=None,
         preprocessed_contract=None,
+        content_hash=None,
+        reused_analysis=False,
+        reused_analysis_at=None,
         report=None,
         current_clause_index=0,
         clause_results={},
+        llm_metrics=[],
+        observability_summary=None,
         errors=[],
         attempts={},
     )

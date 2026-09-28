@@ -1,10 +1,10 @@
-﻿import pytest
+import pytest
 from app.mcp import report_generator_tools
 from app.schemas.report import (
     AnalysisReport,
+    ClassificationSummary,
     ReportGenerationRequest,
     ReportGenerationResponse,
-    RiskSummary,
 )
 
 
@@ -34,7 +34,7 @@ async def test_generate_analysis_report_invoca_agente(
             analyzed_clauses=0,
             successful_clauses=0,
             failed_clauses=0,
-            risk_summary=RiskSummary(),
+            classification_summary=ClassificationSummary(),
             clauses=[],
         ),
     )

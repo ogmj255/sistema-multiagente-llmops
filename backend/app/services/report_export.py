@@ -131,23 +131,26 @@ def export_report_pdf(
             body_style,
         ),
         _paragraph(
-            "Riesgo bajo",
-            report.risk_summary.low,
+            "No potencialmente abusivas",
+            report.classification_summary.not_potentially_abusive,
             body_style,
         ),
         _paragraph(
-            "Riesgo medio",
-            report.risk_summary.medium,
+            "Potencialmente abusivas",
+            report.classification_summary.potentially_abusive,
             body_style,
         ),
         _paragraph(
-            "Riesgo alto",
-            report.risk_summary.high,
+            "Indicios fuertes de abusividad",
+            (
+                report.classification_summary.
+                strong_indications_of_abusiveness
+            ),
             body_style,
         ),
         _paragraph(
-            "Requieren revisión",
-            report.risk_summary.requires_review,
+            "No aplicables",
+            report.classification_summary.not_applicable,
             body_style,
         ),
     ]
@@ -198,18 +201,23 @@ def export_report_pdf(
                     body_style,
                 ),
                 _paragraph(
-                    "Estado del análisis",
-                    assessment.analysis_status,
+                    "Tipo contractual",
+                    assessment.clause_type,
+                    body_style,
+                ),
+                _paragraph(
+                    "Dirigido a",
+                    assessment.target,
+                    body_style,
+                ),
+                _paragraph(
+                    "Consecuencia",
+                    assessment.consequence or "No especificada",
                     body_style,
                 ),
                 _paragraph(
                     "Clasificación",
-                    assessment.classification or "No determinada",
-                    body_style,
-                ),
-                _paragraph(
-                    "Nivel de riesgo",
-                    assessment.risk_level or "No determinado",
+                    assessment.classification or "No aplica",
                     body_style,
                 ),
                 _paragraph(
@@ -224,21 +232,12 @@ def export_report_pdf(
                 ),
                 _paragraph(
                     "Recomendación",
-                    assessment.recommendation,
+                    assessment.recommendation or "No aplica",
                     body_style,
                 ),
                 _paragraph(
-                    "Suficiencia de evidencia",
+                    "Suficiencia de evidencia jurídica",
                     assessment.evidence_sufficiency,
-                    body_style,
-                ),
-                _paragraph(
-                    "Revisión humana",
-                    (
-                        "Sí"
-                        if assessment.requires_human_review
-                        else "No"
-                    ),
                     body_style,
                 ),
             ]

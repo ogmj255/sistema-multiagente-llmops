@@ -25,7 +25,7 @@ def create_request() -> ClauseAnalysisRequest:
             original_order=4,
             heading="Modificación unilateral",
             heading_level=2,
-            content=("El proveedor podrá modificar el precio."),
+            content="El proveedor podrá modificar el precio.",
         ),
     )
 
@@ -38,7 +38,7 @@ def create_match(
     """Crea una evidencia jurídica identificable."""
 
     return LegalKnowledgeMatch(
-        chunk_id=(f"{document_id}_chunk_{chunk_index:04d}"),
+        chunk_id=f"{document_id}_chunk_{chunk_index:04d}",
         document_id=document_id,
         chunk_index=chunk_index,
         content=(
@@ -66,14 +66,17 @@ def create_execution(
     """Crea una clasificación generada por el modelo."""
 
     decision = ClauseAnalysisDecision(
-        category="unilateral_modification",
-        classification="high_risk_abusiveness",
+        category="Modificación de condiciones",
+        clause_type="Facultad unilateral del proveedor",
+        target="Proveedor",
+        consequence="El precio puede cambiar para el usuario.",
+        classification="strong_indications_of_abusiveness",
         analysis_status="classified",
         justification=(
-            "La cláusula permite una modificación "
-            "unilateral prohibida por la normativa."
+            "La cláusula presenta indicios fuertes "
+            "de modificación unilateral."
         ),
-        recommendation=("Eliminar la facultad unilateral."),
+        recommendation="Revisar la facultad de modificación.",
         evidence_sufficiency="sufficient",
         legal_basis_indices=indices,
     )
@@ -108,12 +111,21 @@ def test_builds_assessment_with_selected_basis() -> None:
         [first_match, second_match],
     )
 
-    assert assessment.classification == "high_risk_abusiveness"
-    assert assessment.risk_level == "high"
-    assert assessment.requires_human_review is True
+    assert assessment.classification == (
+        "strong_indications_of_abusiveness"
+    )
+    assert assessment.category == "Modificación de condiciones"
+    assert assessment.clause_type == (
+        "Facultad unilateral del proveedor"
+    )
+    assert assessment.target == "Proveedor"
+    assert assessment.consequence == (
+        "El precio puede cambiar para el usuario."
+    )
     assert assessment.legal_basis == [second_match]
-    assert assessment.relevant_fragment == (create_request().clause.content)
-    assert assessment.justification == create_execution([1]).decision.justification
+    assert assessment.relevant_fragment == (
+        create_request().clause.content
+    )
 
 
 def test_preserves_exact_legal_metadata() -> None:
@@ -133,23 +145,30 @@ def test_preserves_exact_legal_metadata() -> None:
 
     basis = assessment.legal_basis[0]
 
-    assert basis.chunk_id == ("ec_consumer_law_chunk_0048")
-    assert str(basis.source_url) == ("https://example.com/law")
+    assert basis.chunk_id == "ec_consumer_law_chunk_0048"
+    assert str(basis.source_url) == "https://example.com/law"
     assert basis.distance == 0.18
 
 
-def test_builds_review_without_legal_basis() -> None:
-    """Permite una abstención sin fuentes inventadas."""
+def test_builds_classification_without_legal_basis() -> None:
+    """Conserva la clasificación con evidencia insuficiente."""
 
     decision = ClauseAnalysisDecision(
-        category="other_contractual_risk",
-        classification=None,
-        analysis_status="requires_review",
-        justification=("La evidencia recuperada es insuficiente."),
-        recommendation=("Solicitar revisión jurídica."),
+        category="Modificación de condiciones",
+        clause_type="Facultad unilateral del proveedor",
+        target="Proveedor",
+        consequence="El precio puede cambiar para el usuario.",
+        classification="potentially_abusive",
+        analysis_status="classified",
+        justification=(
+            "El fragmento presenta indicios de desequilibrio, "
+            "pero la evidencia recuperada es insuficiente."
+        ),
+        recommendation="Revisar jurídicamente la disposición.",
         evidence_sufficiency="insufficient",
         legal_basis_indices=[],
     )
+
     execution = ClassificationExecution(
         decision=decision,
         model_response=ModelResponse(
@@ -165,9 +184,47 @@ def test_builds_review_without_legal_basis() -> None:
         [],
     )
 
-    assert assessment.analysis_status == ("requires_review")
+    assert assessment.analysis_status == "classified"
+    assert assessment.classification == "potentially_abusive"
+    assert assessment.evidence_sufficiency == "insufficient"
+    assert assessment.legal_basis == []
+
+
+def test_builds_not_applicable_assessment() -> None:
+    """Permite excluir un fragmento sin disposición contractual."""
+
+    decision = ClauseAnalysisDecision(
+        category="Encabezado contractual",
+        clause_type="Título sin contenido normativo",
+        target="No aplica",
+        consequence=None,
+        classification=None,
+        analysis_status="not_applicable",
+        justification=(
+            "El fragmento corresponde únicamente a un encabezado."
+        ),
+        recommendation=None,
+        evidence_sufficiency="insufficient",
+        legal_basis_indices=[],
+    )
+
+    execution = ClassificationExecution(
+        decision=decision,
+        model_response=ModelResponse(
+            provider="openrouter",
+            model="deepseek/deepseek-v4-flash-0731",
+            content="{}",
+        ),
+    )
+
+    assessment = build_grounded_assessment(
+        execution,
+        create_request(),
+        [],
+    )
+
+    assert assessment.analysis_status == "not_applicable"
     assert assessment.classification is None
-    assert assessment.risk_level is None
     assert assessment.legal_basis == []
 
 

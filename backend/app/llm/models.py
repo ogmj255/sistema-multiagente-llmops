@@ -38,6 +38,10 @@ class ModelResponse(BaseModel):
         default=None,
         ge=0,
     )
+    cost_usd: float | None = Field(
+        default=None,
+        ge=0,
+    )
 
 
 class ModelProviderError(RuntimeError):

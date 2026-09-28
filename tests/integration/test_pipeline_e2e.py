@@ -13,7 +13,9 @@ TERMS_URL = os.getenv(
     "E2E_TERMS_URL",
     "https://example.com",
 )
-TIMEOUT_SECONDS = float(os.getenv("E2E_TIMEOUT_SECONDS", "1800"))
+TIMEOUT_SECONDS = float(
+    os.getenv("E2E_TIMEOUT_SECONDS", "1800")
+)
 
 pytestmark = pytest.mark.skipif(
     not E2E_ENABLED,
@@ -52,11 +54,13 @@ def test_pipeline_completo_desde_traefik() -> None:
     """Ejecuta el recorrido real hasta obtener resultados por cláusula."""
 
     started = perf_counter()
+
     response = httpx.post(
         f"{BASE_URL}/analisis",
         json={"url": TERMS_URL},
         timeout=TIMEOUT_SECONDS,
     )
+
     duration = perf_counter() - started
 
     print(
@@ -86,10 +90,19 @@ def test_pipeline_completo_desde_traefik() -> None:
     assert successful + failed == analyzed
     assert len(results) == analyzed
 
-    expected_status = "success" if failed == 0 else "partial"
+    expected_status = (
+        "success"
+        if failed == 0
+        else "partial"
+    )
+
     assert body["status"] == expected_status
 
-    orders = [item["clause_order"] for item in results]
+    orders = [
+        item["clause_order"]
+        for item in results
+    ]
+
     assert orders == sorted(set(orders))
 
     for item in results:
@@ -103,27 +116,54 @@ def test_pipeline_completo_desde_traefik() -> None:
             continue
 
         assessment = item["result"]
+
         assert assessment["analysis_status"] in {
             "classified",
-            "requires_review",
+            "not_applicable",
         }
+
+        assert assessment["category"]
+        assert assessment["clause_type"]
+        assert assessment["target"]
         assert assessment["relevant_fragment"]
         assert assessment["justification"]
-        assert assessment["recommendation"]
+
+        consequence = assessment["consequence"]
+
+        assert consequence is None or (
+            isinstance(consequence, str)
+            and consequence.strip()
+        )
 
         if assessment["analysis_status"] == "classified":
             assert assessment["classification"] in {
                 "not_potentially_abusive",
                 "potentially_abusive",
-                "high_risk_abusiveness",
+                "strong_indications_of_abusiveness",
             }
-            assert assessment["risk_level"] in {
-                "low",
-                "medium",
-                "high",
+
+            assert assessment["evidence_sufficiency"] in {
+                "sufficient",
+                "partial",
+                "insufficient",
             }
-            assert assessment["legal_basis"]
+
+
+
+            if assessment["evidence_sufficiency"] in {
+                "sufficient",
+                "partial",
+            }:
+                assert assessment["legal_basis"]
+            else:
+                assert assessment["legal_basis"] == []
+
         else:
             assert assessment["classification"] is None
-            assert assessment["risk_level"] is None
-            assert assessment["requires_human_review"] is True
+            assert assessment["legal_basis"] == []
+
+    report = body["report"]
+
+    assert report is not None
+    assert "classification_summary" in report
+    assert "risk_summary" not in report

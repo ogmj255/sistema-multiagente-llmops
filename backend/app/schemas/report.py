@@ -37,13 +37,13 @@ class ReportGenerationRequest(BaseModel):
     )
 
 
-class RiskSummary(BaseModel):
-    """Resume los niveles de riesgo del análisis."""
+class ClassificationSummary(BaseModel):
+    """Resume las clasificaciones del análisis."""
 
-    low: int = Field(default=0, ge=0)
-    medium: int = Field(default=0, ge=0)
-    high: int = Field(default=0, ge=0)
-    requires_review: int = Field(default=0, ge=0)
+    not_potentially_abusive: int = Field(default=0, ge=0)
+    potentially_abusive: int = Field(default=0, ge=0)
+    strong_indications_of_abusiveness: int = Field(default=0, ge=0)
+    not_applicable: int = Field(default=0, ge=0)
 
 
 class AnalysisReport(BaseModel):
@@ -60,7 +60,7 @@ class AnalysisReport(BaseModel):
     successful_clauses: int = Field(ge=0)
     failed_clauses: int = Field(ge=0)
 
-    risk_summary: RiskSummary
+    classification_summary: ClassificationSummary
     clauses: list[ClauseReportItem] = Field(
         default_factory=list
     )

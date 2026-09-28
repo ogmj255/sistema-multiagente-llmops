@@ -19,3 +19,4 @@ pypdf==6.16.2
 chromadb-client==1.5.9
 langgraph==1.2.11
 reportlab==5.0.1
+pysbd==0.3.4
