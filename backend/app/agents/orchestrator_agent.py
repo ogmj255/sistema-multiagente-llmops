@@ -832,8 +832,27 @@ async def ejecutar_orquestacion_async(
             )
 
     observability_summary = estado_final[
-        "observability_summary"
+    "observability_summary"
     ]
+
+    preprocessed_contract = estado_final[
+        "preprocessed_contract"
+    ]
+
+    extracted_contract = estado_final[
+        "extracted_contract"
+    ]
+
+    if preprocessed_contract is not None:
+        observability_platform = (
+            preprocessed_contract.platform
+        )
+    elif extracted_contract is not None:
+        observability_platform = (
+            extracted_contract.platform
+        )
+    else:
+        observability_platform = request.platform
 
     if (
         observability_summary is not None
@@ -843,6 +862,8 @@ async def ejecutar_orquestacion_async(
             save_observability_run(
                 execution_id=estado_final["execution_id"],
                 summary=observability_summary,
+                source_url=str(request.url),
+                platform=observability_platform,
             )
         except Exception:
             logger.exception(

@@ -5,18 +5,26 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 from app.core.config import settings
 
-engine = create_engine(settings.database_url)
+
+engine = create_engine(
+    settings.database_url,
+    connect_args={
+        "options": "-c timezone=-5",
+    },
+)
+
 SessionLocal = sessionmaker(bind=engine)
 
 
 class Base(DeclarativeBase):
-    """Clase base para los futuros modelos de la base de datos."""
+    """Clase base para los modelos de la base de datos."""
 
 
 def get_database() -> Generator[Session, None, None]:
     """Proporciona una sesión y la cierra después de utilizarla."""
 
     database = SessionLocal()
+
     try:
         yield database
     finally:

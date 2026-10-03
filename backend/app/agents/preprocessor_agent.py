@@ -46,6 +46,7 @@ def run_preprocessor_agent(
 
         semantic_chunks = build_semantic_chunks(
             cleaned_text,
+            language=language,
             breakpoint_percentile=(
                 BREAKPOINT_PERCENTILE
             ),

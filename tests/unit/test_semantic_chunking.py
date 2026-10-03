@@ -227,3 +227,39 @@ def test_empty_text_returns_no_chunks() -> None:
     assert build_semantic_chunks(
         "   "
     ) == []
+
+def test_spanish_abbreviation_is_not_split() -> None:
+    text = (
+        "Los servicios no pueden utilizarse "
+        "en ningún territorio embargado por EE. UU. "
+        "o por personas restringidas."
+    )
+
+    sentences = split_into_sentences(
+        text,
+        language="es",
+    )
+
+    assert sentences == [
+        (
+            "Los servicios no pueden utilizarse "
+            "en ningún territorio embargado por EE. UU. "
+            "o por personas restringidas."
+        )
+    ]
+
+def test_us_abbreviation_is_not_split() -> None:
+    text = (
+        "The U.S. Government may impose "
+        "additional requirements."
+    )
+
+    assert split_into_sentences(
+        text,
+        language="en",
+    ) == [
+        (
+            "The U.S. Government may impose "
+            "additional requirements."
+        )
+    ]

@@ -64,6 +64,16 @@ def build_llmops_dashboard(
     executions = [
         ObservabilityRunResponse(
             execution_id=str(record.execution_id),
+            platform=getattr(
+                record,
+                "platform",
+                None,
+            ),
+            source_url=getattr(
+                record,
+                "source_url",
+                None,
+            ),
             status=record.status,
             duration_ms=record.duration_ms,
             prompt_tokens=record.prompt_tokens,

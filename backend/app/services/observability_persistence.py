@@ -11,11 +11,15 @@ def save_observability_run(
     *,
     execution_id: str,
     summary: ObservabilitySummary,
+    source_url: str | None = None,
+    platform: str | None = None,
 ) -> None:
     """Persiste las métricas LLMOps de una ejecución."""
 
     record = ObservabilityRun(
         execution_id=UUID(execution_id),
+        source_url=source_url,
+        platform=platform,
         status=summary.status,
         duration_ms=summary.duration_ms,
         prompt_tokens=summary.prompt_tokens,

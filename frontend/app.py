@@ -464,6 +464,32 @@ def load_persisted_analysis(
         )
         return False
 
+def get_analysis_execution_detail(
+    execution_id: str,
+) -> dict[str, object] | None:
+    """Recupera los datos contractuales de una ejecución."""
+
+    try:
+        response = httpx.get(
+            f"{API_ANALYSIS_URL}/{execution_id}",
+            timeout=10.0,
+        )
+
+        if response.status_code == 404:
+            return None
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        return (
+            data
+            if isinstance(data, dict)
+            else None
+        )
+
+    except httpx.HTTPError:
+        return None
 
 def load_llmops_dashboard(
     limit: int = 50,
@@ -525,13 +551,14 @@ def render_analysis_results(
                     reused_at.replace("Z", "+00:00")
                 )
                 formatted_date = reused_datetime.strftime(
-                    "%d/%m/%Y %H:%M"
+                    "%d/%m/%Y %H:%M:%S"
                 )
             except ValueError:
                 formatted_date = reused_at
 
             message += (
-                f"\n\nFecha del análisis: {formatted_date}"
+                f"\n\nFecha del análisis: "
+                f"{formatted_date} UTC-5"
             )
 
         if execution_id:
@@ -787,7 +814,7 @@ def render_analysis_results(
 def render_llmops_dashboard(
     data: dict[str, object],
 ) -> None:
-    """Muestra métricas históricas reales del sistema LLMOps."""
+    """Muestra el dashboard LLMOps organizado por vistas."""
 
     executions = data.get("executions", [])
 
@@ -800,107 +827,10 @@ def render_llmops_dashboard(
         if isinstance(execution, dict)
     ]
 
-    average_latency_ms = float(
-        data.get("average_latency_ms", 0.0) or 0.0
-    )
-
-    total_cost_usd = data.get("total_cost_usd")
-
-    cost_label = (
-        f"${float(total_cost_usd):.6f}"
-        if isinstance(total_cost_usd, (int, float))
-        and not isinstance(total_cost_usd, bool)
-        else "No reportado"
-    )
-
-    error_rate = float(
-        data.get("error_rate_percent", 0.0) or 0.0
-    )
-
-    total_executions = int(
-        data.get("total_executions", 0) or 0
-    )
-
-    prompt_tokens = sum(
-        int(execution.get("prompt_tokens", 0) or 0)
-        for execution in valid_executions
-    )
-
-    completion_tokens = sum(
-        int(execution.get("completion_tokens", 0) or 0)
-        for execution in valid_executions
-    )
-
-    invocation_count = sum(
-        int(
-            execution.get(
-                "llm_invocation_count",
-                0,
-            )
-            or 0
-        )
-        for execution in valid_executions
-    )
-
-    st.caption(
-        "Indicadores calculados sobre las ejecuciones "
-        "recientes persistidas en PostgreSQL."
-    )
-
-    st.subheader("Indicadores principales")
-
-    primary_metrics = st.columns(3)
-
-    primary_metrics[0].metric(
-        "Latencia promedio",
-        f"{average_latency_ms / 1000:.2f} s",
-    )
-
-    primary_metrics[1].metric(
-        "Costo acumulado reportado",
-        cost_label,
-    )
-
-    primary_metrics[2].metric(
-        "Tasa de error",
-        f"{error_rate:.2f} %",
-        help=(
-            "Porcentaje de ejecuciones de la ventana histórica "
-            "que registraron al menos un error."
-        ),
-    )
-
-    secondary_metrics = st.columns(4)
-
-    secondary_metrics[0].metric(
-        "Ejecuciones analizadas",
-        total_executions,
-    )
-
-    secondary_metrics[1].metric(
-        "Tokens de entrada",
-        f"{prompt_tokens:,}",
-    )
-
-    secondary_metrics[2].metric(
-        "Tokens de salida",
-        f"{completion_tokens:,}",
-    )
-
-    secondary_metrics[3].metric(
-        "Invocaciones LLM",
-        f"{invocation_count:,}",
-    )
-
-    st.metric(
-        "Tokens totales",
-        f"{int(data.get('total_tokens', 0) or 0):,}",
-    )
-
     if not valid_executions:
         st.info(
             "Todavía no existen ejecuciones persistidas "
-            "para construir el histórico."
+            "para construir el dashboard."
         )
         return
 
@@ -909,7 +839,6 @@ def render_llmops_dashboard(
     frame["created_at"] = pd.to_datetime(
         frame["created_at"],
         errors="coerce",
-        utc=True,
     )
 
     numeric_columns = (
@@ -928,12 +857,22 @@ def render_llmops_dashboard(
             errors="coerce",
         )
 
+    frame["platform"] = (
+        frame["platform"]
+        .fillna("No disponible")
+    )
+
+    frame["source_url"] = (
+        frame["source_url"]
+        .fillna("")
+    )
+
     frame = frame.sort_values(
-        "created_at",
+        "created_at"
     ).reset_index(drop=True)
 
-    frame["execution"] = [
-        f"Ejecución {index}"
+    frame["execution_label"] = [
+        f"E{index}"
         for index in range(
             1,
             len(frame) + 1,
@@ -944,166 +883,1127 @@ def render_llmops_dashboard(
         frame["duration_ms"] / 1000
     )
 
-    st.divider()
-    st.subheader("Evolución histórica")
-
-    first_chart_row = st.columns(2)
-
-    with first_chart_row[0]:
-        st.markdown("#### Latencia por ejecución")
-
-        latency_chart = (
-            frame.set_index("execution")[
-                ["latency_seconds"]
-            ]
-            .rename(
-                columns={
-                    "latency_seconds": "Latencia (s)",
-                }
-            )
-        )
-
-        st.line_chart(
-            latency_chart,
-        )
-
-    with first_chart_row[1]:
-        st.markdown("#### Costo por ejecución")
-
-        if frame["cost_usd"].notna().any():
-            cost_chart = (
-                frame.set_index("execution")[
-                    ["cost_usd"]
-                ]
-                .rename(
-                    columns={
-                        "cost_usd": "Costo USD",
-                    }
-                )
-            )
-
-            st.bar_chart(
-                cost_chart,
-            )
-        else:
-            st.info(
-                "El proveedor no reportó costos "
-                "para estas ejecuciones."
-            )
-
-    second_chart_row = st.columns(2)
-
-    with second_chart_row[0]:
-        st.markdown("#### Tokens por ejecución")
-
-        tokens_chart = (
-            frame.set_index("execution")[
-                [
-                    "prompt_tokens",
-                    "completion_tokens",
-                ]
-            ]
-            .rename(
-                columns={
-                    "prompt_tokens": "Entrada",
-                    "completion_tokens": "Salida",
-                }
-            )
-        )
-
-        st.bar_chart(
-            tokens_chart,
-        )
-
-    with second_chart_row[1]:
-        st.markdown("#### Errores por ejecución")
-
-        errors_chart = (
-            frame.set_index("execution")[
-                ["error_count"]
-            ]
-            .rename(
-                columns={
-                    "error_count": "Errores",
-                }
-            )
-        )
-
-        st.bar_chart(
-            errors_chart,
-        )
-
-    st.divider()
-    st.subheader("Ejecuciones recientes")
-
     status_labels = {
         "success": "Exitosa",
         "partial": "Parcial",
         "error": "Error",
     }
 
-    table = frame.sort_values(
-        "created_at",
-        ascending=False,
-    ).copy()
-
-    table["Fecha"] = table["created_at"].dt.strftime(
-        "%Y-%m-%d %H:%M:%S UTC"
+    frame["status_label"] = (
+        frame["status"]
+        .map(status_labels)
+        .fillna(frame["status"])
     )
 
-    table["Estado"] = table["status"].map(
-        status_labels
-    ).fillna(
-        table["status"]
-    )
+    app_url = st.context.url
 
-    table["Latencia"] = table[
-        "latency_seconds"
-    ].map(
-        lambda value: f"{value:.2f} s"
-    )
-
-    table["Costo USD"] = table[
-        "cost_usd"
-    ].map(
-        lambda value: (
-            f"${value:.6f}"
-            if pd.notna(value)
-            else "No reportado"
-        )
-    )
-
-    table = table[
-        [
-            "execution_id",
-            "Fecha",
-            "Estado",
-            "Latencia",
-            "prompt_tokens",
-            "completion_tokens",
-            "total_tokens",
-            "Costo USD",
-            "error_count",
-            "llm_invocation_count",
-        ]
-    ].rename(
-        columns={
-            "execution_id": "Execution ID",
-            "prompt_tokens": "Tokens entrada",
-            "completion_tokens": "Tokens salida",
-            "total_tokens": "Tokens totales",
-            "error_count": "Errores",
-            "llm_invocation_count": "Invocaciones LLM",
+    # Estilos exclusivos del dashboard.
+    st.markdown(
+        """
+        <style>
+        .llmops-section {
+            margin-top: 1.4rem;
+            margin-bottom: 0.8rem;
         }
+
+        .llmops-section-title {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #252525;
+        }
+
+        .llmops-section-description {
+            color: #64748B;
+            font-size: 0.86rem;
+            margin-top: 0.15rem;
+        }
+
+        .execution-info {
+            background: #ffffff;
+            border: 1px solid #E2E8F0;
+            border-left: 4px solid #8f1d2c;
+            border-radius: 8px;
+            padding: 0.9rem 1rem;
+            margin: 0.5rem 0 1rem 0;
+        }
+
+        .execution-info-platform {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1F2937;
+        }
+
+        .execution-info-id {
+            font-size: 0.78rem;
+            color: #64748B;
+            margin-top: 0.25rem;
+            overflow-wrap: anywhere;
+        }
+
+        .history-wrapper {
+            width: 100%;
+            margin-top: 0.6rem;
+        }
+
+        .history-table {
+            width: 100%;
+            table-layout: fixed;
+            border-collapse: collapse;
+            background: #ffffff;
+            border: 1px solid #E2E8F0;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .history-table th {
+            background: #F8FAFC;
+            color: #475569;
+            font-size: 0.76rem;
+            font-weight: 700;
+            text-align: left;
+            padding: 0.7rem 0.55rem;
+            border-bottom: 1px solid #E2E8F0;
+        }
+
+        .history-table td {
+            color: #334155;
+            font-size: 0.79rem;
+            padding: 0.68rem 0.55rem;
+            border-bottom: 1px solid #F1F5F9;
+            vertical-align: middle;
+            overflow-wrap: anywhere;
+        }
+
+        .history-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .history-table a {
+            color: #8f1d2c;
+            font-weight: 600;
+            text-decoration: none;
+        }
+
+        .history-table a:hover {
+            text-decoration: underline;
+        }
+
+        .status-badge {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 0.22rem 0.55rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status-success {
+            background: #ECFDF5;
+            color: #047857;
+        }
+
+        .status-partial {
+            background: #FFF7ED;
+            color: #C2410C;
+        }
+
+        .status-error {
+            background: #FEF2F2;
+            color: #B91C1C;
+        }
+
+        .history-table th:nth-child(1),
+        .history-table td:nth-child(1) {
+            width: 18%;
+        }
+
+        .history-table th:nth-child(2),
+        .history-table td:nth-child(2) {
+            width: 17%;
+        }
+
+        .history-table th:nth-child(3),
+        .history-table td:nth-child(3) {
+            width: 11%;
+        }
+
+        .history-table th:nth-child(4),
+        .history-table td:nth-child(4) {
+            width: 11%;
+        }
+
+        .history-table th:nth-child(5),
+        .history-table td:nth-child(5) {
+            width: 11%;
+        }
+
+        .history-table th:nth-child(6),
+        .history-table td:nth-child(6) {
+            width: 12%;
+        }
+
+        .history-table th:nth-child(7),
+        .history-table td:nth-child(7) {
+            width: 10%;
+        }
+
+        .history-table th:nth-child(8),
+        .history-table td:nth-child(8) {
+            width: 10%;
+        }
+
+        .history-table th:nth-child(9),
+        .history-table td:nth-child(9) {
+            width: 10%;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
     )
 
-    st.dataframe(
-        table,
-        hide_index=True,
-        use_container_width=True,
+    summary_tab, history_tab, detail_tab = st.tabs(
+        [
+            "Resumen",
+            "Historial",
+            "Detalle de ejecución",
+        ]
     )
 
+    with summary_tab:
+        st.markdown(
+            """
+            <div class="llmops-section">
+                <div class="llmops-section-title">
+                    Indicadores generales
+                </div>
+                <div class="llmops-section-description">
+                    Estado acumulado de las ejecuciones registradas.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
+        total_executions = len(frame)
+
+        average_latency = (
+            frame["latency_seconds"]
+            .fillna(0)
+            .mean()
+        )
+
+        total_tokens = int(
+            frame["total_tokens"]
+            .fillna(0)
+            .sum()
+        )
+
+        reported_costs = frame[
+            "cost_usd"
+        ].dropna()
+
+        total_cost = (
+            float(reported_costs.sum())
+            if not reported_costs.empty
+            else None
+        )
+
+        executions_with_errors = int(
+            (
+                frame["error_count"]
+                .fillna(0)
+                > 0
+            ).sum()
+        )
+
+        error_rate = (
+            executions_with_errors
+            / total_executions
+            * 100
+            if total_executions
+            else 0.0
+        )
+
+        metric_columns = st.columns(5)
+
+        metric_columns[0].metric(
+            "Ejecuciones",
+            f"{total_executions:,}",
+        )
+
+        metric_columns[1].metric(
+            "Latencia promedio",
+            f"{average_latency:.2f} s",
+        )
+
+        metric_columns[2].metric(
+            "Tokens totales",
+            f"{total_tokens:,}",
+        )
+
+        metric_columns[3].metric(
+            "Costo acumulado",
+            (
+                f"${total_cost:.6f}"
+                if total_cost is not None
+                else "No reportado"
+            ),
+        )
+
+        metric_columns[4].metric(
+            "Tasa de error",
+            f"{error_rate:.2f} %",
+        )
+
+        st.markdown(
+            """
+            <div class="llmops-section">
+                <div class="llmops-section-title">
+                    Comportamiento de las ejecuciones
+                </div>
+                <div class="llmops-section-description">
+                    Evolución de latencia, consumo, costo y estado.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        first_chart_row = st.columns(2)
+
+        # -----------------------------------------------------
+        # LATENCIA
+        # -----------------------------------------------------
+
+        with first_chart_row[0]:
+            st.markdown("#### Latencia por ejecución")
+
+            latency_chart = (
+                frame[
+                    [
+                        "execution_label",
+                        "latency_seconds",
+                    ]
+                ]
+                .set_index("execution_label")
+                .rename(
+                    columns={
+                        "latency_seconds": (
+                            "Latencia (s)"
+                        ),
+                    }
+                )
+            )
+
+            if len(frame) >= 3:
+                st.line_chart(
+                    latency_chart,
+                    height=300,
+                )
+            else:
+                st.bar_chart(
+                    latency_chart,
+                    height=300,
+                )
+
+            if len(frame) == 1:
+                st.caption(
+                    "Existe una sola ejecución; "
+                    "se muestra como barra para evitar "
+                    "una serie temporal sin trayectoria."
+                )
+            elif len(frame) == 2:
+                st.caption(
+                    "Con dos ejecuciones se utiliza "
+                    "comparación mediante barras."
+                )
+            else:
+                st.caption(
+                    "La línea permite observar la "
+                    "evolución de la latencia."
+                )
+
+        # -----------------------------------------------------
+        # TOKENS
+        # -----------------------------------------------------
+
+        with first_chart_row[1]:
+            st.markdown("#### Consumo de tokens")
+
+            tokens_chart = (
+                frame[
+                    [
+                        "execution_label",
+                        "prompt_tokens",
+                        "completion_tokens",
+                    ]
+                ]
+                .set_index("execution_label")
+                .rename(
+                    columns={
+                        "prompt_tokens": "Entrada",
+                        "completion_tokens": "Salida",
+                    }
+                )
+            )
+
+            st.bar_chart(
+                tokens_chart,
+                stack=True,
+                height=300,
+            )
+
+            st.caption(
+                "Compara los tokens enviados al modelo "
+                "con los tokens generados."
+            )
+
+        second_chart_row = st.columns(2)
+
+        # -----------------------------------------------------
+        # COSTO
+        # -----------------------------------------------------
+
+        with second_chart_row[0]:
+            st.markdown("#### Costo por ejecución")
+
+            cost_frame = frame[
+                frame["cost_usd"].notna()
+            ]
+
+            if not cost_frame.empty:
+                cost_chart = (
+                    cost_frame[
+                        [
+                            "execution_label",
+                            "cost_usd",
+                        ]
+                    ]
+                    .set_index("execution_label")
+                    .rename(
+                        columns={
+                            "cost_usd": "Costo USD",
+                        }
+                    )
+                )
+
+                st.bar_chart(
+                    cost_chart,
+                    height=300,
+                )
+
+                st.caption(
+                    "Costo reportado para cada ejecución."
+                )
+            else:
+                st.info(
+                    "El proveedor no reportó costos "
+                    "para las ejecuciones registradas."
+                )
+
+        # -----------------------------------------------------
+        # ESTADO
+        # -----------------------------------------------------
+
+        with second_chart_row[1]:
+            st.markdown("#### Estado de las ejecuciones")
+
+            if len(frame) == 1:
+                only_execution = frame.iloc[0]
+
+                st.metric(
+                    "Estado registrado",
+                    str(
+                        only_execution[
+                            "status_label"
+                        ]
+                    ),
+                )
+
+                st.caption(
+                    "Se mostrará una distribución "
+                    "cuando existan varias ejecuciones."
+                )
+
+            else:
+                status_chart = (
+                    frame["status_label"]
+                    .value_counts()
+                    .rename_axis("Estado")
+                    .reset_index(
+                        name="Ejecuciones"
+                    )
+                )
+
+                st.bar_chart(
+                    status_chart,
+                    x="Estado",
+                    y="Ejecuciones",
+                    horizontal=True,
+                    height=300,
+                )
+
+                st.caption(
+                    "Distribución de ejecuciones "
+                    "exitosas, parciales y fallidas."
+                )
+
+    with history_tab:
+        st.markdown(
+            """
+            <div class="llmops-section">
+                <div class="llmops-section-title">
+                    Historial de ejecuciones
+                </div>
+                <div class="llmops-section-description">
+                    Consulte los análisis registrados sin
+                    sobrecargar la vista principal.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        filter_columns = st.columns(2)
+
+        platform_options = [
+            "Todas"
+        ] + sorted(
+            str(platform)
+            for platform in frame[
+                "platform"
+            ].dropna().unique()
+        )
+
+        selected_platform = (
+            filter_columns[0].selectbox(
+                "Plataforma",
+                options=platform_options,
+                key="history_platform_filter",
+            )
+        )
+
+        status_options = [
+            "Todos",
+            "Exitosa",
+            "Parcial",
+            "Error",
+        ]
+
+        selected_status = (
+            filter_columns[1].selectbox(
+                "Estado",
+                options=status_options,
+                key="history_status_filter",
+            )
+        )
+
+        history_frame = frame.copy()
+
+        if selected_platform != "Todas":
+            history_frame = history_frame[
+                history_frame["platform"]
+                == selected_platform
+            ]
+
+        if selected_status != "Todos":
+            history_frame = history_frame[
+                history_frame["status_label"]
+                == selected_status
+            ]
+
+        history_frame = history_frame.sort_values(
+            "created_at",
+            ascending=False,
+        ).reset_index(drop=True)
+
+        if history_frame.empty:
+            st.info(
+                "No existen ejecuciones que coincidan "
+                "con los filtros seleccionados."
+            )
+
+        else:
+            PAGE_SIZE = 10
+
+            total_rows = len(history_frame)
+
+            total_pages = max(
+                1,
+                (
+                    total_rows
+                    + PAGE_SIZE
+                    - 1
+                )
+                // PAGE_SIZE,
+            )
+
+            pagination_columns = st.columns(
+                [3, 1]
+            )
+
+            pagination_columns[0].caption(
+                (
+                    "1 ejecución encontrada."
+                    if total_rows == 1
+                    else f"{total_rows} ejecuciones encontradas."
+                )
+            )
+
+            if total_pages > 1:
+                selected_page = (
+                    pagination_columns[1]
+                    .selectbox(
+                        "Página",
+                        options=list(
+                            range(
+                                1,
+                                total_pages + 1,
+                            )
+                        ),
+                        format_func=lambda page: (
+                            f"{page} de {total_pages}"
+                        ),
+                        key="history_page",
+                    )
+                )
+            else:
+                selected_page = 1
+
+            start = (
+                selected_page - 1
+            ) * PAGE_SIZE
+
+            end = start + PAGE_SIZE
+
+            visible_history = history_frame.iloc[
+                start:end
+            ]
+
+            rows: list[str] = []
+
+            for _, row in visible_history.iterrows():
+                execution_id = str(
+                    row["execution_id"]
+                )
+
+                created_at = row["created_at"]
+
+                if pd.notna(created_at):
+                    date_text = created_at.strftime(
+                        "%d/%m/%Y %H:%M"
+                    )
+                else:
+                    date_text = "No disponible"
+
+                platform = escape(
+                    str(row["platform"])
+                )
+
+                status = str(
+                    row["status"]
+                )
+
+                status_text = escape(
+                    str(row["status_label"])
+                )
+
+                status_class = {
+                    "success": "status-success",
+                    "partial": "status-partial",
+                    "error": "status-error",
+                }.get(
+                    status,
+                    "status-partial",
+                )
+
+                latency = row[
+                    "latency_seconds"
+                ]
+
+                latency_text = (
+                    f"{float(latency):.2f} s"
+                    if pd.notna(latency)
+                    else "—"
+                )
+
+                tokens = row[
+                    "total_tokens"
+                ]
+
+                tokens_text = (
+                    f"{int(tokens):,}"
+                    if pd.notna(tokens)
+                    else "—"
+                )
+
+                cost = row[
+                    "cost_usd"
+                ]
+
+                cost_text = (
+                    f"${float(cost):.6f}"
+                    if pd.notna(cost)
+                    else "—"
+                )
+                errors = row[
+                    "error_count"
+                ]
+
+                errors_text = (
+                    str(int(errors))
+                    if pd.notna(errors)
+                    else "—"
+                )
+
+                source_url = str(
+                    row["source_url"]
+                    or ""
+                )
+
+                analysis_url = (
+                    f"{app_url}"
+                    f"?execution="
+                    f"{execution_id}"
+                )
+
+                if source_url:
+                    source_link = (
+                        '<a href="'
+                        + escape(
+                            source_url,
+                            quote=True,
+                        )
+                        + '" target="_blank">'
+                        + "Abrir"
+                        + "</a>"
+                    )
+                else:
+                    source_link = "—"
+
+                analysis_link = (
+                    '<a href="'
+                    + escape(
+                        analysis_url,
+                        quote=True,
+                    )
+                    + '">'
+                    + "Ver"
+                    + "</a>"
+                )
+
+                rows.append(
+                    "<tr>"
+                    f"<td>{date_text}</td>"
+                    f"<td>{platform}</td>"
+                    "<td>"
+                    f'<span class="status-badge {status_class}">'
+                    f"{status_text}"
+                    "</span>"
+                    "</td>"
+                    f"<td>{latency_text}</td>"
+                    f"<td>{tokens_text}</td>"
+                    f"<td>{cost_text}</td>"
+                    f"<td>{errors_text}</td>"
+                    f"<td>{source_link}</td>"
+                    f"<td>{analysis_link}</td>"
+                    "</tr>"
+                )
+
+            history_html = (
+                '<div class="history-wrapper">'
+                '<table class="history-table">'
+                "<thead>"
+                "<tr>"
+                "<th>Fecha</th>"
+                "<th>Plataforma</th>"
+                "<th>Estado</th>"
+                "<th>Latencia</th>"
+                "<th>Tokens</th>"
+                "<th>Costo</th>"
+                "<th>Errores</th>"
+                "<th>Fuente</th>"
+                "<th>Análisis</th>"
+                "</tr>"
+                "</thead>"
+                "<tbody>"
+                f"{''.join(rows)}"
+                "</tbody>"
+                "</table>"
+                "</div>"
+            )
+
+            st.html(
+                history_html
+            )
+
+            if total_pages > 1:
+                st.caption(
+                    f"Mostrando registros "
+                    f"{start + 1}–"
+                    f"{min(end, total_rows)} "
+                    f"de {total_rows}."
+                )
+
+    with detail_tab:
+        st.markdown(
+            """
+            <div class="llmops-section">
+                <div class="llmops-section-title">
+                    Detalle de ejecución
+                </div>
+                <div class="llmops-section-description">
+                    Consulte la telemetría completa de
+                    una ejecución individual.
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        detail_frame = frame.sort_values(
+            "created_at",
+            ascending=False,
+        ).copy()
+
+        detail_options: dict[str, str] = {}
+
+        for _, row in detail_frame.iterrows():
+            execution_id = str(
+                row["execution_id"]
+            )
+
+            short_id = execution_id[:8]
+
+            created_at = row[
+                "created_at"
+            ]
+
+            if pd.notna(created_at):
+                date_text = (
+                    created_at.strftime(
+                        "%d/%m/%Y %H:%M"
+                    )
+                )
+            else:
+                date_text = (
+                    "Fecha no disponible"
+                )
+
+            label = (
+                f"{row['platform']} · "
+                f"{date_text} · "
+                f"{short_id}"
+            )
+
+            detail_options[
+                label
+            ] = execution_id
+
+        selected_label = st.selectbox(
+            "Seleccionar ejecución",
+            options=list(
+                detail_options.keys()
+            ),
+            key="execution_detail_selector",
+        )
+
+        selected_execution_id = (
+            detail_options[
+                selected_label
+            ]
+        )
+
+        selected_execution = (
+            detail_frame[
+                detail_frame[
+                    "execution_id"
+                ].astype(str)
+                == selected_execution_id
+            ]
+            .iloc[0]
+        )
+
+        analysis_detail = get_analysis_execution_detail(
+            selected_execution_id
+        )
+
+        st.markdown(
+            f"""
+            <div class="execution-info">
+                <div class="
+                    execution-info-platform
+                ">
+                    {
+                        escape(
+                            str(
+                                selected_execution[
+                                    "platform"
+                                ]
+                            )
+                        )
+                    }
+                </div>
+                <div class="
+                    execution-info-id
+                ">
+                    ID:
+                    {
+                        escape(
+                            selected_execution_id
+                        )
+                    }
+                </div>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
+
+        primary_detail = st.columns(4)
+
+        primary_detail[0].metric(
+            "Estado",
+            str(
+                selected_execution[
+                    "status_label"
+                ]
+            ),
+        )
+
+        primary_detail[1].metric(
+            "Latencia",
+            (
+                f"{float(selected_execution['latency_seconds']):.2f} s"
+                if pd.notna(
+                    selected_execution[
+                        "latency_seconds"
+                    ]
+                )
+                else "No disponible"
+            ),
+        )
+
+        selected_cost = (
+            selected_execution[
+                "cost_usd"
+            ]
+        )
+
+        primary_detail[2].metric(
+            "Costo",
+            (
+                f"${float(selected_cost):.6f}"
+                if pd.notna(
+                    selected_cost
+                )
+                else "No reportado"
+            ),
+        )
+
+        primary_detail[3].metric(
+            "Errores",
+            (
+                f"{int(selected_execution['error_count'] or 0)}"
+            ),
+        )
+
+        st.markdown("#### Consumo del modelo")
+
+        token_columns = st.columns(4)
+
+        token_columns[0].metric(
+            "Tokens entrada",
+            f"{int(selected_execution['prompt_tokens'] or 0):,}",
+        )
+
+        token_columns[1].metric(
+            "Tokens salida",
+            f"{int(selected_execution['completion_tokens'] or 0):,}",
+        )
+
+        token_columns[2].metric(
+            "Tokens totales",
+            f"{int(selected_execution['total_tokens'] or 0):,}",
+        )
+
+        token_columns[3].metric(
+            "Invocaciones LLM",
+            f"{int(selected_execution['llm_invocation_count'] or 0):,}",
+        )
+
+        st.markdown("#### Procesamiento contractual")
+
+        if isinstance(
+            analysis_detail,
+            dict,
+        ):
+            total_clauses = int(
+                analysis_detail.get(
+                    "total_clauses",
+                    0,
+                )
+                or 0
+            )
+
+            analyzed_clauses = int(
+                analysis_detail.get(
+                    "analyzed_clauses",
+                    0,
+                )
+                or 0
+            )
+
+            successful_clauses = int(
+                analysis_detail.get(
+                    "successful_clauses",
+                    0,
+                )
+                or 0
+            )
+
+            failed_clauses = int(
+                analysis_detail.get(
+                    "failed_clauses",
+                    0,
+                )
+                or 0
+            )
+
+            failure_rate = (
+                failed_clauses
+                / analyzed_clauses
+                * 100
+                if analyzed_clauses > 0
+                else None
+            )
+
+            clause_metrics = st.columns(5)
+
+            clause_metrics[0].metric(
+                "Cláusulas totales",
+                f"{total_clauses:,}",
+            )
+
+            clause_metrics[1].metric(
+                "Analizadas",
+                f"{analyzed_clauses:,}",
+            )
+
+            clause_metrics[2].metric(
+                "Exitosas",
+                f"{successful_clauses:,}",
+            )
+
+            clause_metrics[3].metric(
+                "Fallidas",
+                f"{failed_clauses:,}",
+            )
+
+            clause_metrics[4].metric(
+                "Tasa de fallo",
+                (
+                    f"{failure_rate:.2f} %"
+                    if failure_rate is not None
+                    else "No aplica"
+                ),
+                help=(
+                    "Porcentaje de cláusulas cuyo análisis "
+                    "no pudo completarse satisfactoriamente "
+                    "respecto de las cláusulas analizadas."
+                ),
+            )
+
+        else:
+            st.info(
+                "No existe un análisis contractual persistido "
+                "para calcular las métricas por cláusula."
+            )
+        st.markdown("#### Información de origen")
+
+        source_url = str(
+            selected_execution[
+                "source_url"
+            ]
+            or ""
+        )
+
+        detail_info = st.columns(
+            [1, 2]
+        )
+
+        detail_info[0].markdown(
+            "**Plataforma**"
+        )
+
+        detail_info[1].write(
+            selected_execution[
+                "platform"
+            ]
+        )
+
+        detail_info = st.columns(
+            [1, 2]
+        )
+
+        detail_info[0].markdown(
+            "**Fecha**"
+        )
+
+        detail_created_at = (
+            selected_execution[
+                "created_at"
+            ]
+        )
+
+        if pd.notna(
+            detail_created_at
+        ):
+            detail_date = (
+                detail_created_at.strftime(
+                    "%d/%m/%Y %H:%M:%S "
+                    "UTC-5"
+                )
+            )
+        else:
+            detail_date = (
+                "No disponible"
+            )
+
+        detail_info[1].write(
+            detail_date
+        )
+
+        detail_info = st.columns(
+            [1, 2]
+        )
+
+        detail_info[0].markdown(
+            "**URL fuente**"
+        )
+
+        if source_url:
+            detail_info[1].markdown(
+                f"[{source_url}]"
+                f"({source_url})"
+            )
+        else:
+            detail_info[1].write(
+                "No disponible"
+            )
+
+        st.divider()
+
+        analysis_url = (
+            f"{app_url}"
+            f"?execution="
+            f"{selected_execution_id}"
+        )
+
+        st.link_button(
+            "Abrir reporte completo",
+            analysis_url,
+            use_container_width=True,
+        )
 
 st.set_page_config(
     page_title="Análisis de Términos de Servicio",
@@ -1117,10 +2017,55 @@ st.markdown(
             background-color: #f7f7f8;
         }
 
+        /* Oculta elementos propios de Streamlit */
+        header[data-testid="stHeader"] {
+            display: none;
+        }
+
+        [data-testid="stToolbar"] {
+            display: none;
+        }
+
+        [data-testid="stDecoration"] {
+            display: none;
+        }
+
+        #MainMenu {
+            visibility: hidden;
+        }
+
+        footer {
+            visibility: hidden;
+        }
+
         .block-container {
             max-width: 1180px;
-            padding-top: 2.5rem;
+            padding-top: 1.4rem;
             padding-bottom: 4rem;
+        }
+
+        .app-brand {
+            padding-top: 0.25rem;
+        }
+
+        .app-brand-title {
+            color: #252525;
+            font-size: 1.15rem;
+            font-weight: 700;
+            line-height: 1.25;
+        }
+
+        .app-brand-subtitle {
+            color: #64748B;
+            font-size: 0.83rem;
+            margin-top: 0.2rem;
+        }
+
+        .top-navigation-divider {
+            height: 1px;
+            background-color: #E5E7EB;
+            margin-top: 0.65rem;
+            margin-bottom: 1.6rem;
         }
 
         h1 {
@@ -1330,27 +2275,130 @@ st.markdown(
             }
         }
 
+        .dashboard-section-heading {
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+        }
+
+        .dashboard-section-title {
+            color: #252525;
+            font-size: 1.25rem;
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        .dashboard-section-description {
+            color: #64748B;
+            font-size: 0.88rem;
+            margin-top: 0.2rem;
+        }
+
+        .dashboard-kpi-card {
+            background-color: #ffffff;
+            border: 1px solid #E2E8F0;
+            border-top: 3px solid #8f1d2c;
+            border-radius: 9px;
+            padding: 0.9rem 1rem;
+            min-height: 125px;
+        }
+
+        .dashboard-kpi-label {
+            color: #64748B;
+            font-size: 0.78rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.025em;
+        }
+
+        .dashboard-kpi-value {
+            color: #1F2937;
+            font-size: 1.7rem;
+            font-weight: 700;
+            line-height: 1.2;
+            margin-top: 0.4rem;
+        }
+
+        .dashboard-kpi-description {
+            color: #94A3B8;
+            font-size: 0.75rem;
+            line-height: 1.35;
+            margin-top: 0.35rem;
+        }
+
+        .execution-detail-card {
+            background-color: #ffffff;
+            border: 1px solid #E2E8F0;
+            border-left: 4px solid #8f1d2c;
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .execution-detail-platform {
+            color: #1F2937;
+            font-size: 1rem;
+            font-weight: 700;
+        }
+
+        .execution-detail-id {
+            color: #64748B;
+            font-size: 0.78rem;
+            margin-top: 0.2rem;
+            overflow-wrap: anywhere;
+        }
     </style>
     """,
     unsafe_allow_html=True,
 )
 
-view = st.sidebar.radio(
-    "Navegación",
-    (
-        "Análisis",
-        "Dashboard LLMOps",
-    ),
+brand_column, navigation_column = st.columns(
+    [1.6, 1]
 )
 
-if view == "Análisis":
-    st.title("Análisis de Términos de Servicio")
-
-    st.write(
-        "Sistema multiagente para detectar cláusulas "
-        "potencialmente abusivas en plataformas SaaS."
+with brand_column:
+    st.markdown(
+        """
+        <div class="app-brand">
+            <div class="app-brand-title">
+                Sistema Multiagente LLMOps
+            </div>
+            <div class="app-brand-subtitle">
+                Análisis automatizado de Términos de Servicio SaaS
+            </div>
+        </div>
+        """,
+        unsafe_allow_html=True,
     )
 
+with navigation_column:
+    if st.query_params.get("execution"):
+        st.session_state["main_navigation"] = "Análisis"
+
+    if "main_navigation" not in st.session_state:
+        st.session_state["main_navigation"] = "Análisis"
+
+    view = st.segmented_control(
+        "Navegación principal",
+        (
+            "Análisis",
+            "Dashboard LLMOps",
+        ),
+        key="main_navigation",
+        label_visibility="collapsed",
+    )
+
+    if view is None:
+        view = "Análisis"
+
+    if view is None:
+        view = "Análisis"
+
+    st.markdown(
+        '<div class="top-navigation-divider"></div>',
+        unsafe_allow_html=True,
+    )
+
+if view == "Análisis":
     with st.form("analysis_form"):
         url = st.text_input(
             "URL de los Términos de Servicio",
@@ -1555,7 +2603,9 @@ else:
         "de las ejecuciones del sistema."
     )
 
-    dashboard_data = load_llmops_dashboard()
+    dashboard_data = load_llmops_dashboard(
+        limit=200
+    )
 
     if dashboard_data is None:
         st.info(

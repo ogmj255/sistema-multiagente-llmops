@@ -68,7 +68,6 @@ class AnalysisRun(Base):
         server_default=func.now(),
     )
 
-
 class ObservabilityRun(Base):
     """Representa las métricas LLMOps persistidas de una ejecución."""
 
@@ -88,38 +87,57 @@ class ObservabilityRun(Base):
         Uuid,
         primary_key=True,
     )
+
+    source_url: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
+    platform: Mapped[str | None] = mapped_column(
+        Text,
+        nullable=True,
+    )
+
     status: Mapped[str] = mapped_column(
         String(20),
         nullable=False,
     )
+
     duration_ms: Mapped[float] = mapped_column(
         Float,
         nullable=False,
     )
+
     prompt_tokens: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
     )
+
     completion_tokens: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
     )
+
     total_tokens: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
     )
+
     cost_usd: Mapped[float | None] = mapped_column(
         Float,
         nullable=True,
     )
+
     error_count: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
     )
+
     llm_invocation_count: Mapped[int] = mapped_column(
         Integer,
         nullable=False,
     )
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         nullable=False,

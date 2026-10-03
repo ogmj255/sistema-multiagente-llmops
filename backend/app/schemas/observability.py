@@ -54,21 +54,43 @@ class LegalAnalyzerToolResponse(BaseModel):
     analysis: ClauseAnalysisResponse
     observability: LLMInvocationMetrics | None = None
 
-
 class ObservabilityRunResponse(BaseModel):
     """Métricas persistidas de una ejecución para el dashboard."""
 
     execution_id: str = Field(min_length=1)
-    status: Literal["success", "partial", "error"]
+
+    platform: str | None = Field(
+        default=None,
+        min_length=1,
+    )
+
+    source_url: str | None = Field(
+        default=None,
+        min_length=1,
+    )
+
+    status: Literal[
+        "success",
+        "partial",
+        "error",
+    ]
+
     duration_ms: float = Field(ge=0)
+
     prompt_tokens: int = Field(ge=0)
     completion_tokens: int = Field(ge=0)
     total_tokens: int = Field(ge=0)
-    cost_usd: float | None = Field(default=None, ge=0)
-    error_count: int = Field(ge=0)
-    llm_invocation_count: int = Field(ge=0)
-    created_at: datetime
 
+    cost_usd: float | None = Field(
+        default=None,
+        ge=0,
+    )
+
+    error_count: int = Field(ge=0)
+
+    llm_invocation_count: int = Field(ge=0)
+
+    created_at: datetime
 
 class LLMOpsDashboardResponse(BaseModel):
     """Datos agregados e históricos del dashboard LLMOps."""

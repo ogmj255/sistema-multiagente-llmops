@@ -5,10 +5,16 @@ import pysbd
 
 from app.services.embeddings import generate_embeddings
 
-SENTENCE_SEGMENTER = pysbd.Segmenter(
-    language="en",
-    clean=False,
-)
+SENTENCE_SEGMENTERS = {
+    "en": pysbd.Segmenter(
+        language="en",
+        clean=False,
+    ),
+    "es": pysbd.Segmenter(
+        language="es",
+        clean=False,
+    ),
+}
 
 ROMAN_ENUMERATION_END = re.compile(
     r"(?:^|\s)(?:i|ii|iii|iv|v|vi|vii|viii|ix|x)\.$"
@@ -87,6 +93,8 @@ def _merge_roman_enumeration_breaks(
 
 def split_into_sentences(
     text: str,
+    *,
+    language: str = "en",
 ) -> list[str]:
     """Separa el texto limpio en unidades oracionales."""
 
@@ -95,7 +103,12 @@ def split_into_sentences(
     if not normalized:
         return []
 
-    raw_sentences = SENTENCE_SEGMENTER.segment(
+    segmenter = SENTENCE_SEGMENTERS.get(
+        language,
+        SENTENCE_SEGMENTERS["en"],
+    )
+
+    raw_sentences = segmenter.segment(
         normalized
     )
 
@@ -108,7 +121,6 @@ def split_into_sentences(
     return _merge_roman_enumeration_breaks(
         sentences
     )
-
 
 def build_context_groups(
     sentences: list[str],
@@ -230,17 +242,18 @@ def _chunk_text(
         sentences[start : end + 1]
     )
 
-
 def build_semantic_chunks(
     text: str,
     *,
+    language: str = "en",
     breakpoint_percentile: float = 80,
     buffer_size: int = 1,
 ) -> list[str]:
     """Segmenta texto mediante embeddings y breakpoints por percentil."""
 
     sentences = split_into_sentences(
-        text
+        text,
+        language=language,
     )
 
     if not sentences:
