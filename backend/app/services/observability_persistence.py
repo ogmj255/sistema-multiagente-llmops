@@ -4,6 +4,7 @@ from sqlalchemy import select
 
 from app.db.database import SessionLocal
 from app.db.models import ObservabilityRun
+from app.core.config import settings
 from app.schemas.observability import ObservabilitySummary
 
 
@@ -18,6 +19,14 @@ def save_observability_run(
 
     record = ObservabilityRun(
         execution_id=UUID(execution_id),
+        provider=(
+            summary.provider
+            or "openrouter"
+        ),
+        model=(
+            summary.model
+            or settings.openrouter_model
+        ),
         source_url=source_url,
         platform=platform,
         status=summary.status,

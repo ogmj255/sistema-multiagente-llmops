@@ -18,6 +18,35 @@ def build_observability_summary(
 
     metrics = tuple(llm_metrics)
 
+    providers = {
+        item.provider
+        for item in metrics
+    }
+
+    models = {
+        item.model
+        for item in metrics
+    }
+
+    provider = (
+        next(iter(providers))
+        if len(providers) == 1
+        else (
+            "multiple"
+            if providers
+            else None
+        )
+    )
+
+    model = (
+        next(iter(models))
+        if len(models) == 1
+        else (
+            "multiple"
+            if models
+            else None
+        )
+    )
     prompt_tokens = sum(
         item.prompt_tokens or 0
         for item in metrics
@@ -51,6 +80,8 @@ def build_observability_summary(
 
     return ObservabilitySummary(
         status=summary_status,
+        provider=provider,
+        model=model,
         duration_ms=duration_ms,
         prompt_tokens=prompt_tokens,
         completion_tokens=completion_tokens,

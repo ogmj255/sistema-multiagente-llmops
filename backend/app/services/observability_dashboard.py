@@ -64,6 +64,9 @@ def build_llmops_dashboard(
     executions = [
         ObservabilityRunResponse(
             execution_id=str(record.execution_id),
+            execution_number=record.execution_number,
+            provider=record.provider,
+            model=record.model,
             platform=getattr(
                 record,
                 "platform",

@@ -9,8 +9,10 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
     Uuid,
     func,
+    text,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, mapped_column
@@ -81,13 +83,34 @@ class ObservabilityRun(Base):
             "ix_observability_runs_created_at",
             "created_at",
         ),
+        UniqueConstraint(
+            "execution_number",
+            name="uq_observability_runs_execution_number",
+        ),
     )
-
     execution_id: Mapped[UUID] = mapped_column(
         Uuid,
         primary_key=True,
     )
+    execution_number: Mapped[int] = mapped_column(
+        Integer,
+        nullable=False,
+        server_default=text(
+            "nextval("
+            "'observability_runs_execution_number_seq'"
+            "::regclass)"
+        ),
+    )
 
+    provider: Mapped[str] = mapped_column(
+        String(50),
+        nullable=False,
+    )
+
+    model: Mapped[str] = mapped_column(
+        String(200),
+        nullable=False,
+    )
     source_url: Mapped[str | None] = mapped_column(
         Text,
         nullable=True,

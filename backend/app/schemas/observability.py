@@ -37,6 +37,15 @@ class ObservabilitySummary(BaseModel):
         "partial",
         "error",
     ]
+    provider: str | None = Field(
+    default=None,
+    min_length=1,
+    )
+
+    model: str | None = Field(
+        default=None,
+        min_length=1,
+    )
     duration_ms: float = Field(ge=0)
     prompt_tokens: int = Field(ge=0)
     completion_tokens: int = Field(ge=0)
@@ -58,6 +67,12 @@ class ObservabilityRunResponse(BaseModel):
     """Métricas persistidas de una ejecución para el dashboard."""
 
     execution_id: str = Field(min_length=1)
+    
+    execution_number: int = Field(ge=1)
+
+    provider: str = Field(min_length=1)
+
+    model: str = Field(min_length=1)
 
     platform: str | None = Field(
         default=None,

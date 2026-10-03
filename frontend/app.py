@@ -547,9 +547,15 @@ def render_analysis_results(
 
         if isinstance(reused_at, str):
             try:
-                reused_datetime = datetime.fromisoformat(
-                    reused_at.replace("Z", "+00:00")
+                reused_datetime = pd.to_datetime(
+                    reused_at,
+                    utc=True,
                 )
+
+                reused_datetime = reused_datetime.tz_convert(
+                    "-05:00"
+                )
+
                 formatted_date = reused_datetime.strftime(
                     "%d/%m/%Y %H:%M:%S"
                 )
@@ -836,12 +842,17 @@ def render_llmops_dashboard(
 
     frame = pd.DataFrame(valid_executions)
 
-    frame["created_at"] = pd.to_datetime(
-        frame["created_at"],
-        errors="coerce",
+    frame["created_at"] = (
+        pd.to_datetime(
+            frame["created_at"],
+            errors="coerce",
+            utc=True,
+        )
+        .dt.tz_convert("-05:00")
     )
 
     numeric_columns = (
+        "execution_number",
         "duration_ms",
         "prompt_tokens",
         "completion_tokens",
@@ -866,19 +877,47 @@ def render_llmops_dashboard(
         frame["source_url"]
         .fillna("")
     )
+    frame["provider"] = (
+        frame["provider"]
+        .fillna("No disponible")
+    )
 
+    frame["model"] = (
+        frame["model"]
+        .fillna("No disponible")
+    )
+
+    frame["provider_display"] = (
+        frame["provider"]
+        .replace(
+            {
+                "openrouter": "OpenRouter",
+            }
+        )
+    )
+
+    frame["model_display"] = (
+        frame["model"]
+        .replace(
+            {
+                "not_recorded": "No registrado",
+            }
+        )
+    )
+    
     frame = frame.sort_values(
         "created_at"
     ).reset_index(drop=True)
 
-    frame["execution_label"] = [
-        f"E{index}"
-        for index in range(
-            1,
-            len(frame) + 1,
+    frame["execution_label"] = frame[
+        "execution_number"
+    ].apply(
+        lambda value: (
+            f"E{int(value)}"
+            if pd.notna(value)
+            else "E—"
         )
-    ]
-
+    )
     frame["latency_seconds"] = (
         frame["duration_ms"] / 1000
     )
@@ -988,6 +1027,12 @@ def render_llmops_dashboard(
             text-decoration: underline;
         }
 
+        .history-secondary {
+            font-size: 0.72rem;
+            color: #64748B;
+            margin-top: 0.18rem;
+            line-height: 1.25;
+        }
         .status-badge {
             display: inline-block;
             border-radius: 999px;
@@ -1499,7 +1544,30 @@ def render_llmops_dashboard(
                 platform = escape(
                     str(row["platform"])
                 )
+                execution_number = row[
+                    "execution_number"
+                ]
 
+                execution_number_text = (
+                    str(int(execution_number))
+                    if pd.notna(execution_number)
+                    else "—"
+                )
+
+                model_display = str(
+                    row["model_display"]
+                )
+
+                if "/" in model_display:
+                    history_model = (
+                        model_display.split("/")[-1]
+                    )
+                else:
+                    history_model = model_display
+
+                history_model = escape(
+                    history_model
+                )
                 status = str(
                     row["status"]
                 )
@@ -1594,8 +1662,18 @@ def render_llmops_dashboard(
 
                 rows.append(
                     "<tr>"
-                    f"<td>{date_text}</td>"
-                    f"<td>{platform}</td>"
+                    "<td>"
+                    f"{date_text}"
+                    '<div class="history-secondary">'
+                    f"N.º {execution_number_text}"
+                    "</div>"
+                    "</td>"
+                    "<td>"
+                    f"{platform}"
+                    '<div class="history-secondary">'
+                    f"{history_model}"
+                    "</div>"
+                    "</td>"
                     "<td>"
                     f'<span class="status-badge {status_class}">'
                     f"{status_text}"
@@ -1674,7 +1752,15 @@ def render_llmops_dashboard(
             )
 
             short_id = execution_id[:8]
+            execution_number = row[
+                "execution_number"
+            ]
 
+            execution_number_text = (
+                str(int(execution_number))
+                if pd.notna(execution_number)
+                else "—"
+            )
             created_at = row[
                 "created_at"
             ]
@@ -1691,6 +1777,7 @@ def render_llmops_dashboard(
                 )
 
             label = (
+                f"N.º {execution_number_text} · "
                 f"{row['platform']} · "
                 f"{date_text} · "
                 f"{short_id}"
@@ -1728,34 +1815,72 @@ def render_llmops_dashboard(
             selected_execution_id
         )
 
+        selected_execution_number = (
+            selected_execution[
+                "execution_number"
+            ]
+        )
+
+        selected_execution_number_text = (
+            str(
+                int(
+                    selected_execution_number
+                )
+            )
+            if pd.notna(
+                selected_execution_number
+            )
+            else "—"
+        )
+
+        selected_provider = escape(
+            str(
+                selected_execution[
+                    "provider_display"
+                ]
+            )
+        )
+
+        selected_model = escape(
+            str(
+                selected_execution[
+                    "model_display"
+                ]
+            )
+        )
+
+        platform_detail = escape(
+            str(
+                selected_execution[
+                    "platform"
+                ]
+            )
+        )
+
+        execution_info_html = (
+            '<div class="execution-info">'
+            '<div class="execution-info-platform">'
+            f'{platform_detail}'
+            '</div>'
+            '<div class="execution-info-id">'
+            'Ejecución N.º: '
+            f'{selected_execution_number_text}'
+            '&nbsp;&nbsp;·&nbsp;&nbsp;'
+            'Proveedor: '
+            f'{selected_provider}'
+            '&nbsp;&nbsp;·&nbsp;&nbsp;'
+            'Modelo: '
+            f'{selected_model}'
+            '</div>'
+            '<div class="execution-info-id">'
+            'ID: '
+            f'{escape(selected_execution_id)}'
+            '</div>'
+            '</div>'
+        )
+
         st.markdown(
-            f"""
-            <div class="execution-info">
-                <div class="
-                    execution-info-platform
-                ">
-                    {
-                        escape(
-                            str(
-                                selected_execution[
-                                    "platform"
-                                ]
-                            )
-                        )
-                    }
-                </div>
-                <div class="
-                    execution-info-id
-                ">
-                    ID:
-                    {
-                        escape(
-                            selected_execution_id
-                        )
-                    }
-                </div>
-            </div>
-            """,
+            execution_info_html,
             unsafe_allow_html=True,
         )
 

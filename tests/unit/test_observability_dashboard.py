@@ -13,6 +13,9 @@ def test_build_llmops_dashboard_aggregates_real_runs() -> None:
     runs = [
         SimpleNamespace(
             execution_id=uuid4(),
+            execution_number=1,
+            provider="openrouter",
+            model="model-a",
             status="success",
             duration_ms=1000.0,
             prompt_tokens=100,
@@ -25,6 +28,9 @@ def test_build_llmops_dashboard_aggregates_real_runs() -> None:
         ),
         SimpleNamespace(
             execution_id=uuid4(),
+            execution_number=2,
+            provider="openrouter",
+            model="model-a",
             status="partial",
             duration_ms=3000.0,
             prompt_tokens=200,
@@ -46,6 +52,13 @@ def test_build_llmops_dashboard_aggregates_real_runs() -> None:
     assert dashboard.error_rate_percent == 50.0
     assert dashboard.total_errors == 2
     assert len(dashboard.executions) == 2
+    assert dashboard.executions[0].execution_number == 1
+    assert dashboard.executions[0].provider == "openrouter"
+    assert dashboard.executions[0].model == "model-a"
+
+    assert dashboard.executions[1].execution_number == 2
+    assert dashboard.executions[1].provider == "openrouter"
+    assert dashboard.executions[1].model == "model-a"
 
 
 def test_build_llmops_dashboard_without_reported_costs() -> None:
@@ -54,6 +67,9 @@ def test_build_llmops_dashboard_without_reported_costs() -> None:
     runs = [
         SimpleNamespace(
             execution_id=uuid4(),
+            execution_number=1,
+            provider="openrouter",
+            model="model-a",
             status="success",
             duration_ms=500.0,
             prompt_tokens=100,
