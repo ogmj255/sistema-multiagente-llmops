@@ -1,66 +1,71 @@
-# Evaluación experimental — fase 1 (base verificable)
+# Evaluación experimental — capítulo III, sección 3.7
 
-Esta rama añade la **validación del corpus y el evaluador de predicciones**.
-Aún no ejecuta tres modelos, RAG ni el pipeline de LangGraph. No hay
-resultados experimentales reales en este cambio.
+Esta rama contiene la validación del ground truth, el cálculo de métricas y
+el **plan experimental**. No ejecuta todavía modelos ni recuperaciones RAG
+y no contiene resultados medidos.
 
-## Fuente y confidencialidad
+## Referencia humana
 
-Exportar la hoja única de \`ANEXO-GroundTruth.xlsx\` a CSV UTF-8 sin editar
-ID, texto, aplicabilidad ni etiqueta. Guardarla localmente como
-\`data/evaluation/ground_truth_547.csv\` (excluida de Git por \`.gitignore\`).
-No subir el archivo etiquetado a prompts, ChromaDB ni repositorios públicos.
+La fuente es `ANEXO-GroundTruth.xlsx`, hoja única, exportada localmente a
+`data/evaluation/ground_truth_547.csv` (UTF-8 y cabeceras originales).
+Esta ruta está excluida de Git. **No subir el CSV etiquetado al RAG ni al
+repositorio**. La decisión final del investigador para `ToS05-U002` es
+`no potencialmente abusiva`; conservar como evidencia la captura de
+validación y la huella del dataset.
 
-La referencia validada aún requiere resolver la discrepancia documental
-\`ToS05-U002\` y dejar constancia del cierre de auditoría. No usar las
-etiquetas para ajustar modelos sobre las mismas unidades destinadas a
-evaluación final.
+La versión validada en el equipo del investigador contiene 547 unidades,
+10 ToS y el fingerprint:
 
-Desde la raíz del repositorio:
+`47f69eb943f539751f2c120ab6fdd7f45bbc000f93459a90f1162212cfdde4a5`
 
-\`\`\`bash
-cd backend
-python ../scripts/evaluate_groundtruth.py --csv ../data/evaluation/ground_truth_547.csv
-\`\`\`
+La huella se comprueba otra vez antes de cualquier inferencia.
 
-Se obtiene un manifiesto con las 547 unidades, distribución de clases,
-plataformas, SHA-256 del archivo y huella reproducible de filas y etiquetas.
+## Diseño fijado en la tesis
 
-## Formato previsto para predicciones de cada modelo
+- **Factor variable:** modelo LLM.
+- **Tratamientos:** T1 DeepSeek V4 Flash 0731, T2 Mistral Large 3 2512,
+  T3 Kimi K2.6, todos previstos a través de OpenRouter.
+- **Objetos:** 10 documentos ToS SaaS; **unidades:** 547 fragmentos fijos.
+- **Diseño:** 30 combinaciones documento-modelo (ET01–ET30);
+  3 repeticiones por combinación; 90 ejecuciones documentales y
+  4.923 predicciones individuales previstas.
+- **Constantes:** mismo fragmento y orden, prompt, modelo de embeddings,
+  corpus jurídico, configuración de recuperación semántica y entorno.
+- **Indicadores:** precisión, recall, F1, exactitud, latencia de extremo a
+  extremo, tokens, costo y tasa de error.
 
-Guardar JSONL fuera del control de versiones, una línea por intento:
+Los identificadores API escritos en `backend/app/evaluation/design.py`
+son **candidatos de configuración**: verificar que cada ID existe y está
+disponible en OpenRouter, registrar el modelo efectivamente devuelto y
+congelar versiones antes de ejecutar. Los nombres académicos de la tesis
+son la referencia autoritativa hasta esa verificación.
 
-\`\`\`json
-{"id":"ToS01-U001","model":"modelo-real","dataset_fingerprint":"HUELLA_DEL_MANIFIESTO","status":"success","prediction":"potencialmente abusiva"}
-\`\`\`
+## Uso en VS Code (PowerShell, desde la raíz)
 
-Las predicciones deben generarse **sin acceso a \`Etiqueta final\`**.
-El identificador y la huella permiten detectar mezcla de versiones.
-Si faltan predicciones, se contabilizan como fallos, no se eliminan
-silenciosamente del denominador. Para puntuarlas:
+```powershell
+$env:PYTHONPATH = (Resolve-Path ".\backend").Path
+python -m pytest tests/unit/test_groundtruth_evaluation.py tests/unit/test_experiment_design.py -q
+python scripts/evaluate_groundtruth.py --csv data/evaluation/ground_truth_547.csv
+python scripts/plan_groundtruth_experiment.py --csv data/evaluation/ground_truth_547.csv
+```
 
-\`\`\`bash
-cd backend
-python ../scripts/evaluate_groundtruth.py \
-  --csv ../data/evaluation/ground_truth_547.csv \
-  --predictions ../data/evaluation/predicciones.jsonl \
-  --model modelo-real \
-  --output ../data/evaluation/metricas-modelo-real.json
-\`\`\`
+El último comando crea `data/evaluation/plan_90_ejecuciones.json`
+(excluido de Git) y **no realiza llamadas a modelos**.
 
-El informe incluye matriz de confusión, precisión, recall, F1,
-exactitud y cobertura de predicción, separando cuatro clases (todo
-el corpus) y tres clases (solo fragmentos evaluables). No se debe
-interpretar una métrica baja como fracaso técnico automático.
+## Etapas pendientes
 
-## Pendiente antes de la ejecución oficial
+1. Verificar los tres IDs exactos y sus restricciones de salida estructurada.
+2. Crear el ejecutor integrado con el analizador jurídico existente y
+   las trazas Langfuse, conservando las **tres repeticiones por unidad**
+   identificadas por tarea, modelo y run independiente.
+3. Prevenir reutilización de reportes previos y filtración de etiquetas
+   humanas. Congelar o reproducir contexto RAG entre tratamientos.
+4. Realizar piloto técnico sin optimizar prompts sobre el conjunto final,
+   y después ejecutar las 90 tareas.
+5. Agregar resultados operativos y comparaciones estadísticas; el
+   evaluador actual para predicciones JSONL sirve como base, pero
+   **todavía no calcula métricas agrupadas por repetición**.
 
-- Seleccionar y fijar las versiones reales de los tres modelos.
-- Implementar el ejecutor usando el analizador existente y Langfuse,
-  separando las etiquetas humanas de cualquier solicitud al modelo.
-- Verificar que el corpus de 10 ToS cumple el requisito académico
-  previamente planteado de al menos 15 ToS, o ampliar la evaluación.
-- Congelar configuración, evidencia RAG y conjunto final antes de medir.
-
-Pruebas de esta fase:
-\`PYTHONPATH=backend pytest tests/unit/test_groundtruth_evaluation.py -q\`.
+Los 10 ToS de esta investigación son los que constan en el alcance,
+la muestra y la Tabla 8 de la tesis. No existe en esta versión
+un requisito de 15 documentos.
