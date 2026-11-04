@@ -28,13 +28,23 @@ class ServidorMCP:
     herramienta: str
     variables_entorno: tuple[str, ...] = ()
 
-    def crear_parametros(self) -> StdioServerParameters:
+    def crear_parametros(
+        self, overrides: dict[str, str] | None = None,
+    ) -> StdioServerParameters:
         """Crea los parámetros para iniciar el servidor por stdio."""
         entorno = {
             variable: environ[variable]
             for variable in self.variables_entorno
             if variable in environ
         }
+        if overrides:
+            unexpected = set(overrides) - set(self.variables_entorno)
+            if unexpected:
+                raise ValueError(
+                    "Variables no autorizadas para MCP: "
+                    + ", ".join(sorted(unexpected))
+                )
+            entorno.update(overrides)
         return StdioServerParameters(
             command=sys.executable,
             args=["-m", self.modulo],
@@ -143,12 +153,37 @@ def _obtener_detalle_error(
 class ClienteMCP:
     """Administra las conexiones con los servidores MCP."""
 
-    def __init__(self) -> None:
+    def __init__(
+        self,
+        *,
+        required_servers: tuple[str, ...] | None = None,
+        environment_overrides: dict[str, dict[str, str]] | None = None,
+    ) -> None:
         self._recursos = AsyncExitStack()
         self._sesiones: dict[str, ClientSession] = {}
+        self._required_servers = (
+            tuple(SERVIDORES_MCP) if required_servers is None
+            else required_servers
+        )
+        self._environment_overrides = environment_overrides or {}
+        for name in (
+            *self._required_servers,
+            *self._environment_overrides,
+        ):
+            if name not in SERVIDORES_MCP:
+                raise ValueError(f"Servidor MCP desconocido: {name}")
+        for name, overrides in self._environment_overrides.items():
+            unexpected = set(overrides) - set(
+                SERVIDORES_MCP[name].variables_entorno
+            )
+            if unexpected:
+                raise ValueError(
+                    "Variables no autorizadas para MCP: "
+                    + ", ".join(sorted(unexpected))
+                )
 
     async def __aenter__(self) -> Self:
-        for clave in SERVIDORES_MCP:
+        for clave in self._required_servers:
             await self._obtener_sesion(clave)
 
         return self
@@ -171,7 +206,11 @@ class ClienteMCP:
         servidor = obtener_servidor(clave)
 
         transporte = await self._recursos.enter_async_context(
-            stdio_client(servidor.crear_parametros())
+            stdio_client(
+                servidor.crear_parametros(
+                    self._environment_overrides.get(clave)
+                )
+            )
         )
         lector, escritor = transporte
 
