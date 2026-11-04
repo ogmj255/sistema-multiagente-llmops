@@ -1,5 +1,6 @@
 ﻿from dataclasses import dataclass
 
+from app.llm.openrouter_client import OpenRouterClientError
 from app.agents.knowledge_agent import (
     run_knowledge_agent,
 )
@@ -69,12 +70,20 @@ def run_legal_analyzer_execution_with_context(
                 trace_context=trace_context,
             )
     except ClauseClassificationError as error:
+        provider_error = error.__cause__
+        error_code = None
+        if isinstance(provider_error, OpenRouterClientError):
+            if provider_error.status_code == 429:
+                error_code = "provider_rate_limited"
+            elif provider_error.status_code is not None:
+                error_code = "provider_http_error"
         return LegalAnalyzerExecution(
             response=ClauseAnalysisResponse(
                 status="error",
                 error=(
                     f"No se pudo analizar la cláusula: {error}"
                 ),
+                error_code=error_code,
             ),
             llm_metrics=None,
         )
