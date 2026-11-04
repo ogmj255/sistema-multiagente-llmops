@@ -96,6 +96,11 @@ OperacionAsincrona: TypeAlias = Callable[
 MAX_INTENTOS = 2
 MAX_CLAUSULAS_CONCURRENTES = 1
 
+
+class ErrorProveedorNoReintentable(RuntimeError):
+    """La solicitud al proveedor ya agotó sus reintentos HTTP."""
+
+
 POLITICA_REINTENTOS = RetryPolicy(
     max_attempts=MAX_INTENTOS,
     jitter=False,
@@ -248,6 +253,8 @@ async def ejecutar_con_reintentos(
     for _ in range(MAX_INTENTOS):
         try:
             return await operacion()
+        except ErrorProveedorNoReintentable:
+            raise
         except RuntimeError as error:
             ultimo_error = error
 
@@ -265,6 +272,7 @@ def crear_actualizacion_error_clausula(
     """Construye el resultado de un fallo aislado por cláusula."""
 
     mensaje = str(error)
+    intentos = 1 if isinstance(error, ErrorProveedorNoReintentable) else MAX_INTENTOS
 
     return {
         "clause_results": {
@@ -278,12 +286,12 @@ def crear_actualizacion_error_clausula(
                 "step": etapa,
                 "clause_order": orden_clausula,
                 "message": mensaje,
-                "attempt": MAX_INTENTOS,
+                "attempt": intentos,
                 "retryable": False,
             }
         ],
         "attempts": {
-            f"{etapa}:{orden_clausula}": MAX_INTENTOS,
+            f"{etapa}:{orden_clausula}": intentos,
         },
     }
 
@@ -478,7 +486,10 @@ async def analizar_clausula(
         ) from error
 
     if respuesta.status == "error":
-        raise RuntimeError(respuesta.error or "No se pudo analizar la cláusula.")
+        mensaje = respuesta.error or "No se pudo analizar la cláusula."
+        if respuesta.error_code in {"provider_rate_limited", "provider_http_error"}:
+            raise ErrorProveedorNoReintentable(mensaje)
+        raise RuntimeError(mensaje)
 
     return respuesta
 
