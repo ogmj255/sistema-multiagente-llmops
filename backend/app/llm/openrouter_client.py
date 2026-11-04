@@ -21,6 +21,8 @@ def generate_with_openrouter(
     messages: list[ChatMessage],
     response_schema: dict[str, object] | None = None,
     trace_context: dict[str, str] | None = None,
+    *,
+    model: str | None = None,
 ) -> ModelResponse:
     """Genera una respuesta mediante OpenRouter."""
 
@@ -40,8 +42,13 @@ def generate_with_openrouter(
             "No se configuró OPENROUTER_API_KEY."
         )
 
+    if model is not None and not model.strip():
+        raise ValueError("El identificador del modelo no puede estar vacío.")
+
+    selected_model = model or settings.openrouter_model
+
     payload: dict[str, object] = {
-        "model": settings.openrouter_model,
+        "model": selected_model,
         "messages": [
             message.model_dump()
             for message in messages
@@ -75,7 +82,7 @@ def generate_with_openrouter(
 
     with start_llm_generation(
         trace_context,
-        model=settings.openrouter_model,
+        model=selected_model,
         input_data=payload,
     ) as generation:
         try:
@@ -124,11 +131,11 @@ def generate_with_openrouter(
 
         returned_model = body.get(
             "model",
-            settings.openrouter_model,
+            selected_model,
         )
 
         if not isinstance(returned_model, str):
-            returned_model = settings.openrouter_model
+            returned_model = selected_model
 
         usage = body.get("usage", {})
 
