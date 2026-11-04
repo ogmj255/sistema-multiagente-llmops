@@ -45,6 +45,9 @@ class Settings(BaseSettings):
     openrouter_model: str = (
         "deepseek/deepseek-v4-flash-0731"
     )
+    openrouter_retry_max_attempts: int = Field(default=3, ge=1, le=5)
+    openrouter_retry_initial_delay_seconds: float = Field(default=2.0, gt=0, le=30)
+    openrouter_retry_max_delay_seconds: float = Field(default=30.0, gt=0, le=120)
     openrouter_app_name: str = (
         "Sistema Multiagente LLMOps"
     )
