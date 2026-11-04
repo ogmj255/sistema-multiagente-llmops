@@ -1,8 +1,8 @@
 # Evaluación experimental — capítulo III, sección 3.7
 
-Esta rama contiene la validación del ground truth, el cálculo de métricas,
-el **plan experimental** y un **ejecutor piloto limitado** con recuperación RAG,
-selección de modelo y registro JSONL. No contiene resultados medidos todavía.
+Esta rama contiene validación del ground truth, métricas, plan experimental,
+un piloto aislado y un **piloto multiagente vía LangGraph + MCP**. Las pruebas
+unitarias y la ejecución real de este último están pendientes de verificación.
 
 ## Referencia humana
 
@@ -99,6 +99,66 @@ recuperación jurídica por separado, no la latencia extremo a extremo de la
 aplicación completa. El evaluador de predicciones `JSONL` disponible
 actualmente consolida una predicción por ID y modelo: **todavía no es
 adecuado para evaluar las tres repeticiones** de la fase formal.
+
+## Integración del sistema multiagente real (preferida)
+
+**Ruta nueva:** `scripts/run_orchestrated_experiment.py`.
+
+Esta ejecución utiliza el **grafo real `AgenteOrquestador` de LangGraph**
+y los nodos `procesar_clausula`, `generar_informe` y
+`finalizar_flujo` del código productivo. Los nodos de entrada inyectan
+los textos congelados del ground truth; **no vuelven a realizar extracción
+web ni segmentación**, ya que eso modificaría las unidades experimentales.
+Las operaciones jurídicas, de análisis, generación de informe y
+observabilidad se invocan por los servidores **MCP stdio reales**.
+
+La selección T1/T2/T3 se transmite únicamente a la variable
+`OPENROUTER_MODEL` del proceso MCP del analizador, sin alterar el modelo
+global de producción. La primera recuperación jurídica de un fragmento
+se obtiene a través de MCP y se guarda como instantánea en
+`data/evaluation/mcp_legal_context_snapshots.jsonl`; los demás
+tratamientos usan **exactamente el mismo contexto recuperado**.
+Se registran ID de tarea, modelo, repetición, predicción, reporte, resumen
+operativo y referencia de ejecución en Langfuse.
+
+Desde VS Code en PowerShell (raíz del proyecto):
+
+```powershell
+git pull --ff-only origin experiment/groundtruth-evaluation
+$env:PYTHONPATH = (Resolve-Path ".\backend").Path
+python -m pytest tests/unit/test_orchestrated_experiment.py -q
+
+# Vista previa del sistema integrado; sin facturación ni servidores MCP
+python scripts/run_orchestrated_experiment.py --csv data/evaluation/ground_truth_547.csv --task-id ET01-R1 --unit-id ToS01-U001
+
+# SOLO tras validar las pruebas, infraestructura y saldo:
+python scripts/run_orchestrated_experiment.py --csv data/evaluation/ground_truth_547.csv --task-id ET01-R1 --unit-id ToS01-U001 --execute
+```
+
+Para comprobar los otros dos tratamientos sobre el **mismo** fragmento,
+ejecutar después ET02-R1 y ET03-R1. La primera corrida recupera RAG
+con MCP; las siguientes reutilizan la instantánea. Cada corrida genera
+un informe por el servidor MCP de reportes y un resumen de observabilidad.
+
+Los registros se guardan en
+`data/evaluation/orchestrated_runs.jsonl`, excluido de Git.
+No almacenan etiquetas humanas. Una repetición correcta no se vuelve a
+ejecutar accidentalmente. La ejecución se limita actualmente a **una
+unidad por comando**, para evitar facturación masiva sin verificación.
+
+**Delimitación:** esta es la evaluación controlada de clasificación con
+arquitectura multiagente. La **evaluación de extremo a extremo desde URL**
+se hará por separado mediante el flujo normal `/analisis` (Web Scraper y
+Preprocesador incluidos). La variante controlada no inserta resultados en
+PostgreSQL productivo; conserva resultados en JSONL y trazas mediante la
+instrumentación existente de Langfuse. Antes de la evaluación completa
+faltan el ejecutor de 90 tareas, la persistencia experimental dedicada y
+las métricas separadas por repetición. No atribuir al piloto el rendimiento
+de la aplicación completa.
+
+El script anterior `run_experimental_pilot.py` sigue disponible como
+**prueba aislada**, pero no representa el flujo multiagente integrado y
+no debe usarse para la evaluación formal del capítulo IV.
 
 ## Etapas pendientes
 
