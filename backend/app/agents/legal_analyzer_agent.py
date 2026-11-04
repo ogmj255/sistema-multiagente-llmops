@@ -96,6 +96,8 @@ def run_legal_analyzer_execution_with_context(
         completion_tokens=model_response.completion_tokens,
         total_tokens=total_tokens,
         cost_usd=model_response.cost_usd,
+        request_attempts=model_response.request_attempts,
+        http_429_count=model_response.http_429_count,
     )
 
     try:
