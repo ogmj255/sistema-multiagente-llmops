@@ -160,6 +160,57 @@ El script anterior `run_experimental_pilot.py` sigue disponible como
 **prueba aislada**, pero no representa el flujo multiagente integrado y
 no debe usarse para la evaluación formal del capítulo IV.
 
+## Política de recuperación ante HTTP 429
+
+El cliente **OpenRouter real** aplica esta política para todos los modelos
+sin cambiar el tratamiento solicitado:
+
+- Máximo **3 solicitudes HTTP** por inferencia cuando el proveedor devuelve
+  un 429; las esperas sin encabezado son de **2 y 4 segundos** (exponenciales).
+- Si existe `Retry-After`, respeta su valor en segundos o fecha HTTP. Si la
+  espera indicada supera el máximo configurado (30 segundos por defecto),
+  **termina y registra el bloqueo**, sin reintentar antes del plazo requerido.
+- Los errores HTTP diferentes de 429 (incluidos 401 y 402) **no se reintentan
+  automáticamente**. Tampoco se repiten ciegamente los errores de conexión,
+  para evitar dobles cobros cuando se desconoce si la generación ocurrió.
+- Cada intento HTTP cuenta con su propia generación/error en Langfuse; si
+  finalmente hay éxito, `request_attempts` y `http_429_count` se incorporan
+  a la telemetría MCP de la clasificación.
+- Cuando se agotan intentos ante 429, la respuesta MCP lleva el código
+  `provider_rate_limited`. El orquestador **no realiza otros dos intentos
+  externos**; el error conserva el número de intentos del cliente OpenRouter.
+  El campo `attempt` del fallo LangGraph indica **invocaciones MCP**, no
+  solicitudes HTTP internas.
+- Los fallos de proveedor son **operativos**; no se convierten en etiquetas
+  falsas ni se incluyen como clasificaciones erróneas.
+
+Configuración en `backend/.env` si se requiere personalizar:
+
+```env
+OPENROUTER_RETRY_MAX_ATTEMPTS=3
+OPENROUTER_RETRY_INITIAL_DELAY_SECONDS=2.0
+OPENROUTER_RETRY_MAX_DELAY_SECONDS=30.0
+```
+
+Pruebas nuevas (sin consumir API):
+
+```powershell
+python -m pytest tests/unit/test_openrouter_retry_policy.py tests/unit/test_llm_clients.py tests/unit/test_orchestrated_experiment.py tests/unit/test_mcp_registry.py -q
+```
+
+**Mistral ET02-R1** falló previamente por HTTP 429 y está registrado en
+`orchestrated_runs.jsonl`. Cuando la prueba pase, para un intento
+**explícito** después de verificar límites y disponibilidad:
+
+```powershell
+python scripts/run_orchestrated_experiment.py --csv data/evaluation/ground_truth_547.csv --task-id ET02-R1 --unit-id ToS01-U001 --execute --retry-errors
+```
+
+No repetir DeepSeek ni Kimi. Mantener los intentos fallidos como evidencia
+operativa y documentar que una repetición posterior recuperó un fallo técnico.
+Antes de ampliar a 90 ejecuciones, definir una estrategia de presupuesto y
+concurrencia. Esta política no garantiza que el proveedor admita la solicitud.
+
 ## Etapas pendientes
 
 1. Verificar los tres IDs exactos y sus restricciones de salida estructurada.
