@@ -232,11 +232,18 @@ def _execution(overview: dict) -> None:
 
     enabled = overview.get("execution_enabled", False)
     worker_online = overview.get("worker_online", False)
+    preflight_registered = overview.get("preflight_registered", False)
     if not enabled:
         st.info(
             "Modo de consulta: la facturación está deshabilitada "
             "en el servidor. Se pueden revisar diseño, progreso, "
             "resultados y evidencias sin restricciones de acceso."
+        )
+    elif not preflight_registered:
+        st.warning(
+            "No existe un manifiesto de reproducibilidad V2 válido. "
+            "Ejecuta el preflight sin costo desde Docker antes "
+            "de iniciar una tarea."
         )
     elif not worker_online:
         st.warning(
@@ -262,6 +269,7 @@ def _execution(overview: dict) -> None:
 
     blocked = (
         not enabled
+        or not preflight_registered
         or not worker_online
         or selected["status"] == "completed"
         or selected.get("job_status") in {"queued", "running", "completed"}
