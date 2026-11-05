@@ -174,3 +174,32 @@ def enqueue_experiment(request: TaskOrder) -> dict[str, str]:
         "status": "queued",
         "message": "La tarea será procesada por el worker experimental.",
     }
+
+
+@router.get("/results", dependencies=[Depends(require_operator)])
+def experimental_results() -> dict:
+    """Resúmenes y métricas SOLO para el investigador.
+
+    Las etiquetas humanas se usan aquí para puntuación, después de
+    las inferencias; jamás pasan a la entrada del agente jurídico.
+    """
+    from app.evaluation.document_metrics import score_campaign_documents
+    from app.evaluation.repetition_metrics import score_campaign_repetitions
+
+    dataset, _plan = _load()
+    records = _runs()
+    documents = score_campaign_documents(dataset, records)
+    repetitions = score_campaign_repetitions(dataset, records)
+    return {
+        "protocol": "NPA-PA-v2.0",
+        "documents": documents,
+        "repetitions": repetitions["by_treatment_repetition"],
+        "model_aggregate": repetitions["model_aggregate"],
+        "results_are_final": repetitions["results_are_final"],
+        "caution": (
+            "La exactitud binaria se calcula sobre unidades evaluables. "
+            "No deben confundirse documentos pendientes con errores "
+            "operativos ni utilizar métricas de cobertura global como "
+            "exactitud de un documento completado."
+        ),
+    }
