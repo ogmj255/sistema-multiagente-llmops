@@ -20,6 +20,7 @@ from app.evaluation.campaign import (
 )
 from app.evaluation.design import make_experimental_plan
 from app.evaluation.orchestrated import run_orchestrated_trial
+from app.evaluation.readiness import verify_readiness
 from app.evaluation.pilot import append_jsonl, read_jsonl
 
 DIRECTORY = Path(os.getenv("EXPERIMENT_DATA_DIR", "/app/data/evaluation"))
@@ -72,6 +73,18 @@ def execute_job(path: Path) -> None:
     if task is None or job.get("dataset_fingerprint") != data.fingerprint:
         job["status"] = "invalid"
         job["error"] = "Tarea/huella no corresponde al protocolo V2."
+        save_job(path, job)
+        return
+
+    # Revalida la huella del corpus jurídico, la configuración del
+    # analizador y el corpus de referencia ANTES de llamar al proveedor.
+    try:
+        verify_readiness(DIRECTORY)
+    except Exception as exc:
+        job["status"] = "invalid"
+        job["error_type"] = type(exc).__name__
+        job["error"] = "Preflight V2 no aprobado; no se inició OpenRouter."
+        job["finished_at"] = datetime.now(UTC).isoformat()
         save_job(path, job)
         return
 
