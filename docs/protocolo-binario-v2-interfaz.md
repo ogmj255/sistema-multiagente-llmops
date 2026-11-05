@@ -71,7 +71,8 @@ EXPERIMENT_EXECUTION_ENABLED=false
 docker compose up -d --build
 \`\`\`
 
-Para autorizar llamadas con costo, después de validar pruebas, respaldo y presupuesto, cambiar temporalmente \`EXPERIMENT_EXECUTION_ENABLED=true\` y:
+Para autorizar llamadas con costo, después de validar pruebas, respaldo y presupuesto, cambiar temporalmente \`EXPERIMENT_EXECUTION_ENABLED=true
+EXPERIMENT_MAX_REPORTED_COST_USD=0.10\` y:
 
 \`\`\`powershell
 docker compose --profile experiment up -d --build
@@ -310,7 +311,12 @@ para evitar el bloqueo sin documentar un nuevo protocolo científico.
 
 Confirmar saldo y límites del proveedor OpenRouter y revisar la
 configuración de Langfuse. No hay un techo rígido de costo por tarea:
-los 21 fragmentos pueden consumir más que el piloto V1.
+los 21 fragmentos pueden consumir más que el piloto V1. El worker
+incluye un freno **blando entre documentos** configurado mediante
+`EXPERIMENT_MAX_REPORTED_COST_USD=0.10` en el `.env` raíz.
+Cuando el costo reportado acumulado alcanza ese valor no inicia otra
+tarea, pero **no puede detener la facturación de la tarea ya iniciada**
+ni contabilizar consumos que el proveedor no reportó.
 
 En el \`.env\` raíz cambiar **solo temporalmente**:
 
