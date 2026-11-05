@@ -26,6 +26,27 @@ La interfaz Streamlit no invoca el LLM directamente. La API FastAPI (/experiment
 
 Este diseño es un prototipo académico de **un único nodo**; la cola por archivos requiere migración a PostgreSQL antes de múltiples réplicas, acceso distribuido o despliegue público.
 
+## Precaución: salida de Docker Compose y secretos
+
+El comando `docker compose config` puede mostrar en pantalla las
+credenciales efectivas cargadas desde `.env` y `backend/.env`.
+Para validar la sintaxis sin exponerlas utiliza:
+
+```powershell
+docker compose config --quiet
+docker compose --profile experiment config --quiet
+```
+
+Si alguna clave de OpenRouter, Langfuse o contraseña de base de datos
+apareció en una captura, registro o conversación compartida,
+**revocar/rotar los secretos expuestos** antes de continuar con pruebas
+o despliegues. No adjuntar la salida completa de `docker compose config`
+ni archivos `.env` a la tesis, GitHub o al chat. En PostgreSQL,
+cambiar `POSTGRES_PASSWORD` no actualiza automáticamente la contraseña
+de un rol en un volumen persistente; efectuar la rotación del rol y
+actualizar después la configuración del backend. Nunca publicar
+valores reales de credenciales en ejemplos o resultados.
+
 ## Configuración segura
 
 Crear el archivo \`.env\` en la raíz a partir de \`.env.example\` y asignar valores secretos reales (NO subir a Git):
