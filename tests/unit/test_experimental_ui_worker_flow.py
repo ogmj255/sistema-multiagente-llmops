@@ -24,6 +24,8 @@ from scripts import evaluation_worker as worker
 CLIENT = TestClient(app)
 TOKEN = "token-simulado-sin-relacion-con-credenciales-reales"
 HEADERS = {"X-Experiment-Token": TOKEN}
+OPERATOR = "clave-sintetica-solo-para-pruebas"
+WRITE_HEADERS = {**HEADERS, "X-Experiment-Operator": OPERATOR}
 
 
 @pytest.fixture
@@ -61,6 +63,7 @@ def synthetic_groundtruth():
 def isolated_environment(monkeypatch, tmp_path, synthetic_groundtruth):
     """Aísla 100 % de los archivos reales y bloquea ejecución implícita."""
     monkeypatch.setenv("EXPERIMENT_ADMIN_TOKEN", TOKEN)
+    monkeypatch.setenv("EXPERIMENT_OPERATOR_PASSWORD", OPERATOR)
     monkeypatch.setenv("EXPERIMENT_EXECUTION_ENABLED", "false")
 
     plan = make_experimental_plan(synthetic_groundtruth)
@@ -91,8 +94,9 @@ def isolated_environment(monkeypatch, tmp_path, synthetic_groundtruth):
 
 def test_access_control_and_disabled_billing(isolated_environment):
     folder, _dataset = isolated_environment
-    assert CLIENT.get("/experimental/overview").status_code == 403
-    assert CLIENT.get("/experimental/results").status_code == 403
+    # Consulta libre: útil para reproducir el diseño durante la defensa.
+    assert CLIENT.get("/experimental/overview").status_code == 200
+    assert CLIENT.get("/experimental/results").status_code == 200
     assert CLIENT.post(
         "/experimental/jobs",
         json={
@@ -114,7 +118,7 @@ def test_access_control_and_disabled_billing(isolated_environment):
 
     result = CLIENT.post(
         "/experimental/jobs",
-        headers=HEADERS,
+        headers=WRITE_HEADERS,
         json={
             "task_id": "ET01-R1",
             "accept_paid_execution": True,
@@ -179,20 +183,33 @@ def test_api_queue_worker_and_results_end_to_end_simulated(
     assert unauthorized.status_code == 403
     denied = CLIENT.post(
         "/experimental/jobs",
-        headers=HEADERS,
+        headers=WRITE_HEADERS,
         json={"task_id": "ET01-R1", "accept_paid_execution": False},
     )
     assert denied.status_code == 400
-    unknown = CLIENT.post(
+    # El token interno del frontend NO autoriza por sí solo el gasto.
+    token_only = CLIENT.post(
         "/experimental/jobs",
         headers=HEADERS,
+        json={"task_id": "ET01-R1", "accept_paid_execution": True},
+    )
+    assert token_only.status_code == 403
+    wrong_password = CLIENT.post(
+        "/experimental/jobs",
+        headers={**HEADERS, "X-Experiment-Operator": "incorrecta"},
+        json={"task_id": "ET01-R1", "accept_paid_execution": True},
+    )
+    assert wrong_password.status_code == 403
+    unknown = CLIENT.post(
+        "/experimental/jobs",
+        headers=WRITE_HEADERS,
         json={"task_id": "ET99-R1", "accept_paid_execution": True},
     )
     assert unknown.status_code == 404
 
     submitted = CLIENT.post(
         "/experimental/jobs",
-        headers=HEADERS,
+        headers=WRITE_HEADERS,
         json={"task_id": "ET01-R1", "accept_paid_execution": True},
     )
     assert submitted.status_code == 200, submitted.text
@@ -204,7 +221,7 @@ def test_api_queue_worker_and_results_end_to_end_simulated(
     )["status"] == "queued"
     duplicate = CLIENT.post(
         "/experimental/jobs",
-        headers=HEADERS,
+        headers=WRITE_HEADERS,
         json={"task_id": "ET01-R1", "accept_paid_execution": True},
     )
     assert duplicate.status_code == 409
@@ -237,7 +254,7 @@ def test_api_queue_worker_and_results_end_to_end_simulated(
 
     repeated = CLIENT.post(
         "/experimental/jobs",
-        headers=HEADERS,
+        headers=WRITE_HEADERS,
         json={"task_id": "ET01-R1", "accept_paid_execution": True},
     )
     assert repeated.status_code == 409
@@ -356,3 +373,19 @@ def test_checkpoint_progress_ignores_other_models_and_labels(
     assert "original_text" not in response.text
     assert "label" not in selected["unit_progress"]
     assert "classification_labels" in data["manifest"]
+
+
+def test_readonly_unit_listing_is_public_and_does_not_reveal_labels(
+    isolated_environment,
+):
+    response = CLIENT.get("/experimental/tasks/ET01-R1/units")
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["task_id"] == "ET01-R1"
+    assert len(payload["units"]) == 21
+    assert payload["units"][0] == {
+        "id": "ToS01-U001", "status": "pending"
+    }
+    assert "original_text" not in response.text
+    assert "potentially_abusive" not in response.text
+    assert CLIENT.get("/experimental/tasks/ET99-R1/units").status_code == 404
