@@ -133,3 +133,41 @@ lectura; por separado aún queda comprobar el funcionamiento real de
 LangGraph/MCP en el protocolo V2, para lo cual habrá una autorización
 de costo y auditoría posterior.
 
+
+
+## Pantalla de seguimiento y UX (revisión posterior a la primera captura)
+
+La revisión visual de Streamlit confirmó el acceso, el origen V2 del
+ground truth, 90 tareas sin ejecutar y la protección contra llamadas
+facturables. Se incorporaron estos ajustes en la rama de desarrollo:
+
+- Mayor proporción de espacio para la navegación de las tres secciones,
+  evitando en pantallas anchas que «Evaluación experimental» salte a
+  una segunda línea.
+- Con \`EXPERIMENT_EXECUTION_ENABLED=false\`, la casilla de autorización
+  de pago no se muestra y el botón de inicio permanece deshabilitado.
+- La API \`/experimental/overview\` incluye por tarea \`unit_progress\`
+  con \`checkpoint_successful\`, \`checkpoint_failed\`, \`remaining\`
+  y \`total\`. La API separa la huella de dataset, modelo, repetición,
+  documento y hash del fragmento. No expone etiquetas humanas.
+- Streamlit muestra una barra de progreso por unidad para la tarea
+  seleccionada y, cuando exista, el estado independiente de su cola
+  (\`queued\`, \`running\`, \`failed\`, \`completed\`).
+- La barra de cláusulas **no sustituye** el estado de completitud formal
+  del documento: ese estado exige informe completo, 21/21 u otras
+  unidades correspondientes y persistencia del resultado.
+
+Pruebas posteriores a la implementación:
+
+\`\`\`powershell
+git pull --ff-only origin experiment/binary-classification-ui-v2
+$env:PYTHONPATH = (Resolve-Path ".\\backend").Path
+python -m pytest tests/unit/test_experimental_ui_worker_flow.py -q
+python -m pytest tests/unit -q
+docker compose up -d --build backend frontend
+docker compose ps
+\`\`\`
+
+Mantener el worker desactivado y nunca compartir las claves en las
+capturas. Esta prueba de integración no sustituye una ejecución V2
+real con LangGraph/MCP; solo verifica control y observabilidad local.
