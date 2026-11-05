@@ -238,6 +238,18 @@ def _compare_one(root: Path) -> dict[str, Any]:
     candidate = row_summary(new_metrics, new_matrix)
     old_by_id = {r["id"]: r["prediction"] for r in old["unit_results"]}
     new_by_id = {r["id"]: r["prediction"] for r in new["unit_results"]}
+    na_ids = [
+        unit.technical_id for unit in units
+        if unit.label == "not_applicable"
+    ]
+    old_na_correct = sum(
+        old_by_id[technical_id] == "not_applicable"
+        for technical_id in na_ids
+    )
+    candidate_na_correct = sum(
+        new_by_id[technical_id] == "not_applicable"
+        for technical_id in na_ids
+    )
     changed = [
         {
             "id": unit.technical_id,
@@ -253,6 +265,7 @@ def _compare_one(root: Path) -> dict[str, Any]:
         and candidate["false_negatives"] <= original["false_negatives"]
         and candidate["false_positives"] < original["false_positives"]
         and new_metrics["predictions_valid"] == 21
+        and candidate_na_correct >= old_na_correct
     )
     report = {
         "comparison_type": "EXPLORATORY_NOT_CONFIRMATORY",
@@ -274,7 +287,13 @@ def _compare_one(root: Path) -> dict[str, Any]:
             ),
         },
         "changed_unit_predictions": changed,
+        "applicability": {
+            "reference_not_applicable": len(na_ids),
+            "v2_correct": old_na_correct,
+            "v2_1_correct": candidate_na_correct,
+        },
         "candidate_passes_exploratory_gate": preliminary_improvement,
+        "gate_is_exploratory_only": True,
         "limitations": [
             "La candidata se evaluó después de inspeccionar los errores V2.",
             "Un único documento con solo cuatro PA no prueba superioridad.",
