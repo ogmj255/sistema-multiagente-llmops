@@ -309,6 +309,62 @@ denominadores. **No ejecutar las 90 tareas todavía.**
 
 
 
+## Lectura correcta del primer resultado documental (ET01-R1)
+
+Ejecución real de Holded con DeepSeek, 21 unidades: **21/21 predicciones
+registradas, 7 coincidencias con el ground truth y 14 desacuerdos**.
+Exactitud **documental**: 7/21 = 33,33%. La duración reportada es
+1.301.697,229 ms (~21 min 42 s) y el costo total reportado de la tarea
+es USD 0,0215251.
+
+El primer CSV de las nueve celdas presentó una exactitud de 0,012797 y
+F1 macro de 0,015841 para T1-R1 porque esos cálculos tienen como
+denominador **las 547 unidades del corpus**, aunque las 526 restantes
+están sin ejecutar. Son **métricas ajustadas por cobertura**, no la
+calidad de DeepSeek sobre el documento Holded ni su tasa de error
+operativo. No usar esos valores como resultado final del capítulo IV.
+
+La matriz de confusión de Holded indica que DeepSeek asignó siete veces
+`indicios fuertes de abusividad` sin que esa clase estuviera presente
+entre las etiquetas humanas de ese documento. Evaluar
+cualitativamente esos desacuerdos antes de inferir tendencias
+de rendimiento o modificar prompts.
+
+### Corrección del evaluador (pendiente de pruebas en VS Code)
+
+- `backend/app/evaluation/document_metrics.py` calcula métricas
+  independientes para cada una de las 90 tareas: precisión documental,
+  F1 macro, matriz de confusión y subconjunto evaluable. Solo marca
+  una calidad definitiva cuando **todas las unidades del documento
+  están procesadas**.
+- `scripts/score_groundtruth_campaign.py` genera dos archivos adicionales:
+  `data/evaluation/formal_metrics_by_document.csv` y
+  `data/evaluation/formal_metrics_by_document.json`.
+- El CSV por repetición deja **vacías las métricas de calidad global**
+  cuando la repetición está incompleta, pero conserva cobertura y
+  métricas de denominador global bajo nombres
+  `*_full_corpus_coverage_adjusted`.
+- Las unidades aún no ejecutadas
+  (`pending_document_units`), la falta de predicciones en documentos
+  intentados (`unavailable_in_started_documents`) y los errores
+  explícitos (`explicit_unit_errors`) aparecen separados. Ninguno
+  se convierte artificialmente en clase negativa.
+
+Comprobar el cambio sin enviar nuevos datos a OpenRouter:
+
+```powershell
+git pull --ff-only origin experiment/groundtruth-evaluation
+$env:PYTHONPATH = (Resolve-Path ".\\backend").Path
+python -m pytest tests/unit/test_document_metrics.py tests/unit/test_repetition_metrics.py -q
+python scripts/score_groundtruth_campaign.py --csv data/evaluation/ground_truth_547.csv
+```
+
+**No repetir ET01-R1**: la ejecución documental ya fue completada.
+No alterar las etiquetas humanas ni el prompt en función de estos
+primeros resultados si el objetivo es mantener una evaluación
+confirmatoria válida; cualquier cambio deberá documentarse y
+justificarse como experimento separado.
+
 ## Trabajos restantes antes de la evaluación del capítulo IV
 
 - Verificar en VS Code el checkpoint de cláusulas y el evaluador por repetición.
