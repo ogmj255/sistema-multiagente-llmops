@@ -8,6 +8,8 @@ import httpx
 import pandas as pd
 import streamlit as st
 
+from experiment_page import render_experiment_page
+
 API_ANALYSIS_URL = os.getenv(
     "API_ANALYSIS_URL",
     "http://traefik/api/analisis",
@@ -2492,6 +2494,7 @@ with navigation_column:
         (
             "Análisis",
             "Dashboard LLMOps",
+            "Evaluación experimental",
         ),
         key="main_navigation",
         label_visibility="collapsed",
@@ -2706,7 +2709,7 @@ if view == "Análisis":
             analysis_result
         )
 
-else:
+elif view == "Dashboard LLMOps":
     st.title("Dashboard LLMOps")
     st.write(
         "Monitoreo de latencia, costos, tokens y errores "
@@ -2725,3 +2728,6 @@ else:
         render_llmops_dashboard(
             dashboard_data
         )
+
+else:
+    render_experiment_page()
