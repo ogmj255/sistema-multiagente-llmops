@@ -10,6 +10,7 @@ import hmac
 import json
 import os
 import re
+import time
 from pathlib import Path
 from typing import Annotated
 
@@ -60,6 +61,23 @@ def _load():
 
 def _runs():
     return read_jsonl(DATA_DIR / "v2_binary_campaign_runs.jsonl")
+
+
+def _worker_online() -> bool:
+    """Latido reciente; no asumir que un proceso de cobro está activo."""
+    heartbeat = DATA_DIR / "v2_binary_worker_heartbeat.json"
+    if not heartbeat.exists():
+        return False
+    try:
+        details = json.loads(heartbeat.read_text(encoding="utf-8"))
+        timestamp = float(details.get("timestamp", 0))
+        return (
+            details.get("protocol") == "NPA-PA-v2.0"
+            and 0 <= time.time() - timestamp <= 15
+        )
+    except (OSError, ValueError, TypeError):
+        return False
+
 
 
 def _job_files():
@@ -153,6 +171,7 @@ def experimental_overview() -> dict:
         "execution_enabled": os.getenv(
             "EXPERIMENT_EXECUTION_ENABLED", "false"
         ).lower() == "true",
+        "worker_online": _worker_online(),
         "tasks": [
             {
                 **task,
@@ -188,6 +207,11 @@ def enqueue_experiment(request: TaskOrder) -> dict[str, str]:
         raise HTTPException(
             status_code=400,
             detail="Debe autorizar explícitamente el consumo de créditos.",
+        )
+    if not _worker_online():
+        raise HTTPException(
+            status_code=503,
+            detail="Worker experimental no disponible. No se encoló ninguna tarea.",
         )
     data, plan = _load()
     task = next(
