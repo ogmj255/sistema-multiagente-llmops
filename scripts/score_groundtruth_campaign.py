@@ -8,6 +8,7 @@ import json
 from pathlib import Path
 
 from app.evaluation.groundtruth import load_groundtruth_csv
+from app.evaluation.document_metrics import score_campaign_documents
 from app.evaluation.pilot import read_jsonl
 from app.evaluation.repetition_metrics import score_campaign_repetitions
 
@@ -58,12 +59,55 @@ def main() -> None:
                 "f1_macro_evaluable": row["evaluable_units"]["f1_macro"],
             })
 
+    # Calidad documental: denominador = unidades del ToS realmente
+    # analizadas. Nunca presentar como 0 una tarea no ejecutada.
+    documents = score_campaign_documents(dataset, records)
+    document_table = args.output.with_name(
+        "formal_metrics_by_document.csv"
+    )
+    document_fields = [
+        "task_id", "document_id", "platform", "treatment", "model",
+        "repetition", "status", "unit_count", "predictions_valid",
+        "predictions_missing", "explicit_unit_errors", "attempt_records",
+        "correct_on_observed", "accuracy_on_observed",
+        "f1_macro_on_observed", "accuracy_evaluable_observed",
+        "f1_macro_evaluable_observed", "quality_is_final_for_document",
+        "duration_ms_reported", "cost_usd_reported",
+        "cost_reporting_incomplete_attempts",
+    ]
+    with document_table.open("w", encoding="utf-8-sig", newline="") as handle:
+        writer = csv.DictWriter(handle, fieldnames=document_fields)
+        writer.writeheader()
+        for row in documents:
+            writer.writerow({key: row.get(key) for key in document_fields})
+
+    document_details = args.output.with_name(
+        "formal_metrics_by_document.json"
+    )
+    document_details.write_text(
+        json.dumps({
+            "dataset_fingerprint": dataset.fingerprint,
+            "scope": "90 independent document/model/repetition tasks",
+            "documents": documents,
+            "notes": (
+                "La exactitud observada usa solo las unidades clasificadas "
+                "del documento, sin imputar unidades pendientes como errores. "
+                "La calidad documental solo es definitiva si "
+                "quality_is_final_for_document=true. Las 547 unidades "
+                "permanecen como denominador para cobertura global."
+            ),
+        }, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+
     print(
         f"Tareas registradas: {len(records)} | "
         f"Resultados completos: {result['results_are_final']}"
     )
     print(f"Detalle JSON: {args.output}")
     print(f"Tabla CSV: {table}")
+    print(f"Métricas por documento: {document_table}")
+    print(f"Matrices por documento: {document_details}")
 
 
 if __name__ == "__main__":
