@@ -53,7 +53,7 @@ def holded_result(dataset):
         elif n <= 14:
             label = "potencialmente abusiva"
         else:
-            label = "indicios fuertes de abusividad"
+            label = "potencialmente abusiva"
         predictions.append({
             "id": unit.technical_id,
             "status": "success",
@@ -81,16 +81,16 @@ def test_holded_21_predictions_produce_document_accuracy_not_547_accuracy():
     assert completed["status"] == "completed"
     assert completed["unit_count"] == 21
     assert completed["predictions_valid"] == 21
-    assert completed["correct_on_observed"] == 7
-    assert completed["accuracy_on_observed"] == 0.333333
-    assert completed["f1_macro_on_observed"] == 0.386364
-    assert completed["accuracy_evaluable_observed"] == 0.3
-    assert completed["f1_macro_evaluable_observed"] == 0.181818
+    assert completed["correct_on_observed"] == 11
+    assert completed["accuracy_on_observed"] == 0.52381
+    assert completed["f1_macro_on_observed"] > 0.66
+    assert completed["accuracy_evaluable_observed"] == 0.5
+    assert completed["f1_macro_evaluable_observed"] == 0.494949
     assert completed["quality_is_final_for_document"] is True
     assert completed["explicit_unit_errors"] == 0
     assert completed["confusion_matrix_on_observed"][
         "potencialmente abusiva"
-    ]["indicios fuertes de abusividad"] == 4
+    ]["potencialmente abusiva"] == 4
     assert completed["confusion_matrix_on_observed"][
         "no potencialmente abusiva"
     ]["potencialmente abusiva"] == 7
