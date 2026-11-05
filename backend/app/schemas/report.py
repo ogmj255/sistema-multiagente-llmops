@@ -42,7 +42,6 @@ class ClassificationSummary(BaseModel):
 
     not_potentially_abusive: int = Field(default=0, ge=0)
     potentially_abusive: int = Field(default=0, ge=0)
-    strong_indications_of_abusiveness: int = Field(default=0, ge=0)
     not_applicable: int = Field(default=0, ge=0)
 
 
