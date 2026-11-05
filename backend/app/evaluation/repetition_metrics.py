@@ -126,6 +126,9 @@ def score_campaign_repetitions(
             total_cost = 0.0
             unknown_cost_attempts = 0
             attempt_count = 0
+            pending_document_units = 0
+            unavailable_in_started_documents = 0
+            explicit_unit_errors = 0
 
             for task in relevant_tasks:
                 units = document_units(groundtruth, task)
@@ -151,6 +154,7 @@ def score_campaign_repetitions(
                 )
                 if selected is None:
                     document_counts["pending"] += 1
+                    pending_document_units += len(units)
                 elif completed_document_run(
                     selected, task, expected_ids, groundtruth.fingerprint
                 ):
@@ -161,6 +165,17 @@ def score_campaign_repetitions(
                 extracted = _unit_predictions(
                     selected, expected_ids=set(expected_ids)
                 )
+                if selected is not None:
+                    unavailable_in_started_documents += (
+                        len(units) - len(extracted)
+                    )
+                    unit_results = selected.get("unit_results", [])
+                    if isinstance(unit_results, list):
+                        explicit_unit_errors += sum(
+                            result.get("status") == "error"
+                            for result in unit_results
+                            if isinstance(result, dict)
+                        )
                 for technical_id, label in extracted.items():
                     if technical_id in predicted:
                         raise ValueError(
@@ -190,9 +205,15 @@ def score_campaign_repetitions(
                 "total_units": total,
                 "predictions_valid": covered,
                 "missing_or_invalid": total - covered,
-                "operational_failure_or_missing_rate": round(
+                # No llamar 'tasa de error' a unidades no ejecutadas.
+                "unavailable_prediction_rate": round(
                     (total - covered) / total, 6
                 ),
+                "pending_document_units": pending_document_units,
+                "unavailable_in_started_documents": (
+                    unavailable_in_started_documents
+                ),
+                "explicit_unit_errors": explicit_unit_errors,
                 "all_units": all_scores,
                 "evaluable_units": eligible_scores,
                 "duration_ms_reported": round(duration_ms, 3),
@@ -241,9 +262,12 @@ def score_campaign_repetitions(
         "by_treatment_repetition": detail,
         "model_aggregate": aggregate,
         "notes": (
-            "Las métricas de clasificación usan denominadores fijos y "
-            "presentan cobertura; las ejecuciones incompletas no permiten "
-            "aceptar o rechazar H0. Los costos pueden ser subestimaciones "
-            "si falló la captura de uso o hubo interrupciones."
+            "Las métricas globales sobre 547 fragmentos se deben "
+            "interpretar junto con la cobertura. La tasa de predicciones "
+            "no disponibles NO es una tasa de error operativo: distingue "
+            "unidades pendientes y errores explícitos. La calidad del "
+            "documento procesado aparece en formal_metrics_by_document; "
+            "no pueden contrastarse hipótesis mientras falten tareas. "
+            "Los costos pueden ser subestimaciones si falló la captura."
         ),
     }
