@@ -10,6 +10,7 @@ import asyncio
 import json
 import os
 import time
+from threading import Event, Thread
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -26,6 +27,28 @@ QUEUE = DIRECTORY / "binary_jobs"
 RESULTS = DIRECTORY / "v2_binary_campaign_runs.jsonl"
 CONTEXT = DIRECTORY / "v2_binary_legal_context_snapshots.jsonl"
 CHECKPOINTS = DIRECTORY / "v2_binary_unit_checkpoints.jsonl"
+
+HEARTBEAT = DIRECTORY / "v2_binary_worker_heartbeat.json"
+
+
+def _write_heartbeat() -> None:
+    """Indicador de vida para no encolar gastos si no existe worker."""
+    HEARTBEAT.parent.mkdir(parents=True, exist_ok=True)
+    temporary = HEARTBEAT.with_suffix(".tmp")
+    temporary.write_text(
+        json.dumps({
+            "timestamp": time.time(),
+            "protocol": "NPA-PA-v2.0",
+        }), encoding="utf-8",
+    )
+    os.replace(temporary, HEARTBEAT)
+
+
+def _heartbeat_loop(stop: Event) -> None:
+    while not stop.is_set():
+        _write_heartbeat()
+        stop.wait(3.0)
+
 
 
 def save_job(path: Path, job: dict) -> None:
@@ -106,22 +129,32 @@ def main() -> None:
     QUEUE.mkdir(parents=True, exist_ok=True)
     print("Worker experimental V2 iniciado: una tarea documental por vez.", flush=True)
 
-    # Un único servicio/replica en Docker Compose. No escalar horizontalmente
-    # sin implementar cola transaccional con bloqueo en PostgreSQL.
-    while True:
-        try:
-            jobs = sorted(QUEUE.glob("ET*-R*.json"))
-            for path in jobs:
-                job = json.loads(path.read_text(encoding="utf-8"))
-                if job.get("status") in {"queued", "running"}:
-                    execute_job(path)
-                    break
-        except Exception as exc:
-            print(
-                f"Error supervisando tareas experimentales: {exc}",
-                flush=True,
-            )
-        time.sleep(3)
+    stop = Event()
+    heartbeat_thread = Thread(
+        target=_heartbeat_loop, args=(stop,), daemon=True
+    )
+    heartbeat_thread.start()
+    try:
+        # Un único servicio/replica en Docker Compose. No escalar
+        # horizontalmente sin una cola transaccional en PostgreSQL.
+        while True:
+            try:
+                jobs = sorted(QUEUE.glob("ET*-R*.json"))
+                for path in jobs:
+                    job = json.loads(path.read_text(encoding="utf-8"))
+                    if job.get("status") in {"queued", "running"}:
+                        execute_job(path)
+                        break
+            except Exception as exc:
+                print(
+                    f"Error supervisando tareas experimentales: {exc}",
+                    flush=True,
+                )
+            time.sleep(3)
+    finally:
+        stop.set()
+        heartbeat_thread.join(timeout=4)
+        HEARTBEAT.unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
