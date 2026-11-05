@@ -30,12 +30,26 @@ MANIFEST_FILENAME = "v2_binary_preflight_manifest.json"
 CRITICAL_SOURCES = (
     "prompts/legal_analysis.py",
     "schemas/legal_analysis.py",
+    "schemas/orchestration.py",
     "agents/orchestrator_agent.py",
     "agents/legal_analyzer_agent.py",
+    "agents/knowledge_agent.py",
     "evaluation/orchestrated.py",
     "evaluation/unit_checkpoint.py",
+    "evaluation/readiness.py",
+    "evaluation/design.py",
+    "evaluation/pilot.py",
+    "evaluation/groundtruth.py",
+    "evaluation/binary_groundtruth.py",
+    "evaluation/binary_scoring.py",
     "llm/openrouter_client.py",
+    "services/embeddings.py",
+    "services/legal_vector_store.py",
+    "services/analysis_persistence.py",
     "mcp/registry.py",
+    "mcp/knowledge_tools.py",
+    "mcp/legal_analyzer_tools.py",
+    "mcp/report_generator_tools.py",
 )
 
 
@@ -54,6 +68,13 @@ def _code_sha256() -> str:
             "path": rel,
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         })
+    requirements = Path(__file__).resolve().parents[2] / "requirements.txt"
+    if not requirements.is_file():
+        raise PreflightError("Falta el manifiesto de dependencias del backend.")
+    files.append({
+        "path": "requirements.txt",
+        "sha256": hashlib.sha256(requirements.read_bytes()).hexdigest(),
+    })
     worker = Path(__file__).resolve().parents[2] / "scripts" / "evaluation_worker.py"
     if not worker.is_file():
         raise PreflightError("Falta el script del worker experimental.")
