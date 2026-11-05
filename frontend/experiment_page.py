@@ -17,6 +17,16 @@ API = os.getenv(
     "API_EXPERIMENT_URL", "http://traefik/api/experimental"
 ).rstrip("/")
 
+STATUS_TEXT = {
+    "pending": "Pendiente",
+    "completed": "Completada",
+    "failed": "Fallida",
+    "queued": "En cola",
+    "running": "En ejecución",
+    "invalid": "Inválida",
+}
+
+
 
 def _headers() -> dict[str, str]:
     return {
@@ -157,7 +167,8 @@ def render_experiment_page() -> None:
             (
                 f"{t['task_id']} · {t['platform']} · "
                 f"{t['treatment']} · R{t['repetition']} · "
-                f"{t['unit_count']} unidades · {t['status']}"
+                f"{t['unit_count']} unidades · "
+                f"{STATUS_TEXT.get(t['status'], t['status'])}"
             ): t for t in tasks
         }
         selected_text = st.selectbox(
@@ -188,7 +199,10 @@ def render_experiment_page() -> None:
         p3.metric("Errores registrados", unit_progress["checkpoint_failed"])
         job_status = selected.get("job_status")
         if job_status in {"queued", "running", "failed", "completed"}:
-            st.caption(f"Estado del worker: {job_status}")
+            st.caption(
+                "Estado del worker: "
+                f"{STATUS_TEXT.get(job_status, job_status)}"
+            )
         else:
             st.caption("No hay una tarea del worker en curso.")
 
@@ -265,6 +279,30 @@ def render_experiment_page() -> None:
             "huella del corpus, unidades procesadas, checkpoints, "
             "costo reportado y trazas del flujo multiagente."
         )
+        filter_document, filter_treatment = st.columns(2)
+        with filter_document:
+            chosen_platform = st.selectbox(
+                "Filtrar por plataforma",
+                ["Todas", *sorted({t["platform"] for t in tasks})],
+                key="experiment_evidence_platform",
+            )
+        with filter_treatment:
+            chosen_treatment = st.selectbox(
+                "Filtrar por tratamiento",
+                ["Todos", "T1", "T2", "T3"],
+                key="experiment_evidence_treatment",
+            )
+        visible_tasks = [
+            task for task in tasks
+            if (chosen_platform == "Todas"
+                or task["platform"] == chosen_platform)
+            and (chosen_treatment == "Todos"
+                or task["treatment"] == chosen_treatment)
+        ]
+        st.caption(
+            f"Mostrando {len(visible_tasks)} de {len(tasks)} tareas "
+            "del protocolo NPA/PA V2."
+        )
         st.dataframe(
             pd.DataFrame([
                 {
@@ -272,11 +310,14 @@ def render_experiment_page() -> None:
                     "Plataforma": task["platform"],
                     "Tratamiento": task["treatment"],
                     "Repetición": task["repetition"],
-                    "Estado": task["status"],
+                    "Estado": STATUS_TEXT.get(
+                        task["status"], task["status"]
+                    ),
                 }
-                for task in tasks
+                for task in visible_tasks
             ]),
             hide_index=True,
+            use_container_width=True,
         )
         st.caption(
             "Las métricas de precisión, recall y F1 se calculan "
