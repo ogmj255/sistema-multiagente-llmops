@@ -14,7 +14,6 @@ from app.schemas.preprocessing import ProcessedClause
 ClauseClassification = Literal[
     "not_potentially_abusive",
     "potentially_abusive",
-    "strong_indications_of_abusiveness",
 ]
 
 EvidenceSufficiency = Literal[
