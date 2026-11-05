@@ -91,11 +91,11 @@ def test_holdout_gate_requires_identical_rag_and_nonworsening_fn_na(
     holdout.freeze_holdout(root)
     folder = holdout._root(root)
     units = [
-        SimpleNamespace(technical_id="ToS02-U001", label=holdout.NPA),
-        SimpleNamespace(technical_id="ToS02-U002", label=holdout.NPA),
-        SimpleNamespace(technical_id="ToS02-U003", label=holdout.NPA),
-        SimpleNamespace(technical_id="ToS02-U004", label=holdout.PA),
-        SimpleNamespace(technical_id="ToS02-U005", label="not_applicable"),
+        SimpleNamespace(technical_id="ToS02-U001", original_text="Cláusula 1", label=holdout.NPA),
+        SimpleNamespace(technical_id="ToS02-U002", original_text="Cláusula 2", label=holdout.NPA),
+        SimpleNamespace(technical_id="ToS02-U003", original_text="Cláusula 3", label=holdout.NPA),
+        SimpleNamespace(technical_id="ToS02-U004", original_text="Cláusula 4", label=holdout.PA),
+        SimpleNamespace(technical_id="ToS02-U005", original_text="Cláusula 5", label="not_applicable"),
     ]
     ds = SimpleNamespace(fingerprint="dataset")
     task = {"task_id": holdout.TARGET_TASK_ID}
