@@ -267,6 +267,15 @@ Con el worker apagado y la facturación en \`false\`, comprobar
 La prueba integrada emplea un worker **simulado** y archivos
 temporales: no hay consumo ni alteración de los registros reales.
 
+### Solución de importaciones Python en Docker
+
+Para evitar `ModuleNotFoundError: No module named 'app'`, ejecutar el
+preflight mediante `python -m scripts.preflight_binary_worker --freeze`
+en vez de `python scripts/preflight_binary_worker.py --freeze`.
+El servicio `evaluation-worker` usa `PYTHONPATH=/app` y
+`python -m scripts.evaluation_worker`, para que los paquetes internos
+se resuelvan correctamente. El preflight **no llama a OpenRouter**.
+
 ## Habilitación controlada de la primera tarea real ET01-R1
 
 **Alcance:** ToS01 Holded, 21 fragmentos congelados, tratamiento
@@ -287,7 +296,7 @@ python -m pytest tests/unit/test_binary_preflight.py tests/unit/test_experimenta
 python -m pytest tests/unit -q
 docker compose --profile experiment config --quiet
 docker compose --profile experiment build evaluation-worker
-docker compose --profile experiment run --rm --no-deps evaluation-worker python scripts/preflight_binary_worker.py --freeze
+docker compose --profile experiment run --rm --no-deps evaluation-worker python -m scripts.preflight_binary_worker --freeze
 \`\`\`
 
 El preflight:
