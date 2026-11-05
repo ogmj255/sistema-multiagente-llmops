@@ -169,3 +169,61 @@ def test_actual_langgraph_nodes_route_through_mcp(monkeypatch, tmp_path):
     assert FakeMCP.instances[1]["environment_overrides"] == {
         "analizador_legal": {"OPENROUTER_MODEL": other_model}
     }
+
+
+def test_checkpoint_reuses_completed_clause_without_mcp_analysis(
+    monkeypatch, tmp_path,
+):
+    """Un reinicio no debe volver a facturar un éxito ya guardado."""
+    FakeMCP.calls = []
+    FakeMCP.instances = []
+    monkeypatch.setattr(orchestrated, "ClienteMCP", FakeMCP)
+    monkeypatch.setattr(
+        orchestrated, "start_pipeline_observation",
+        lambda _execution_id: nullcontext(None),
+    )
+    monkeypatch.setattr(
+        orchestrated, "update_pipeline_observation",
+        lambda *_args, **_kwargs: None,
+    )
+    context_path = tmp_path / "ctx.jsonl"
+    checkpoint = tmp_path / "units.jsonl"
+    kwargs = {
+        "task": task(),
+        "dataset_fingerprint": "f" * 64,
+        "context_cache": context_path,
+        "checkpoint_path": checkpoint,
+    }
+
+    original = asyncio.run(
+        orchestrated.run_orchestrated_trial(
+            [sample_unit()], **kwargs,
+        )
+    )
+    assert original["status"] == "success", original["errors"]
+    assert original["checkpoint"]["new_successful_units"] == 1
+    assert len([
+        name for name, _ in FakeMCP.calls
+        if name == "analizador_legal"
+    ]) == 1
+    FakeMCP.calls.clear()
+
+    replayed = asyncio.run(
+        orchestrated.run_orchestrated_trial(
+            [sample_unit()], **kwargs,
+        )
+    )
+    assert replayed["status"] == "success", replayed["errors"]
+    assert replayed["report"]["successful_clauses"] == 1
+    assert replayed["unit_results"][0]["prediction"] == (
+        original["unit_results"][0]["prediction"]
+    )
+    assert replayed["checkpoint"]["reused_unit_ids"] == ["ToS01-U001"]
+    assert replayed["checkpoint"]["new_successful_units"] == 0
+    assert all(
+        name not in {"analizador_legal", "conocimiento_juridico"}
+        for name, _ in FakeMCP.calls
+    )
+    assert any(
+        name == "generador_informes" for name, _ in FakeMCP.calls
+    )
