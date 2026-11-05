@@ -99,3 +99,37 @@ Esperado en la vista previa de V2: 90 tareas pendientes, cero inferencias formal
 ## Documento de tesis
 
 La única versión de la tesis disponible para inspección fue un PDF generado por Prism. Los cambios de redacción del proyecto LaTeX original deberán aplicarse sobre ese archivo fuente y recompilarse; el PDF previo no debe presentarse como una versión ya editada. Mantener los antecedentes científicos que usen otras escalas de clasificación, atribuidos a sus autores.
+
+## Prueba integrada sin facturación (API → cola → worker → métricas)
+
+Antes de ejecutar la evaluación real, verificar el circuito de control
+mediante una simulación estrictamente local. El archivo
+\`tests/unit/test_experimental_ui_worker_flow.py\` usa un corpus
+**sintético**, la API FastAPI con \`TestClient\`, una cola temporal creada
+por pytest y un doble de \`run_orchestrated_trial\` que **no realiza
+llamadas a OpenRouter, MCP ni Langfuse**.
+
+La prueba comprueba:
+- bloqueo de endpoints para solicitudes sin credencial;
+- rechazo de órdenes de pago cuando \`EXPERIMENT_EXECUTION_ENABLED=false\`;
+- rechazo de autorizaciones ausentes, tareas desconocidas o duplicadas;
+- encolado y transición de \`queued\` a \`completed\`;
+- relectura del estado y métricas por documento/repetición desde FastAPI;
+- detección de huella de dataset incompatible sin llamar al modelo.
+
+\`\`\`powershell
+git pull --ff-only origin experiment/binary-classification-ui-v2
+$env:PYTHONPATH = (Resolve-Path ".\\backend").Path
+python -m pytest tests/unit/test_experimental_ui_worker_flow.py -q
+python -m pytest tests/unit -q
+docker compose --profile experiment config --quiet
+\`\`\`
+
+**No ejecutar \`EXPERIMENT_EXECUTION_ENABLED=true\` en Docker** para
+probar este circuito: el test activa esa bandera únicamente dentro del
+proceso temporal de pruebas y sustituye todas las inferencias. La prueba
+de UI real en Docker se hace con el trabajador apagado y la API en solo
+lectura; por separado aún queda comprobar el funcionamiento real de
+LangGraph/MCP en el protocolo V2, para lo cual habrá una autorización
+de costo y auditoría posterior.
+
