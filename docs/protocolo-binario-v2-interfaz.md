@@ -1,6 +1,6 @@
 # Protocolo binario V2 y módulo experimental en Streamlit
 
-**Estado:** implementación en rama independiente, NO validada todavía en el equipo de investigación. **No iniciar experimentos facturables hasta pasar las pruebas y la revisión metodológica.**
+**Estado:** rama de desarrollo V2. La última batería unitaria validada por el investigador fue 269/269, antes de la reorganización de cinco apartados. **Los cambios recientes requieren nuevas pruebas locales. No iniciar experimentos facturables hasta comprobar la integración y la reproducibilidad.**
 
 ## Regla de etiquetas
 
@@ -17,12 +17,13 @@ La ejecución previa ET01-R1 (DeepSeek + Holded, 21 unidades) pertenece a V1 y s
 
 Nueva navegación **Evaluación experimental** junto a **Análisis** y **Dashboard LLMOps**.
 
-- **Diseño:** protocolo congelado, clase NPA/PA, corpus y tratamientos.
-- **Ejecución:** elección de documento, tratamiento y repetición; autorización explícita del gasto.
-- **Seguimiento:** estado, cola, reintentos manuales y trazabilidad.
-- **Evidencias:** métricas binarias por documento, matriz de confusión y progresión por repetición.
+- **Diseño:** referencia NPA/PA, corpus, modelos y decisiones metodológicas.
+- **Ejecución:** selección independiente de documento, tratamiento y repetición; orden documental controlada.
+- **Seguimiento:** barra de cláusulas, checkpoints, cola y estado de unidad.
+- **Resultados:** matrices de confusión, F1, comparación por modelo y tres repeticiones; valores incompletos permanecen sin calificación final.
+- **Evidencias:** exportación de estado, manifiesto, métricas y predicciones por documento completado.
 
-La interfaz Streamlit no invoca el LLM directamente. La API FastAPI (/experimental) valida acceso con \`X-Experiment-Token\` y deposita una orden en una cola local. **Un único worker** de Docker Compose llama al LangGraph productivo y a los servidores MCP de conocimiento, análisis, informes y observabilidad. Los Web Scraper y Preprocesador se omiten solo en la evaluación controlada para conservar los fragmentos congelados.
+La interfaz Streamlit no invoca el LLM directamente. Las solicitudes GET de FastAPI (/experimental) son **de solo lectura y libres**, mientras que la creación de tareas con costo exige dos verificaciones de credencial (token de servicio y clave del operador), además de consentimiento y la presencia efectiva del worker. **Un único worker** de Docker Compose llama al LangGraph productivo y a los servidores MCP de conocimiento, análisis, informes y observabilidad. Los Web Scraper y Preprocesador se omiten solo en la evaluación controlada para conservar los fragmentos congelados.
 
 Este diseño es un prototipo académico de **un único nodo**; la cola por archivos requiere migración a PostgreSQL antes de múltiples réplicas, acceso distribuido o despliegue público.
 
@@ -57,7 +58,7 @@ EXPERIMENT_OPERATOR_PASSWORD=<clave-única-investigador>
 EXPERIMENT_EXECUTION_ENABLED=false
 \`\`\`
 
-**Por defecto la ejecución es imposible.** El frontend exige contraseña de investigador y el backend valida una segunda credencial. Para **solo consultar el panel**:
+**Por defecto la ejecución es imposible.** Para consultar el diseño y evidencias **no hay contraseña**. El token y la clave solo son necesarios si se autoriza una solicitud pagada desde la pestaña «Ejecución». Para **consultar el panel**:
 
 \`\`\`powershell
 docker compose up -d --build
@@ -110,7 +111,8 @@ por pytest y un doble de \`run_orchestrated_trial\` que **no realiza
 llamadas a OpenRouter, MCP ni Langfuse**.
 
 La prueba comprueba:
-- bloqueo de endpoints para solicitudes sin credencial;
+- consultas GET libres a diseño, estado, progreso, métricas y predicciones sin etiquetas humanas;
+- bloqueo de escrituras sin token del servicio y clave de operador;
 - rechazo de órdenes de pago cuando \`EXPERIMENT_EXECUTION_ENABLED=false\`;
 - rechazo de autorizaciones ausentes, tareas desconocidas o duplicadas;
 - encolado y transición de \`queued\` a \`completed\`;
@@ -176,11 +178,11 @@ real con LangGraph/MCP; solo verifica control y observabilidad local.
 ## Mejoras del acceso para la defensa — revisión de interfaz
 
 En la revisión visual se observó que el investigador podía mostrar
-accidentalmente la contraseña en una captura de pantalla. La nueva
-implementación requiere un botón explícito **«Acceder al panel»**, borra
-el contenido del campo al autenticar y **oculta el campo de contraseña
-una vez iniciada la sesión**. Se muestra en su lugar **«Cerrar sesión»**.
-No se persisten valores de contraseña en los archivos experimentales.
+accidentalmente la contraseña en una captura de pantalla. La versión actual **elimina el inicio de sesión de lectura**:
+se pueden consultar los cinco apartados sin clave. Solo en caso de
+habilitar ejecuciones de pago aparece un campo de autorización
+transitorio dentro de «Ejecución». El valor no se persiste en los
+archivos experimentales y se borra del formulario tras cada orden.
 
 Si se compartió una captura donde se ve una contraseña real, debe
 **cambiarse de inmediato** en el \`.env\` local y en cualquier otro
@@ -201,7 +203,59 @@ python -m pytest tests/unit -q
 docker compose up -d --build frontend
 \`\`\`
 
-Volver a entrar a \`http://localhost/experimental\`, seleccionar
-«Acceder al panel», comprobar que la contraseña desaparece, probar
-«Cerrar sesión», volver a entrar y revisar los filtros de «Evidencias».
+Volver a entrar a \`http://localhost/experimental\` y comprobar acceso
+sin contraseña, cinco apartados y descarga de evidencias. La pestaña
+«Ejecución» no permite lanzar tareas mientras la facturación esté
+deshabilitada.
 Mantener \`EXPERIMENT_EXECUTION_ENABLED=false\` y el worker apagado.
+
+
+## Diseño funcional de cinco apartados — versión actual
+
+| Apartado | Consulta disponible |
+| --- | --- |
+| Diseño | NPA/PA, aplicabilidad, corpus, tratamientos exactos y huella V2 |
+| Ejecución | Selección de documento, modelo y repetición; costo bloqueado por defecto |
+| Seguimiento | Estado por unidad técnica basado en checkpoints y señal del worker |
+| Resultados | Matrices por documento, F1 binario y agregados de las tres repeticiones |
+| Evidencias | Descarga CSV de tareas y JSON de manifiesto/métricas/predicciones |
+
+La API ofrece GET de solo lectura \`/experimental/overview\`,
+\`/experimental/results\`, \`/experimental/tasks/{task_id}/units\`
+y \`/experimental/tasks/{task_id}/predictions\`. El último expone
+**solo resultados generados por el modelo en documentos completos**,
+nunca etiquetas humanas ni textos contractuales.
+
+**Acción facturable:** POST \`/experimental/jobs\` requiere
+\`EXPERIMENT_EXECUTION_ENABLED=true\`, \`X-Experiment-Token\`,
+\`X-Experiment-Operator\`, aceptación explícita y **latido reciente**
+del trabajador. En ausencia de cualquiera de esas condiciones se
+rechaza la orden. Las claves se configuran solo en backend y en el
+frontend servidor (únicamente el token del servicio), jamás en el
+contenido de resultados. No se debe habilitar el worker hasta auditar
+la configuración RAG, los modelos, la revisión de Git y el presupuesto.
+
+La ejecución de una **sola cláusula como demostración** y el
+**lanzamiento masivo** de las 90 tareas continúan pendientes. La
+modalidad real implementada es **una tarea documental por orden**
+mediante LangGraph+MCP, con reanudación por unidad.
+
+La consulta libre está destinada al entorno local de investigación y
+defensa. Si el sitio se publica en Internet, deben añadirse
+restricciones de red y permisos para los datos que se desee proteger.
+
+### Nueva validación sin inferencia
+
+\`\`\`powershell
+git pull --ff-only origin experiment/binary-classification-ui-v2
+$env:PYTHONPATH = (Resolve-Path ".\\backend").Path
+python -m pytest tests/unit/test_experimental_ui_worker_flow.py -q
+python -m pytest tests/unit -q
+docker compose --profile experiment config --quiet
+docker compose up -d --build backend frontend
+\`\`\`
+
+Con el worker apagado y la facturación en \`false\`, comprobar
+«Diseño», «Ejecución», «Seguimiento», «Resultados» y «Evidencias».
+La prueba integrada emplea un worker **simulado** y archivos
+temporales: no hay consumo ni alteración de los registros reales.
