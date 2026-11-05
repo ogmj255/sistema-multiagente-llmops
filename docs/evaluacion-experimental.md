@@ -1,5 +1,13 @@
 # Evaluación experimental — capítulo III, sección 3.7
 
+> **Aviso de versión (V2):** este documento registra el diseño y las
+> ejecuciones históricas del protocolo V1, con tres categorías de riesgo
+> y el estado `not_applicable`. Para la versión binaria activa NPA/PA
+> y el módulo web de evaluación consultar
+> [protocolo-binario-v2-interfaz.md](protocolo-binario-v2-interfaz.md).
+> ET01-R1 de Holded en V1 no debe mezclarse con ejecuciones V2.
+>
+
 Esta rama contiene validación del ground truth, métricas, plan experimental,
 un piloto aislado y un **piloto multiagente vía LangGraph + MCP**. El flujo integrado ya se verificó en el equipo del investigador mediante
 LangGraph/MCP/OpenRouter/Langfuse con T1, T2 y T3 (unidad ToS01-U001).
