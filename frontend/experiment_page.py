@@ -35,6 +35,28 @@ def _json_request(method: str, path: str, **kwargs):
         return response.json()
 
 
+def _submit_operator_login(expected_password: str) -> None:
+    """Valida el acceso al enviar el formulario y borra el texto ingresado.
+
+    En Streamlit los callbacks se ejecutan antes de reconstruir widgets,
+    por eso es seguro limpiar la clave del campo desde este callback.
+    """
+    submitted = st.session_state.get("experiment_operator_password", "")
+    valid = (
+        isinstance(submitted, str)
+        and hmac.compare_digest(submitted, expected_password)
+    )
+    st.session_state["experiment_authenticated"] = valid
+    st.session_state["experiment_login_error"] = not valid
+    st.session_state["experiment_operator_password"] = ""
+
+
+def _logout_operator() -> None:
+    st.session_state["experiment_authenticated"] = False
+    st.session_state["experiment_login_error"] = False
+    st.session_state.pop("experiment_operator_password", None)
+
+
 def render_experiment_page() -> None:
     st.title("Evaluación experimental")
     st.caption(
@@ -56,17 +78,27 @@ def render_experiment_page() -> None:
         )
         return
 
-    entered = st.text_input(
-        "Contraseña del investigador",
-        type="password",
-        key="experiment_operator_password",
-    )
-    if not hmac.compare_digest(entered, operator_password):
-        if entered:
+    if not st.session_state.get("experiment_authenticated", False):
+        with st.form("experiment_operator_login"):
+            st.text_input(
+                "Contraseña del investigador",
+                type="password",
+                key="experiment_operator_password",
+            )
+            st.form_submit_button(
+                "Acceder al panel",
+                on_click=_submit_operator_login,
+                args=(operator_password,),
+            )
+        if st.session_state.get("experiment_login_error", False):
             st.error("Contraseña incorrecta.")
         else:
             st.caption("Acceso restringido a la persona investigadora.")
         return
+
+    # No mantener un campo con credenciales visibles al presentar
+    # capturas o demostrar los resultados ante el tribunal.
+    st.button("Cerrar sesión", on_click=_logout_operator)
 
     try:
         overview = _json_request("GET", "overview")
