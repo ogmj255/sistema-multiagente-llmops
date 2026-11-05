@@ -417,3 +417,21 @@ def test_readonly_unit_listing_is_public_and_does_not_reveal_labels(
     assert "original_text" not in response.text
     assert "potentially_abusive" not in response.text
     assert CLIENT.get("/experimental/tasks/ET99-R1/units").status_code == 404
+
+
+def test_public_evidence_remains_available_without_any_secret(
+    isolated_environment, monkeypatch,
+):
+    """La consulta para la defensa no exige .env con credenciales."""
+    monkeypatch.delenv("EXPERIMENT_ADMIN_TOKEN", raising=False)
+    monkeypatch.delenv("EXPERIMENT_OPERATOR_PASSWORD", raising=False)
+    assert CLIENT.get("/experimental/overview").status_code == 200
+    assert CLIENT.get("/experimental/results").status_code == 200
+    assert CLIENT.get(
+        "/experimental/tasks/ET01-R1/units"
+    ).status_code == 200
+    assert CLIENT.post(
+        "/experimental/jobs",
+        headers=WRITE_HEADERS,
+        json={"task_id": "ET01-R1", "accept_paid_execution": True},
+    ).status_code == 403
