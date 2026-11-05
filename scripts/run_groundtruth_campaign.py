@@ -51,6 +51,11 @@ def parse_args() -> argparse.Namespace:
         "--context-cache", type=Path,
         default=Path("data/evaluation/formal_legal_context_snapshots.jsonl"),
     )
+    parser.add_argument(
+        "--unit-checkpoints", type=Path,
+        default=Path("data/evaluation/formal_unit_checkpoints.jsonl"),
+        help="Checkpoint durable de cada unidad contractual, separado de pilotos.",
+    )
     args = parser.parse_args()
     if not 1 <= args.max_tasks <= 5:
         parser.error("--max-tasks debe estar entre 1 y 5.")
@@ -114,6 +119,7 @@ async def execute_tasks(args, dataset, tasks, prior):
                 task=task,
                 dataset_fingerprint=dataset.fingerprint,
                 context_cache=args.context_cache,
+                checkpoint_path=args.unit_checkpoints,
             )
         except Exception as error:
             # Nunca inventar resultados ni costo ante una excepción.
@@ -141,6 +147,15 @@ async def execute_tasks(args, dataset, tasks, prior):
             f"costo reportado acumulado USD {reported_spend:.6f}",
             flush=True,
         )
+        if result.get("checkpoint"):
+            checkpoint = result["checkpoint"]
+            print(
+                "Checkpoint: éxitos nuevos=",
+                checkpoint["new_successful_units"],
+                "recuperados=",
+                len(checkpoint["reused_unit_ids"]),
+                flush=True,
+            )
         if state != "completed":
             print("Se detuvo por tarea fallida. Revisar salida JSONL.")
             break
