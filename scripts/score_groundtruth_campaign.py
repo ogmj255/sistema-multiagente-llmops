@@ -42,8 +42,14 @@ def main() -> None:
         "treatment", "model", "repetition",
         "documents_completed", "documents_incomplete", "documents_pending",
         "predictions_valid", "missing_or_invalid",
+        "coverage_four_classes",
+        "pending_document_units",
+        "unavailable_in_started_documents",
+        "explicit_unit_errors",
         "accuracy_four_classes", "f1_macro_four_classes",
         "accuracy_evaluable", "f1_macro_evaluable",
+        "accuracy_full_corpus_coverage_adjusted",
+        "f1_macro_full_corpus_coverage_adjusted",
         "duration_ms_reported", "cost_usd_reported",
         "is_complete",
     ]
@@ -53,10 +59,31 @@ def main() -> None:
         for row in result["by_treatment_repetition"]:
             writer.writerow({
                 **{key: row[key] for key in fields if key in row},
-                "accuracy_four_classes": row["all_units"]["accuracy"],
-                "f1_macro_four_classes": row["all_units"]["f1_macro"],
-                "accuracy_evaluable": row["evaluable_units"]["accuracy"],
-                "f1_macro_evaluable": row["evaluable_units"]["f1_macro"],
+                # Si faltan documentos, NO publicar 1,28% como si
+                # fuera la exactitud de DeepSeek sobre Holded.
+                "coverage_four_classes": row["all_units"]["coverage"],
+                "accuracy_four_classes": (
+                    row["all_units"]["accuracy"] if row["is_complete"]
+                    else None
+                ),
+                "f1_macro_four_classes": (
+                    row["all_units"]["f1_macro"] if row["is_complete"]
+                    else None
+                ),
+                "accuracy_evaluable": (
+                    row["evaluable_units"]["accuracy"] if row["is_complete"]
+                    else None
+                ),
+                "f1_macro_evaluable": (
+                    row["evaluable_units"]["f1_macro"] if row["is_complete"]
+                    else None
+                ),
+                "accuracy_full_corpus_coverage_adjusted": (
+                    row["all_units"]["accuracy"]
+                ),
+                "f1_macro_full_corpus_coverage_adjusted": (
+                    row["all_units"]["f1_macro"]
+                ),
             })
 
     # Calidad documental: denominador = unidades del ToS realmente
