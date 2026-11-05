@@ -72,12 +72,66 @@ def _job_files():
     return sorted(jobs, key=lambda x: x.get("queued_at", ""), reverse=True)
 
 
+def _unit_checkpoint_progress(groundtruth, tasks: list[dict]) -> dict:
+    """Progreso observado por tarea, aislado por dataset y modelo.
+
+    Lee únicamente checkpoints V2 y nunca expone textos originales,
+    etiquetas humanas, prompts ni claves al frontend.
+    """
+    task_index = {task["task_id"]: task for task in tasks}
+    texts = {unit.technical_id: unit.text_sha256 for unit in groundtruth.units}
+    successful = {task_id: set() for task_id in task_index}
+    failed = {task_id: set() for task_id in task_index}
+
+    for row in read_jsonl(DATA_DIR / "v2_binary_unit_checkpoints.jsonl"):
+        if not isinstance(row, dict):
+            continue
+        task_id = row.get("task_id")
+        task = task_index.get(task_id)
+        if task is None:
+            continue
+        unit_id = row.get("id")
+        if (
+            not isinstance(unit_id, str)
+            or not unit_id.startswith(task["document_id"] + "-U")
+            or row.get("dataset_fingerprint") != groundtruth.fingerprint
+            or row.get("model") != task["model"]
+            or row.get("repetition") != task["repetition"]
+            or row.get("text_sha256") != texts.get(unit_id)
+        ):
+            continue
+        if (
+            row.get("status") == "success"
+            and isinstance(row.get("response"), dict)
+            and row["response"].get("status") == "success"
+        ):
+            successful[task_id].add(unit_id)
+        elif row.get("status") == "error":
+            failed[task_id].add(unit_id)
+
+    return {
+        task_id: {
+            "total": task["unit_count"],
+            "checkpoint_successful": len(successful[task_id]),
+            "checkpoint_failed": len(failed[task_id] - successful[task_id]),
+            "remaining": task["unit_count"] - len(successful[task_id]),
+        }
+        for task_id, task in task_index.items()
+    }
+
+
 @router.get("/overview", dependencies=[Depends(require_operator)])
 def experimental_overview() -> dict:
     groundtruth, plan = _load()
     tasks = plan["tasks"]
     records = _runs()
     jobs = _job_files()
+    job_by_task = {
+        job["task_id"]: job
+        for job in reversed(jobs)
+        if isinstance(job.get("task_id"), str)
+    }
+    unit_progress = _unit_checkpoint_progress(groundtruth, tasks)
     by_task = {}
     for task in tasks:
         ids = [
@@ -95,7 +149,12 @@ def experimental_overview() -> dict:
             "EXPERIMENT_EXECUTION_ENABLED", "false"
         ).lower() == "true",
         "tasks": [
-            {**task, "status": by_task[task["task_id"]]}
+            {
+                **task,
+                "status": by_task[task["task_id"]],
+                "job_status": job_by_task.get(task["task_id"], {}).get("status"),
+                "unit_progress": unit_progress[task["task_id"]],
+            }
             for task in tasks
         ],
         "jobs": jobs[:30],
