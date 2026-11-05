@@ -220,3 +220,66 @@ def render_experiment_page() -> None:
             "posteriormente a partir del ground truth. Nunca "
             "se incluyen etiquetas humanas en el prompt."
         )
+        try:
+            quality = _json_request("GET", "results")
+        except (httpx.RequestError, httpx.HTTPStatusError, ValueError):
+            st.warning("No se pueden consultar las métricas experimentales.")
+            return
+
+        completed = [
+            row for row in quality["documents"]
+            if row["status"] == "completed"
+        ]
+        if completed:
+            st.subheader("Calidad binaria por documento completado")
+            st.dataframe(
+                pd.DataFrame([
+                    {
+                        "Tarea": row["task_id"],
+                        "Plataforma": row["platform"],
+                        "Tratamiento": row["treatment"],
+                        "Repetición": row["repetition"],
+                        "Clasificadas": row["predictions_valid"],
+                        "Exactitud NPA/PA": row["accuracy_evaluable_observed"],
+                        "F1 macro NPA/PA": row["f1_macro_evaluable_observed"],
+                        "Costo USD": row["cost_usd_reported"],
+                    } for row in completed
+                ]),
+                hide_index=True,
+            )
+            chosen = st.selectbox(
+                "Detalle de matriz de confusión",
+                [r["task_id"] for r in completed],
+            )
+            entry = next(
+                r for r in completed if r["task_id"] == chosen
+            )
+            matrix = entry.get("binary_confusion_matrix_on_observed")
+            if matrix:
+                st.dataframe(pd.DataFrame.from_dict(matrix, orient="index"))
+            st.caption(
+                "Los resultados del protocolo anterior (tres categorías) "
+                "se conservan como históricos y NO se mezclan aquí."
+            )
+        else:
+            st.info(
+                "Aún no existen documentos completados en el protocolo "
+                "binario V2. Las ejecuciones antiguas no se reutilizan."
+            )
+
+        st.subheader("Evolución por tratamiento y repetición")
+        st.dataframe(pd.DataFrame([
+            {
+                "Modelo": row["treatment"],
+                "Repetición": row["repetition"],
+                "Documentos completos": row["documents_completed"],
+                "Pendientes": row["documents_pending"],
+                "Predicciones registradas": row["predictions_valid"],
+                "Errores explícitos": row["explicit_unit_errors"],
+                "F1 final": (
+                    row["evaluable_units"]["f1_macro"]
+                    if row["is_complete"] else None
+                ),
+            }
+            for row in quality["repetitions"]
+        ]), hide_index=True)
