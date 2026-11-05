@@ -32,6 +32,7 @@ from app.core.observability import (
     update_pipeline_observation,
 )
 from app.evaluation.groundtruth import GroundTruthUnit
+from app.evaluation.unit_checkpoint import UnitCheckpointStore
 from app.evaluation.pilot import (
     MODEL_LABELS,
     append_jsonl,
@@ -166,8 +167,44 @@ def fixed_contract(
 def make_fixed_graph(
     client: FrozenKnowledgeMCP,
     contract: PreprocessedContract,
+    *,
+    checkpoint: UnitCheckpointStore | None = None,
+    units: Sequence[GroundTruthUnit] = (),
+    execution_id: str = "",
 ):
-    """Reutiliza AgenteOrquestador.construir y los nodos MCP existentes."""
+    """Reutiliza AgenteOrquestador.construir y los nodos MCP existentes.
+
+    Si hay checkpoint: cada análisis exitoso queda guardado de forma
+    durable antes de que el grafo avance al siguiente fragmento.
+    """
+    indexed_units = {
+        int(unit.technical_id.split("-U")[1]): unit
+        for unit in units
+    }
+    reused_unit_ids: list[str] = []
+
+    async def process_with_checkpoint(state):
+        order = state["analysis_request"].clause.order
+        if checkpoint is None:
+            return await procesar_clausula(state, cliente=client)
+
+        unit = indexed_units[order]
+        previous = checkpoint.lookup(unit.technical_id)
+        if previous is not None:
+            reused_unit_ids.append(unit.technical_id)
+            return {
+                "clause_results": {order: previous.response},
+            }
+
+        result = await procesar_clausula(state, cliente=client)
+        response = result["clause_results"][order]
+        checkpoint.record(
+            unit,
+            response=response,
+            metrics=result.get("llm_metrics", []),
+            execution_id=execution_id,
+        )
+        return result
 
     def supply_extraction(_state):
         # La extracción se evaluará aparte desde URL reales.
@@ -191,14 +228,17 @@ def make_fixed_graph(
         extraer=supply_extraction,
         preprocesar=supply_preprocessing,
         verificar_analisis_previo=bypass_production_cache,
-        procesar_clausula=partial(procesar_clausula, cliente=client),
+        procesar_clausula=process_with_checkpoint,
         generar_informe=partial(generar_informe, cliente=client),
         finalizar=finalizar_flujo,
     )
-    return AgenteOrquestador(
+    graph = AgenteOrquestador(
         nodes,
         distribuir_clausulas,
     ).construir()
+    # Mantiene la interfaz del grafo; los IDs reutilizados se consultan
+    # desde checkpoint y no requieren estado mutable adicional.
+    return graph
 
 
 async def run_orchestrated_trial(
@@ -207,6 +247,7 @@ async def run_orchestrated_trial(
     task: dict[str, object],
     dataset_fingerprint: str,
     context_cache: Path,
+    checkpoint_path: Path | None = None,
 ) -> dict[str, Any]:
     """Una ejecución LangGraph+MCP sobre cláusulas congeladas.
 
@@ -225,6 +266,23 @@ async def run_orchestrated_trial(
         )
     )
     model = str(task["model"])
+    checkpoint = (
+        UnitCheckpointStore(
+            checkpoint_path,
+            task=task,
+            fingerprint=dataset_fingerprint,
+            units=units,
+        )
+        if checkpoint_path is not None else None
+    )
+    initially_complete = (
+        {
+            unit.technical_id
+            for unit in units
+            if checkpoint.lookup(unit.technical_id) is not None
+        }
+        if checkpoint is not None else set()
+    )
     started = perf_counter()
 
     async with ClienteMCP(
@@ -238,7 +296,12 @@ async def run_orchestrated_trial(
             fingerprint=dataset_fingerprint,
             cache_path=context_cache,
         )
-        graph = make_fixed_graph(client, contract)
+        graph = make_fixed_graph(
+            client, contract,
+            checkpoint=checkpoint,
+            units=units,
+            execution_id=state["execution_id"],
+        )
 
         with start_pipeline_observation(
             state["execution_id"]
@@ -317,6 +380,19 @@ async def run_orchestrated_trial(
         "rag_retrievals": client.retrieved,
         "rag_reuses": client.reused,
         "llm_metrics": metrics,
+        "checkpoint": (
+            {
+                "path": str(checkpoint.path),
+                "reused_unit_ids": sorted(initially_complete),
+                "new_successful_units": sum(
+                    checkpoint.lookup(unit.technical_id) is not None
+                    and unit.technical_id not in initially_complete
+                    for unit in units
+                ),
+                "cumulative_success_usage": checkpoint.cumulative_success_usage(),
+            }
+            if checkpoint is not None else None
+        ),
         "observability_summary": summary.model_dump(mode="json"),
         "errors": final_state["errors"],
         "unit_results": per_unit,
