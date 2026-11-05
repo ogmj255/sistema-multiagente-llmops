@@ -43,9 +43,22 @@ El ejecutor rechaza un nuevo intento si ya existe un registro candidato.
 **No usar scripts/preflight_binary_worker.py sobre V2.1**, pues
 correctamente rechazaría una configuración distinta a la V2 congelada.
 
-## Etapa A: verificar el código, sin gastar créditos
+## Etapa A: detener la ejecución original y verificar sin créditos
 
-Ejecutar en PowerShell desde la raíz del repositorio:
+**ANTES de cambiar la rama o archivos montados en Docker**, comprobar
+en Streamlit que no existe ningún trabajo V2 en cola o en ejecución.
+Dejar EXPERIMENT_EXECUTION_ENABLED=false en el archivo .env de la raíz
+y detener el worker únicamente cuando esté inactivo:
+
+~~~powershell
+docker compose up -d --no-deps --force-recreate backend
+docker compose --profile experiment stop evaluation-worker
+docker compose --profile experiment ps
+~~~
+
+No detener el worker durante una solicitud pagada.
+
+Después, desde PowerShell en la raíz del repositorio:
 
 ~~~powershell
 git status --short
@@ -60,16 +73,6 @@ docker compose --profile experiment config --quiet
 
 Si la rama local existe, usar git switch experiment/prompt-v2-1-validation
 en lugar de git switch --track.
-
-**Antes de reconstruir imágenes**:
-verificar en Streamlit que no exista ningún trabajo V2 ejecutándose
-o en cola. Dejar EXPERIMENT_EXECUTION_ENABLED=false en el archivo .env
-de la raíz; luego ejecutar:
-
-~~~powershell
-docker compose up -d --no-deps --force-recreate backend
-docker compose --profile experiment stop evaluation-worker
-~~~
 
 No detener el worker durante una solicitud de pago. No recrear el backend
 original después de reconstruir la imagen candidata: comparten la
