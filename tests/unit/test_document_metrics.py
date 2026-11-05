@@ -85,7 +85,7 @@ def test_holded_21_predictions_produce_document_accuracy_not_547_accuracy():
     assert completed["accuracy_on_observed"] == 0.52381
     assert completed["f1_macro_on_observed"] > 0.66
     assert completed["accuracy_evaluable_observed"] == 0.5
-    assert completed["f1_macro_evaluable_observed"] == 0.494949
+    assert completed["f1_macro_evaluable_observed"] == 0.49495
     assert completed["quality_is_final_for_document"] is True
     assert completed["explicit_unit_errors"] == 0
     assert completed["confusion_matrix_on_observed"][
