@@ -171,3 +171,37 @@ docker compose ps
 Mantener el worker desactivado y nunca compartir las claves en las
 capturas. Esta prueba de integración no sustituye una ejecución V2
 real con LangGraph/MCP; solo verifica control y observabilidad local.
+
+
+## Mejoras del acceso para la defensa — revisión de interfaz
+
+En la revisión visual se observó que el investigador podía mostrar
+accidentalmente la contraseña en una captura de pantalla. La nueva
+implementación requiere un botón explícito **«Acceder al panel»**, borra
+el contenido del campo al autenticar y **oculta el campo de contraseña
+una vez iniciada la sesión**. Se muestra en su lugar **«Cerrar sesión»**.
+No se persisten valores de contraseña en los archivos experimentales.
+
+Si se compartió una captura donde se ve una contraseña real, debe
+**cambiarse de inmediato** en el \`.env\` local y en cualquier otro
+servicio donde se haya reutilizado, reiniciando solo los contenedores
+que la consumen. Nunca usar esa contraseña para anexos académicos.
+
+En «Evidencias» se incorporaron filtros de plataforma y tratamiento,
+junto con traducción visual de los estados de tarea (por ejemplo,
+\`pending\` → «Pendiente»). Los códigos internos se mantienen sin cambios
+para conservar compatibilidad con el backend.
+
+Comprobación visual, sin facturación:
+
+\`\`\`powershell
+git pull --ff-only origin experiment/binary-classification-ui-v2
+$env:PYTHONPATH = (Resolve-Path ".\\backend").Path
+python -m pytest tests/unit -q
+docker compose up -d --build frontend
+\`\`\`
+
+Volver a entrar a \`http://localhost/experimental\`, seleccionar
+«Acceder al panel», comprobar que la contraseña desaparece, probar
+«Cerrar sesión», volver a entrar y revisar los filtros de «Evidencias».
+Mantener \`EXPERIMENT_EXECUTION_ENABLED=false\` y el worker apagado.
