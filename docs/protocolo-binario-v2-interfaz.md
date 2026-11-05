@@ -1,5 +1,12 @@
 # Protocolo binario V2 y módulo experimental en Streamlit
 
+> **Antes de ejecutar ET01-R1 en el protocolo V2:** este módulo muestra
+> el diseño, las cinco pantallas y las 90 tareas sin contraseña.
+> Las órdenes de gasto requieren consentimiento, clave de operador,
+> worker activo y manifiesto preflight de RAG/código congelado.
+> No reutilizar ET01-R1 de V1 como resultado V2.
+>
+
 **Estado:** rama de desarrollo V2. La última batería unitaria validada por el investigador fue 269/269, antes de la reorganización de cinco apartados. **Los cambios recientes requieren nuevas pruebas locales. No iniciar experimentos facturables hasta comprobar la integración y la reproducibilidad.**
 
 ## Regla de etiquetas
@@ -259,3 +266,86 @@ Con el worker apagado y la facturación en \`false\`, comprobar
 «Diseño», «Ejecución», «Seguimiento», «Resultados» y «Evidencias».
 La prueba integrada emplea un worker **simulado** y archivos
 temporales: no hay consumo ni alteración de los registros reales.
+
+## Habilitación controlada de la primera tarea real ET01-R1
+
+**Alcance:** ToS01 Holded, 21 fragmentos congelados, tratamiento
+\`deepseek/deepseek-v4-flash-0731\`, repetición R1, LangGraph+MCP real.
+La anterior tarea ET01-R1 V1 permanece archivada; la V2 utiliza otro
+fingerprint, checkpoint y archivo de resultados.
+
+### Etapa A. Validación sin créditos (obligatoria)
+
+Comprobar que las credenciales compartidas anteriormente fueron
+rotadas y que \`EXPERIMENT_EXECUTION_ENABLED=false\` en el \`.env\` raíz.
+Los servicios ChromaDB y Ollama deben estar disponibles desde Docker.
+
+\`\`\`powershell
+git pull --ff-only origin experiment/binary-classification-ui-v2
+$env:PYTHONPATH = (Resolve-Path ".\backend").Path
+python -m pytest tests/unit/test_binary_preflight.py tests/unit/test_experimental_ui_worker_flow.py -q
+python -m pytest tests/unit -q
+docker compose --profile experiment config --quiet
+docker compose --profile experiment build evaluation-worker
+docker compose --profile experiment run --rm --no-deps evaluation-worker python scripts/preflight_binary_worker.py --freeze
+\`\`\`
+
+El preflight:
+- valida la huella del corpus V2 y las 90 tareas;
+- verifica \`LLM_TEMPERATURE=0\`, presencia de credenciales OpenRouter
+  y Langfuse (no las imprime);
+- confirma acceso a Ollama y modelo de embeddings instalado;
+- inspecciona ChromaDB **sin crear colecciones**, calcula SHA de
+  documentos, metadatos y vectores jurídicos;
+- registra SHA del prompt/esquema/código analítico y worker;
+- guarda el manifiesto
+  \`data/evaluation/v2_binary_preflight_manifest.json\` si aún no existe.
+
+Es un **único manifiesto inmutable**. Si la colección jurídica,
+configuración, prompt o código cambian, la validación del worker falla
+y no se realiza ninguna inferencia. No borrar ni regenerar el manifiesto
+para evitar el bloqueo sin documentar un nuevo protocolo científico.
+
+### Etapa B. Primer documento con costo (solo después del preflight)
+
+Confirmar saldo y límites del proveedor OpenRouter y revisar la
+configuración de Langfuse. No hay un techo rígido de costo por tarea:
+los 21 fragmentos pueden consumir más que el piloto V1.
+
+En el \`.env\` raíz cambiar **solo temporalmente**:
+
+\`\`\`env
+EXPERIMENT_EXECUTION_ENABLED=true
+\`\`\`
+
+Después:
+
+\`\`\`powershell
+docker compose --profile experiment up -d --build backend evaluation-worker
+docker compose ps
+\`\`\`
+
+Entrar a \`http://localhost/experimental\` → **Diseño** (manifiesto
+registrado) → **Ejecución**. Seleccionar **ToS01 - Holded**,
+**T1 - DeepSeek**, **R1**. El formulario de pago solicita clave de
+operador únicamente al lanzar esta orden y consentimiento explícito.
+Pulsar **Iniciar esta tarea documental** una sola vez.
+
+En **Seguimiento** verificar la barra de 21 unidades y la transición de
+estados. No volver a encolar manualmente mientras el worker siga
+procesando. En **Resultados** verificar métricas documentales y
+aplicabilidad. En **Evidencias** exportar manifiesto, métricas y
+predicciones por cláusula. Revisar las trazas de Langfuse.
+
+### Etapa C. Cierre de validación
+
+Una vez finalizada ET01-R1, desactivar de nuevo
+\`EXPERIMENT_EXECUTION_ENABLED=false\` y recrear backend.
+Detener el worker **solo cuando no exista una tarea en ejecución**;
+la interrupción durante un LLM puede ocasionar cargos sin checkpoint.
+Resguardar manifiesto, JSONL de resultado, checkpoints y traza.
+
+Si el preflight, las pruebas o el estado de un contenedor falla,
+**no activar la facturación**. Solucionar primero la inconsistencia,
+sin modificar el ground truth histórico ni inferir predicciones nuevas.
+
