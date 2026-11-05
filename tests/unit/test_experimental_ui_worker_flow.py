@@ -86,6 +86,10 @@ def isolated_environment(monkeypatch, tmp_path, synthetic_groundtruth):
         tmp_path / "v2_binary_unit_checkpoints.jsonl"
     )
     monkeypatch.setattr(
+        worker, "HEARTBEAT",
+        tmp_path / "v2_binary_worker_heartbeat.json"
+    )
+    monkeypatch.setattr(
         worker, "load_binary_groundtruth_v2",
         lambda _path: synthetic_groundtruth
     )
@@ -114,6 +118,7 @@ def test_access_control_and_disabled_billing(isolated_environment):
         "completed": 0, "failed": 0, "pending": 90,
     }
     assert value["execution_enabled"] is False
+    assert value["worker_online"] is False
     assert len(value["tasks"]) == 90
 
     result = CLIENT.post(
@@ -135,6 +140,13 @@ def test_api_queue_worker_and_results_end_to_end_simulated(
     monkeypatch.setenv(
         "EXPERIMENT_EXECUTION_ENABLED", "true"
     )
+    # El backend no permite órdenes con costo mientras el worker esté caído.
+    assert CLIENT.post(
+        "/experimental/jobs", headers=WRITE_HEADERS,
+        json={"task_id": "ET01-R1", "accept_paid_execution": True},
+    ).status_code == 503
+    worker._write_heartbeat()
+    assert CLIENT.get("/experimental/overview").json()["worker_online"] is True
     calls = []
 
     async def fake_orchestrated_trial(
