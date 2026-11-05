@@ -16,8 +16,9 @@ from app.evaluation.campaign import (
     sum_reported_cost,
 )
 from app.evaluation.design import MODELS, REPETITIONS, make_experimental_plan
-from app.evaluation.groundtruth import GroundTruth, LABELS
-from app.evaluation.metrics import _score_subset
+from app.evaluation.groundtruth import GroundTruth
+from app.evaluation.binary_groundtruth import BINARY_LABELS as LABELS
+from app.evaluation.binary_scoring import _score_subset
 
 VALID = set(LABELS)
 
