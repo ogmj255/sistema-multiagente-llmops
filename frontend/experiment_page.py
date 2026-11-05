@@ -223,11 +223,17 @@ def _execution(overview: dict) -> None:
     )
 
     enabled = overview.get("execution_enabled", False)
+    worker_online = overview.get("worker_online", False)
     if not enabled:
         st.info(
             "Modo de consulta: la facturación está deshabilitada "
             "en el servidor. Se pueden revisar diseño, progreso, "
             "resultados y evidencias sin restricciones de acceso."
+        )
+    elif not worker_online:
+        st.warning(
+            "La facturación está habilitada, pero el worker no está "
+            "disponible. No es posible encolar nuevas tareas."
         )
     else:
         st.warning(
@@ -248,6 +254,7 @@ def _execution(overview: dict) -> None:
 
     blocked = (
         not enabled
+        or not worker_online
         or selected["status"] == "completed"
         or selected.get("job_status") in {"queued", "running", "completed"}
     )
