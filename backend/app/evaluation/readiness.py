@@ -159,6 +159,13 @@ def create_readiness_manifest(data_dir: Path) -> dict[str, Any]:
         raise PreflightError("El diseño experimental no coincide con el aprobado.")
     if not settings.openrouter_api_key.get_secret_value().strip():
         raise PreflightError("Falta OPENROUTER_API_KEY.")
+    if not settings.langfuse_tracing_enabled:
+        raise PreflightError("Langfuse debe permanecer habilitado para la trazabilidad.")
+    if (
+        not settings.langfuse_public_key.get_secret_value().strip()
+        or not settings.langfuse_secret_key.get_secret_value().strip()
+    ):
+        raise PreflightError("Falta configurar las credenciales de Langfuse.")
     if settings.llm_temperature != 0:
         raise PreflightError(
             "La evaluación controlada requiere temperatura 0."
@@ -179,6 +186,8 @@ def create_readiness_manifest(data_dir: Path) -> dict[str, Any]:
         "code_sha256": _code_sha256(),
         "model_ids": plan["treatments"],
         "llm_temperature": settings.llm_temperature,
+        "openrouter_endpoint": settings.openrouter_base_url,
+        "langfuse_tracing_enabled": settings.langfuse_tracing_enabled,
         "rag": legal,
         "ollama": ollama,
     }
