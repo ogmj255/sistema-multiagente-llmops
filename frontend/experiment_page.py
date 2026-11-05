@@ -132,7 +132,8 @@ def _design(overview: dict) -> None:
     d.metric("No aplicables", manifest["applicability"]["not_applicable"])
 
     st.write(
-        "Las **473 unidades evaluables** se clasifican en NPA/PA. "
+        f"Las **{manifest['applicability']['evaluable']} unidades evaluables** "
+        "se clasifican en NPA/PA. "
         "La aplicabilidad se examina por separado. Los textos originales "
         "y las etiquetas humanas se mantienen en una referencia versionada."
     )
@@ -377,6 +378,24 @@ def _results(overview: dict, quality: dict | None) -> None:
                 pd.DataFrame.from_dict(matrix, orient="index"),
                 use_container_width=True,
             )
+        try:
+            predictions = _request(
+                "GET", f"tasks/{id_}/predictions"
+            )
+            if predictions.get("status") == "completed":
+                st.download_button(
+                    "Descargar predicciones de este documento JSON",
+                    data=json.dumps(
+                        predictions, ensure_ascii=False, indent=2
+                    ).encode("utf-8"),
+                    file_name=f"v2_predicciones_{id_}.json",
+                    mime="application/json",
+                )
+                st.caption(
+                    f"ID de ejecución: {predictions.get('execution_id') or 'no disponible'}"
+                )
+        except (httpx.HTTPStatusError, httpx.RequestError, ValueError):
+            st.caption("Las predicciones detalladas no están disponibles.")
     else:
         st.info(
             "Aún no se han completado tareas documentales del protocolo "
@@ -405,6 +424,20 @@ def _results(overview: dict, quality: dict | None) -> None:
         "F1, precisión y recall finales solo se presentan cuando la "
         "repetición está completa. No se imputan como errores las "
         "unidades de documentos que todavía no se ejecutaron."
+    )
+    st.markdown("#### Síntesis de las tres repeticiones por modelo")
+    st.dataframe(
+        pd.DataFrame([
+            {
+                "Tratamiento": row["treatment"],
+                "Modelo": row["model"],
+                "Repeticiones completas": row["complete_repetitions"],
+                "F1 medio NPA/PA": row["f1_macro_mean"],
+                "Desv. estándar muestral": row["f1_macro_sample_sd"],
+            }
+            for row in quality["model_aggregate"]
+        ]),
+        hide_index=True, use_container_width=True,
     )
 
 
