@@ -196,6 +196,7 @@ def test_v21_comparison_is_paired_and_never_mutates_v2(versioned, monkeypatch):
             "predictions_valid": 21,
         }]
     monkeypatch.setattr(runner, "score_campaign_documents", score)
+    runner.candidate_directory(root).mkdir()
     report = runner._compare_one(root)
     assert report["candidate_passes_exploratory_gate"] is True
     assert report["delta"]["false_positives"] == -4
