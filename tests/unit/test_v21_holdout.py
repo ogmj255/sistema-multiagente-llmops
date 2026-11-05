@@ -170,3 +170,32 @@ def test_holdout_gate_requires_identical_rag_and_nonworsening_fn_na(
     result = holdout.compare_holdout(root)
     assert result["rag_context_control"]["exact_response_sha_equivalent"] is False
     assert result["passes_preregistered_gate"] is False
+
+
+
+def test_holdout_does_not_delete_another_process_lock(frozen, monkeypatch):
+    import asyncio
+
+    root, _ = frozen
+    holdout.freeze_holdout(root)
+    folder = holdout._root(root)
+    existing_lock = folder / "holdout_v21.lock"
+    existing_lock.write_text("another-process", encoding="utf-8")
+
+    monkeypatch.setattr(holdout, "_no_active_v2_jobs", lambda _: None)
+    task = {
+        "task_id": holdout.TARGET_TASK_ID,
+        "model": "fake",
+        "unit_count": 40,
+    }
+    monkeypatch.setattr(
+        holdout, "_units", lambda _: (
+            SimpleNamespace(fingerprint="dataset"), task, [], []
+        )
+    )
+    monkeypatch.setattr(
+        holdout, "_completed_record", lambda *_args: {"status": "success"}
+    )
+    with pytest.raises(FileExistsError):
+        asyncio.run(holdout.execute_candidate(root, 0.10))
+    assert existing_lock.read_text(encoding="utf-8") == "another-process"
