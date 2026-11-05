@@ -201,6 +201,11 @@ def test_v21_comparison_is_paired_and_never_mutates_v2(versioned, monkeypatch):
     assert report["candidate_passes_exploratory_gate"] is True
     assert report["delta"]["false_positives"] == -4
     assert report["delta"]["false_negatives"] == 0
+    assert report["applicability"] == {
+        "reference_not_applicable": 1,
+        "v2_correct": 1,
+        "v2_1_correct": 1,
+    }
     assert len(report["changed_unit_predictions"]) == 4
     assert (runner.candidate_directory(root) / "comparison.json").exists()
     assert not (root / runner.OLD_RUN_FILENAME).exists()
