@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import math
 import os
 import time
 from threading import Event, Thread
@@ -16,7 +17,7 @@ from pathlib import Path
 
 from app.evaluation.binary_groundtruth import load_binary_groundtruth_v2
 from app.evaluation.campaign import (
-    document_units, run_classification,
+    document_units, run_classification, sum_reported_cost,
 )
 from app.evaluation.design import make_experimental_plan
 from app.evaluation.orchestrated import run_orchestrated_trial
@@ -85,6 +86,29 @@ def execute_job(path: Path) -> None:
         job["error_type"] = type(exc).__name__
         job["error"] = "Preflight V2 no aprobado; no se inició OpenRouter."
         job["finished_at"] = datetime.now(UTC).isoformat()
+        save_job(path, job)
+        return
+
+    # Presupuesto blando entre documentos: la factura de un documento
+    # en ejecución NO está limitada por este valor.
+    try:
+        soft_limit = float(os.getenv("EXPERIMENT_MAX_REPORTED_COST_USD", "0.10"))
+    except ValueError:
+        soft_limit = float("nan")
+    if not math.isfinite(soft_limit) or soft_limit <= 0:
+        job["status"] = "invalid"
+        job["error"] = "Presupuesto experimental mal configurado."
+        save_job(path, job)
+        return
+    already_spent = sum(
+        sum_reported_cost(record) for record in read_jsonl(RESULTS)
+    )
+    if already_spent >= soft_limit:
+        job["status"] = "invalid"
+        job["error"] = (
+            "El costo reportado de la campaña alcanzó el límite blando. "
+            "No se inició ninguna inferencia."
+        )
         save_job(path, job)
         return
 
