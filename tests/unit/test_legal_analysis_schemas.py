@@ -117,7 +117,7 @@ def test_strong_indications_require_human_review() -> None:
         clause_type="Exclusión amplia de responsabilidad",
         target="Proveedor",
         consequence="El proveedor excluye responsabilidad por daños.",
-        classification="strong_indications_of_abusiveness",
+        classification="potentially_abusive",
         analysis_status="classified",
         relevant_fragment=create_clause().content,
         justification=(
@@ -129,7 +129,7 @@ def test_strong_indications_require_human_review() -> None:
     )
 
     assert assessment.classification == (
-        "strong_indications_of_abusiveness"
+        "potentially_abusive"
     )
 
 
