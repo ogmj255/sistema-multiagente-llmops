@@ -14,6 +14,7 @@ from pathlib import Path
 from typing import Any
 
 import httpx
+import numpy as np
 
 from app.core.config import settings
 from app.evaluation.binary_groundtruth import (
@@ -53,6 +54,13 @@ def _code_sha256() -> str:
             "path": rel,
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         })
+    worker = Path(__file__).resolve().parents[2] / "scripts" / "evaluation_worker.py"
+    if not worker.is_file():
+        raise PreflightError("Falta el script del worker experimental.")
+    files.append({
+        "path": "scripts/evaluation_worker.py",
+        "sha256": hashlib.sha256(worker.read_bytes()).hexdigest(),
+    })
     return canonical_sha256(files)
 
 
@@ -76,23 +84,36 @@ def _collection_inventory() -> dict[str, Any]:
     offset = 0
     while offset < count:
         block = collection.get(
-            limit=min(256, count - offset),
+            limit=min(128, count - offset),
             offset=offset,
-            include=["documents", "metadatas"],
+            include=["documents", "metadatas", "embeddings"],
         )
         ids = block.get("ids", [])
-        docs = block.get("documents") or []
-        metas = block.get("metadatas") or []
-        if len(ids) != len(docs) or len(ids) != len(metas) or not ids:
+        docs = block.get("documents")
+        metas = block.get("metadatas")
+        vectors = block.get("embeddings")
+        if (
+            docs is None or metas is None or vectors is None
+            or not ids
+            or len(ids) != len(docs)
+            or len(ids) != len(metas)
+            or len(ids) != len(vectors)
+        ):
             raise PreflightError("ChromaDB devolvió un inventario incompleto.")
-        for id_, document, metadata_row in zip(ids, docs, metas, strict=True):
+        for id_, document, metadata_row, embedding in zip(
+            ids, docs, metas, vectors, strict=True
+        ):
+            vector = np.asarray(embedding, dtype=np.float32)
+            if vector.ndim != 1 or len(vector) != settings.ollama_embedding_dimensions:
+                raise PreflightError("Un vector jurídico tiene dimensiones incorrectas.")
             hashes.append(canonical_sha256({
                 "id": id_,
                 "document": document,
                 "metadata": metadata_row,
+                "embedding_sha256": hashlib.sha256(vector.tobytes()).hexdigest(),
             }))
         offset += len(ids)
-    if len(hashes) != count:
+    if len(hashes) != count or collection.count() != count:
         raise PreflightError("Cambió el número de segmentos durante el inventario.")
     return {
         "collection": settings.chroma_collection,
@@ -175,7 +196,7 @@ def verify_readiness(data_dir: Path) -> dict[str, Any]:
     except (OSError, ValueError) as exc:
         raise PreflightError("El manifiesto V2 no es válido.") from exc
     current = create_readiness_manifest(data_dir)
-    if frozen.get("fingerprint") != canonical_sha256(current):
+    if not isinstance(frozen, dict) or frozen.get("fingerprint") != canonical_sha256(current):
         raise PreflightError(
             "La referencia, el código, el prompt o la base RAG cambió "
             "desde el preflight. Se bloquea la ejecución."
