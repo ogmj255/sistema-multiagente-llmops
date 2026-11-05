@@ -1,8 +1,9 @@
 # Evaluación experimental — capítulo III, sección 3.7
 
 Esta rama contiene validación del ground truth, métricas, plan experimental,
-un piloto aislado y un **piloto multiagente vía LangGraph + MCP**. Las pruebas
-unitarias y la ejecución real de este último están pendientes de verificación.
+un piloto aislado y un **piloto multiagente vía LangGraph + MCP**. El flujo integrado ya se verificó en el equipo del investigador mediante
+LangGraph/MCP/OpenRouter/Langfuse con T1, T2 y T3 (unidad ToS01-U001).
+El nuevo ejecutor de campaña documental todavía requiere sus pruebas locales.
 
 ## Referencia humana
 
@@ -198,18 +199,69 @@ Pruebas nuevas (sin consumir API):
 python -m pytest tests/unit/test_openrouter_retry_policy.py tests/unit/test_llm_clients.py tests/unit/test_orchestrated_experiment.py tests/unit/test_mcp_registry.py -q
 ```
 
-**Mistral ET02-R1** falló previamente por HTTP 429 y está registrado en
-`orchestrated_runs.jsonl`. Cuando la prueba pase, para un intento
-**explícito** después de verificar límites y disponibilidad:
+**Mistral ET02-R1** registró un fallo inicial HTTP 429 y posteriormente
+clasificó ToS01-U001 con éxito en un segundo intento de ejecución (con
+2 solicitudes HTTP internas y 1 respuesta HTTP 429). Ambos registros se
+conservan en `orchestrated_runs.jsonl`. El piloto no se fusiona
+con los resultados formales y no se reescriben los errores anteriores.
+Las pruebas de la política de recuperación pasaron: 27 tests en VS Code
+el 04/11/2026.
+
+## Campaña formal por documento (nueva, pruebas pendientes)
+
+Comando: `scripts/run_groundtruth_campaign.py`. Este ejecutor
+**no llama directamente al LLM**: llama a `run_orchestrated_trial`,
+que reutiliza el grafo LangGraph y los servidores MCP de producción.
+
+Cada tarea `ETxx-Rn` agrupa **todas** las unidades del ToS y genera
+un informe documental; así se preservan 30 combinaciones y 3 repeticiones
+por combinación (90 ejecuciones documentales en total).
+
+- Inicia con **vista previa**, sin conexiones MCP ni facturación.
+- Valida huella del ground truth y correspondencia exacta entre ToS,
+  modelo y unidades congeladas.
+- Conserva intentos previos en `data/evaluation/formal_campaign_runs.jsonl`
+  y omite solamente tareas con **todas** sus unidades clasificadas y
+  un informe completo. Un fallo requiere `--retry-errors` para repetir
+  el documento, y no se borra su registro.
+- El contexto jurídico formal se guarda aparte, en
+  `data/evaluation/formal_legal_context_snapshots.jsonl`, para no
+  reutilizar datos del piloto técnico. Se comparte entre tratamientos
+  manteniendo la misma configuración RAG.
+- Solo permite **1–5 tareas documentales por comando** (`--max-tasks`;
+  valor predeterminado 1) y bloquea simultaneidad sobre el mismo JSONL.
+- Una solicitud real requiere **tres elementos explícitos**:
+  `--execute --confirm-full-document --max-reported-cost-usd N`.
+  **N es un límite blando del costo informado en esa invocación**:
+  se comprueba *después* de cada tarea y antes de iniciar otra. No
+  puede cortar una tarea ya iniciada y NO garantiza un tope de
+  facturación, especialmente cuando faltan datos de uso en fallos.
+  Verificar saldo disponible y costos de los modelos antes de habilitarlo.
+- Nunca usa las etiquetas humanas en el prompt. Las predicciones
+  permanecen separadas del ground truth; el cálculo de precisión/recall/F1
+  se hará después con denominador fijo y agrupación por repetición.
+
+### Instrucciones inmediatas en VS Code (sin consumo)
 
 ```powershell
-python scripts/run_orchestrated_experiment.py --csv data/evaluation/ground_truth_547.csv --task-id ET02-R1 --unit-id ToS01-U001 --execute --retry-errors
+git pull --ff-only origin experiment/groundtruth-evaluation
+$env:PYTHONPATH = (Resolve-Path ".\backend").Path
+python -m pytest tests/unit/test_experimental_campaign.py tests/unit/test_experiment_design.py tests/unit/test_orchestrated_experiment.py tests/unit/test_openrouter_retry_policy.py -q
+python scripts/run_groundtruth_campaign.py --csv data/evaluation/ground_truth_547.csv --task-id ET01-R2
 ```
 
-No repetir DeepSeek ni Kimi. Mantener los intentos fallidos como evidencia
-operativa y documentar que una repetición posterior recuperó un fallo técnico.
-Antes de ampliar a 90 ejecuciones, definir una estrategia de presupuesto y
-concurrencia. Esta política no garantiza que el proveedor admita la solicitud.
+La última orden solo debe mostrar el estado y la vista previa de ET01-R2;
+no ejecutar con `--execute` hasta verificar los resultados y
+acordar una política de costos y manejo de ejecuciones incompletas.
+
+**Limitación importante:** el checkpoint actual es **por documento**.
+Si una tarea de 91 unidades se interrumpe a mitad de ejecución, el
+registro completo podría no existir y repetirla generaría nuevos costos.
+Antes de una campaña de 4.923 clasificaciones debe implementarse un
+checkpoint durable **por unidad** dentro del grafo, sin alterar el
+significado de las 90 tareas documentales, y auditar la versión del corpus
+jurídico RAG. Las métricas formales por repetición tampoco se han
+implementado todavía.
 
 ## Etapas pendientes
 
