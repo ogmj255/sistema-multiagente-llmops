@@ -21,7 +21,8 @@ from app.evaluation.binary_groundtruth import (
     binary_manifest, load_binary_groundtruth_v2,
 )
 from app.evaluation.campaign import (
-    document_units, run_classification, task_progress,
+    completed_document_run, document_units, run_classification,
+    sum_reported_cost, task_progress,
 )
 from app.evaluation.design import make_experimental_plan
 from app.evaluation.pilot import read_jsonl
@@ -337,3 +338,55 @@ def experimental_task_units(task_id: str) -> dict:
         "note": "Estados derivados exclusivamente de checkpoints V2.",
     }
 
+
+
+@router.get("/tasks/{task_id}/predictions")
+def experimental_task_predictions(task_id: str) -> dict:
+    """Predicciones V2 auditables sin revelar la etiqueta humana.
+
+    Solo devuelve un resultado documental completo de la tarea/modelo/
+    repetición solicitados; no mezcla intentos ni versiones de corpus.
+    """
+    dataset, plan = _load()
+    task = next(
+        (row for row in plan["tasks"] if row["task_id"] == task_id),
+        None,
+    )
+    if task is None:
+        raise HTTPException(status_code=404, detail="Tarea desconocida.")
+
+    units = document_units(dataset, task)
+    ids = [unit.technical_id for unit in units]
+    for row in reversed(_runs()):
+        if not completed_document_run(row, task, ids, dataset.fingerprint):
+            continue
+        by_id = {
+            item["id"]: item
+            for item in row["unit_results"]
+        }
+        return {
+            "task_id": task_id,
+            "protocol": "NPA-PA-v2.0",
+            "model": task["model"],
+            "repetition": task["repetition"],
+            "status": "completed",
+            "execution_id": row.get("execution_id"),
+            "duration_ms": row.get("duration_ms"),
+            "cost_usd_reported": sum_reported_cost(row),
+            "predictions": [
+                {
+                    "unit_id": unit_id,
+                    "status": by_id[unit_id]["status"],
+                    "prediction": by_id[unit_id]["prediction"],
+                }
+                for unit_id in ids
+            ],
+            "note": "Predicciones del modelo; no incluye etiquetas del ground truth.",
+        }
+    return {
+        "task_id": task_id,
+        "protocol": "NPA-PA-v2.0",
+        "status": "not_completed",
+        "predictions": [],
+        "note": "Aún no existe un resultado documental V2 completo.",
+    }
