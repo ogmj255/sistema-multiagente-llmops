@@ -176,6 +176,17 @@ def _design(overview: dict) -> None:
         "SHA-256 de la referencia binaria V2: "
         f"{manifest['binary_v2_fingerprint']}"
     )
+    if overview.get("preflight_registered", False):
+        st.success(
+            "Manifiesto de reproducibilidad registrado. El worker "
+            "revalidará ChromaDB, Ollama y el código antes de cada tarea."
+        )
+    else:
+        st.warning(
+            "Preflight de reproducibilidad pendiente. No se permiten "
+            "órdenes de evaluación hasta congelar la configuración "
+            "jurídica y tecnológica."
+        )
     st.info(
         "Para comparar modelos se introducen los mismos fragmentos "
         "congelados mediante LangGraph y MCP. La extracción web y el "
