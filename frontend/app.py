@@ -21,9 +21,6 @@ API_LLMOPS_URL = f"{API_BASE_URL}/llmops"
 CLASSIFICATION_LABELS = {
     "not_potentially_abusive": "No potencialmente abusiva",
     "potentially_abusive": "Potencialmente abusiva",
-    "strong_indications_of_abusiveness": (
-        "Indicios fuertes de abusividad"
-    ),
 }
 
 EVIDENCE_LABELS = {
@@ -199,11 +196,6 @@ def render_clause(
             "#FFF6E5",
             "#E9D29B",
             "#7A5A12",
-        ),
-        "strong_indications_of_abusiveness": (
-            "#FDECEC",
-            "#E5B6B6",
-            "#8A3D3D",
         ),
         "not_applicable": (
             "#F1F3F5",
@@ -685,7 +677,7 @@ def render_analysis_results(
             )
             st.markdown("### Resumen de clasificaciones")
 
-            classification_columns = st.columns(4)
+            classification_columns = st.columns(3)
 
             classification_cards = [
                 (
@@ -701,13 +693,6 @@ def render_analysis_results(
                     "#FFF6E5",
                     "#E9D29B",
                     "#7A5A12",
-                ),
-                (
-                    "strong_indications_of_abusiveness",
-                    "Indicios fuertes de abusividad",
-                    "#FDECEC",
-                    "#E5B6B6",
-                    "#8A3D3D",
                 ),
                 (
                     "not_applicable",
