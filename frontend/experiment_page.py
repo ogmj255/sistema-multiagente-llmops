@@ -29,6 +29,13 @@ STATUS_TEXT = {
 }
 
 
+def _metric_cell(value: float | int | None) -> str:
+    """Muestra ausencia de resultado sin confundirla con una nota de cero."""
+    if value is None:
+        return "—"
+    return f"{value:.4f}"
+
+
 def _request(method: str, path: str, **kwargs) -> dict:
     """Solo las escrituras llevan credenciales; la lectura es libre."""
     headers = kwargs.pop("headers", {})
@@ -411,7 +418,7 @@ def _results(overview: dict, quality: dict | None) -> None:
                 "Documentos": f"{row['documents_completed']}/10",
                 "Cobertura": f"{row['predictions_valid']}/547",
                 "Errores explícitos": row["explicit_unit_errors"],
-                "F1 macro NPA/PA": (
+                "F1 macro NPA/PA": _metric_cell(
                     row["evaluable_units"]["f1_macro"]
                     if row["is_complete"] else None
                 ),
@@ -421,6 +428,7 @@ def _results(overview: dict, quality: dict | None) -> None:
         hide_index=True, use_container_width=True,
     )
     st.caption(
+        "«—» significa resultado pendiente, no F1 = 0. "
         "F1, precisión y recall finales solo se presentan cuando la "
         "repetición está completa. No se imputan como errores las "
         "unidades de documentos que todavía no se ejecutaron."
@@ -432,8 +440,12 @@ def _results(overview: dict, quality: dict | None) -> None:
                 "Tratamiento": row["treatment"],
                 "Modelo": row["model"],
                 "Repeticiones completas": row["complete_repetitions"],
-                "F1 medio NPA/PA": row["f1_macro_mean"],
-                "Desv. estándar muestral": row["f1_macro_sample_sd"],
+                "F1 medio NPA/PA": _metric_cell(
+                    row["f1_macro_mean"]
+                ),
+                "Desv. estándar muestral": _metric_cell(
+                    row["f1_macro_sample_sd"]
+                ),
             }
             for row in quality["model_aggregate"]
         ]),
