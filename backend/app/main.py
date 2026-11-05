@@ -1,6 +1,7 @@
 ﻿from fastapi import FastAPI
 
 from app.api.routes import router
+from app.api.experimental_routes import router as experimental_router
 from app.core.config import settings
 
 app = FastAPI(
@@ -15,3 +16,4 @@ app = FastAPI(
 )
 
 app.include_router(router)
+app.include_router(experimental_router)
