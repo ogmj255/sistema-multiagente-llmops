@@ -71,8 +71,7 @@ EXPERIMENT_EXECUTION_ENABLED=false
 docker compose up -d --build
 \`\`\`
 
-Para autorizar llamadas con costo, después de validar pruebas, respaldo y presupuesto, cambiar temporalmente \`EXPERIMENT_EXECUTION_ENABLED=true
-EXPERIMENT_MAX_REPORTED_COST_USD=0.10\` y:
+Para autorizar llamadas con costo, después de validar pruebas, respaldo y presupuesto, cambiar temporalmente \`EXPERIMENT_EXECUTION_ENABLED=true\` y establecer \`EXPERIMENT_MAX_REPORTED_COST_USD=0.10\`:
 
 \`\`\`powershell
 docker compose --profile experiment up -d --build
@@ -322,6 +321,7 @@ En el \`.env\` raíz cambiar **solo temporalmente**:
 
 \`\`\`env
 EXPERIMENT_EXECUTION_ENABLED=true
+EXPERIMENT_MAX_REPORTED_COST_USD=0.10
 \`\`\`
 
 Después:
