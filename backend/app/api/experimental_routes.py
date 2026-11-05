@@ -64,6 +64,22 @@ def _runs():
     return read_jsonl(DATA_DIR / "v2_binary_campaign_runs.jsonl")
 
 
+def _preflight_registered(dataset_fingerprint: str) -> bool:
+    """Presencia del manifiesto; el worker revalida Chroma/Ollama al ejecutar."""
+    path = DATA_DIR / "v2_binary_preflight_manifest.json"
+    if not path.is_file():
+        return False
+    try:
+        frozen = json.loads(path.read_text(encoding="utf-8"))
+        return (
+            isinstance(frozen, dict)
+            and frozen.get("environment", {}).get("dataset_fingerprint")
+            == dataset_fingerprint
+        )
+    except (OSError, ValueError, AttributeError, TypeError):
+        return False
+
+
 def _worker_online() -> bool:
     """Latido reciente; no asumir que un proceso de cobro está activo."""
     heartbeat = DATA_DIR / "v2_binary_worker_heartbeat.json"
@@ -173,6 +189,7 @@ def experimental_overview() -> dict:
             "EXPERIMENT_EXECUTION_ENABLED", "false"
         ).lower() == "true",
         "worker_online": _worker_online(),
+        "preflight_registered": _preflight_registered(groundtruth.fingerprint),
         "tasks": [
             {
                 **task,
@@ -215,6 +232,11 @@ def enqueue_experiment(request: TaskOrder) -> dict[str, str]:
             detail="Worker experimental no disponible. No se encoló ninguna tarea.",
         )
     data, plan = _load()
+    if not _preflight_registered(data.fingerprint):
+        raise HTTPException(
+            status_code=409,
+            detail="Falta manifiesto preflight V2 para la referencia vigente.",
+        )
     task = next(
         (t for t in plan["tasks"] if t["task_id"] == request.task_id),
         None,
