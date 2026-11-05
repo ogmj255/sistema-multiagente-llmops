@@ -71,6 +71,9 @@ def isolated_environment(monkeypatch, tmp_path, synthetic_groundtruth):
         api, "_load", lambda: (synthetic_groundtruth, plan)
     )
     monkeypatch.setattr(api, "DATA_DIR", tmp_path)
+    # Los tests de E2E usan un corpus sintético y no consultan Chroma.
+    monkeypatch.setattr(api, "_preflight_registered", lambda _fingerprint: True)
+    monkeypatch.setattr(worker, "verify_readiness", lambda _folder: None)
 
     monkeypatch.setattr(worker, "DIRECTORY", tmp_path)
     monkeypatch.setattr(worker, "QUEUE", tmp_path / "binary_jobs")
@@ -435,3 +438,53 @@ def test_public_evidence_remains_available_without_any_secret(
         headers=WRITE_HEADERS,
         json={"task_id": "ET01-R1", "accept_paid_execution": True},
     ).status_code == 403
+
+
+
+def test_api_rejects_task_without_frozen_preflight(
+    isolated_environment, monkeypatch,
+):
+    monkeypatch.setenv("EXPERIMENT_EXECUTION_ENABLED", "true")
+    monkeypatch.setattr(api, "_worker_online", lambda: True)
+    monkeypatch.setattr(api, "_preflight_registered", lambda _sha: False)
+    result = CLIENT.post(
+        "/experimental/jobs",
+        headers=WRITE_HEADERS,
+        json={"task_id": "ET01-R1", "accept_paid_execution": True},
+    )
+    assert result.status_code == 409
+    assert "preflight" in result.json()["detail"].lower()
+    assert not (isolated_environment[0] / "binary_jobs").exists()
+
+
+def test_worker_refuses_to_call_model_if_preflight_invalid(
+    isolated_environment, monkeypatch,
+):
+    folder, dataset = isolated_environment
+    monkeypatch.setattr(
+        worker, "verify_readiness",
+        lambda _folder: (_ for _ in ()).throw(
+            RuntimeError("Incompatibilidad de colección.")
+        ),
+    )
+    called = []
+
+    async def forbidden(*_args, **_kwargs):
+        called.append(True)
+        raise AssertionError("No debía llamar a ningún proveedor.")
+
+    monkeypatch.setattr(worker, "run_orchestrated_trial", forbidden)
+    jobs = folder / "binary_jobs"
+    jobs.mkdir()
+    path = jobs / "ET01-R1.json"
+    path.write_text(json.dumps({
+        "task_id": "ET01-R1",
+        "dataset_fingerprint": dataset.fingerprint,
+        "status": "queued",
+    }), encoding="utf-8")
+    worker.execute_job(path)
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    assert payload["status"] == "invalid"
+    assert "Preflight" in payload["error"]
+    assert called == []
+    assert not worker.RESULTS.exists()
