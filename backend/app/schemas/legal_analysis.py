@@ -161,6 +161,10 @@ class ClauseAnalysisResponse(BaseModel):
         default=None,
         min_length=1,
     )
+    error_code: Literal[
+        "provider_rate_limited",
+        "provider_http_error",
+    ] | None = None
 
     @model_validator(mode="after")
     def validate_status_content(self) -> Self:
@@ -172,6 +176,8 @@ class ClauseAnalysisResponse(BaseModel):
 
             if self.error is not None:
                 raise ValueError("Una respuesta exitosa no puede contener un error.")
+            if self.error_code is not None:
+                raise ValueError("Una respuesta exitosa no puede contener código de error.")
 
         if self.status == "error":
             if self.result is not None:

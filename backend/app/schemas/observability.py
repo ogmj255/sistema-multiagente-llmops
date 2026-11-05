@@ -27,6 +27,8 @@ class LLMInvocationMetrics(BaseModel):
         default=None,
         ge=0,
     )
+    request_attempts: int = Field(default=1, ge=1)
+    http_429_count: int = Field(default=0, ge=0)
 
 
 class ObservabilitySummary(BaseModel):
