@@ -1,0 +1,222 @@
+"""Panel experimental V2 dentro de la interfaz Streamlit existente.
+
+No lanza el LLM directamente. Todas las operaciones pasan por FastAPI
+autorizada y un worker dedicado con checkpoints de LangGraph/MCP.
+"""
+
+from __future__ import annotations
+
+import hmac
+import os
+
+import httpx
+import pandas as pd
+import streamlit as st
+
+API = os.getenv(
+    "API_EXPERIMENT_URL", "http://traefik/api/experimental"
+).rstrip("/")
+
+
+def _headers() -> dict[str, str]:
+    return {
+        "X-Experiment-Token": os.getenv(
+            "EXPERIMENT_ADMIN_TOKEN", ""
+        )
+    }
+
+
+def _json_request(method: str, path: str, **kwargs):
+    with httpx.Client(timeout=12.0) as client:
+        response = client.request(
+            method, f"{API}/{path}", headers=_headers(), **kwargs
+        )
+        response.raise_for_status()
+        return response.json()
+
+
+def render_experiment_page() -> None:
+    st.title("Evaluación experimental")
+    st.caption(
+        "Protocolo NPA/PA V2 · LangGraph + MCP + RAG + OpenRouter + Langfuse"
+    )
+    st.info(
+        "Este módulo evalúa las mismas unidades congeladas con tres modelos "
+        "y tres repeticiones. NPA y PA son clases de riesgo; no aplicable "
+        "se conserva como estado de aplicabilidad."
+    )
+
+    operator_password = os.getenv("EXPERIMENT_OPERATOR_PASSWORD", "")
+    token = os.getenv("EXPERIMENT_ADMIN_TOKEN", "")
+    if not operator_password or not token:
+        st.warning(
+            "Panel administrativo deshabilitado. Configure "
+            "EXPERIMENT_OPERATOR_PASSWORD y EXPERIMENT_ADMIN_TOKEN "
+            "en el entorno antes de acceder."
+        )
+        return
+
+    entered = st.text_input(
+        "Contraseña del investigador",
+        type="password",
+        key="experiment_operator_password",
+    )
+    if not hmac.compare_digest(entered, operator_password):
+        if entered:
+            st.error("Contraseña incorrecta.")
+        else:
+            st.caption("Acceso restringido a la persona investigadora.")
+        return
+
+    try:
+        overview = _json_request("GET", "overview")
+    except (httpx.HTTPStatusError, httpx.RequestError, ValueError) as exc:
+        st.error(
+            "El servicio experimental no está disponible. "
+            f"Detalle técnico: {type(exc).__name__}."
+        )
+        return
+
+    manifest = overview["manifest"]
+    progress = overview["progress"]
+    counts = progress["counts"]
+    col1, col2, col3, col4 = st.columns(4)
+    col1.metric("Tareas completadas", f"{counts['completed']}/90")
+    col2.metric("Pendientes", counts["pending"])
+    col3.metric("Fallidas", counts["failed"])
+    col4.metric(
+        "Costo reportado (USD)",
+        f"{progress['reported_cost_usd']:.5f}",
+    )
+    st.progress(counts["completed"] / max(progress["tasks"], 1))
+    st.caption(
+        f"Huella de la referencia binaria V2: "
+        f"{manifest['binary_v2_fingerprint']}"
+    )
+
+    tab_setup, tab_queue, tab_evidence = st.tabs([
+        "Diseño experimental", "Ejecución y seguimiento", "Evidencias"
+    ])
+    with tab_setup:
+        st.subheader("Configuración metodológica congelada")
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Unidades contractuales", manifest["units"])
+        c2.metric("NPA", manifest["classification_labels"]["NPA"])
+        c3.metric("PA", manifest["classification_labels"]["PA"])
+        st.caption(
+            "Las 74 unidades no aplicables no pertenecen a NPA/PA. "
+            "La versión V1 permanece archivada y no se suma a la campaña V2."
+        )
+        st.write(
+            "10 documentos SaaS · 3 modelos de lenguaje · "
+            "3 repeticiones por combinación · 90 tareas documentales."
+        )
+        st.warning(
+            "En esta evaluación se emplean fragmentos congelados. "
+            "El Web Scraper y el Preprocesador no se vuelven a ejecutar: "
+            "los agentes jurídico, analizador e informes sí se invocan "
+            "mediante el orquestador LangGraph y MCP."
+        )
+
+    with tab_queue:
+        st.subheader("Seleccionar una ejecución")
+        tasks = overview["tasks"]
+        options = {
+            (
+                f"{t['task_id']} · {t['platform']} · "
+                f"{t['treatment']} · R{t['repetition']} · "
+                f"{t['unit_count']} unidades · {t['status']}"
+            ): t for t in tasks
+        }
+        selected_text = st.selectbox(
+            "Documento, tratamiento y repetición",
+            list(options),
+        )
+        selected = options[selected_text]
+        st.caption(
+            f"Modelo: {selected['model']}. "
+            "Cada combinación tiene una tarea independiente y "
+            "no reutiliza predicciones de otros modelos o repeticiones."
+        )
+        enabled = overview.get("execution_enabled", False)
+        if not enabled:
+            st.info(
+                "La ejecución de pago está deshabilitada. "
+                "Se puede supervisar la campaña sin realizar "
+                "llamadas a OpenRouter."
+            )
+        else:
+            st.warning(
+                "La facturación del proveedor no tiene un límite "
+                "duro por documento. El costo dependerá del modelo, "
+                "las cláusulas y los posibles reintentos."
+            )
+
+        authorized = st.checkbox(
+            "Autorizo expresamente el procesamiento completo "
+            "de esta tarea y sus costos de OpenRouter.",
+            key="experiment_paid_authorization",
+            value=False,
+        )
+        if st.button(
+            "Iniciar tarea experimental",
+            disabled=not enabled or not authorized
+                or selected["status"] == "completed",
+            type="primary",
+        ):
+            try:
+                result = _json_request(
+                    "POST", "jobs",
+                    json={
+                        "task_id": selected["task_id"],
+                        "accept_paid_execution": True,
+                    },
+                )
+                st.success(
+                    f"Tarea {result['task_id']} añadida a la cola. "
+                    "Se ejecutará en el worker experimental."
+                )
+                st.rerun()
+            except httpx.HTTPStatusError as exc:
+                st.error(
+                    f"No se pudo programar la tarea "
+                    f"(HTTP {exc.response.status_code}). "
+                    "Revise que no exista una ejecución activa."
+                )
+            except httpx.RequestError:
+                st.error("No se pudo contactar con el backend.")
+        if st.button("Actualizar seguimiento"):
+            st.rerun()
+
+        jobs = overview.get("jobs", [])
+        if jobs:
+            st.subheader("Últimas tareas en la cola")
+            st.dataframe(pd.DataFrame(jobs), hide_index=True)
+        else:
+            st.caption("Aún no existen tareas solicitadas desde la interfaz.")
+
+    with tab_evidence:
+        st.subheader("Trazabilidad de la evaluación")
+        st.write(
+            "Cada tarea conserva su ID, modelo, repetición, "
+            "huella del corpus, unidades procesadas, checkpoints, "
+            "costo reportado y trazas del flujo multiagente."
+        )
+        st.dataframe(
+            pd.DataFrame([
+                {
+                    "Tarea": task["task_id"],
+                    "Plataforma": task["platform"],
+                    "Tratamiento": task["treatment"],
+                    "Repetición": task["repetition"],
+                    "Estado": task["status"],
+                }
+                for task in tasks
+            ]),
+            hide_index=True,
+        )
+        st.caption(
+            "Las métricas de precisión, recall y F1 se calculan "
+            "posteriormente a partir del ground truth. Nunca "
+            "se incluyen etiquetas humanas en el prompt."
+        )
