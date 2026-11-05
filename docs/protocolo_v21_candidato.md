@@ -119,7 +119,8 @@ ejecución de referencia y los IDs de las predicciones cambiadas.
 
 **Criterio exploratorio registrado antes de ejecutar V2.1**:
 F1 macro superior a V2, menos falsos positivos, ningún falso negativo
-adicional y las 21 unidades procesadas. Revisar asimismo incidencias de
+adicional, ninguna pérdida de aciertos de aplicabilidad (1/1 en la
+referencia V2) y las 21 unidades procesadas. Revisar asimismo incidencias de
 formato JSON, repetición de llamadas, trazas Langfuse, costos totales
 y diagnóstico de aplicabilidad. Un solo documento no demuestra
 superioridad; Holded ya se examinó al diseñar estas mejoras.
