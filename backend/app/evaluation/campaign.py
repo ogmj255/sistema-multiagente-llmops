@@ -10,6 +10,7 @@ from collections.abc import Iterable, Mapping, Sequence
 from typing import Any
 
 from app.evaluation.groundtruth import GroundTruth, GroundTruthUnit
+from app.evaluation.binary_groundtruth import BINARY_LABELS
 
 
 def document_units(
@@ -80,7 +81,7 @@ def completed_document_run(
         return False
     if any(
         result.get("status") != "success"
-        or not isinstance(result.get("prediction"), str)
+        or result.get("prediction") not in BINARY_LABELS
         for result in by_id.values()
     ):
         return False
