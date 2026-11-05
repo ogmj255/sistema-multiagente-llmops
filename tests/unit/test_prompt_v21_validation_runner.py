@@ -124,3 +124,82 @@ def test_v21_requires_complete_baseline_for_comparison(versioned, monkeypatch):
             {"task_id": "ET01-R1"},
             [Unit()],
         )
+
+
+
+def test_v21_comparison_is_paired_and_never_mutates_v2(versioned, monkeypatch):
+    root, _candidate = versioned
+    class Unit:
+        def __init__(self, num, label):
+            self.technical_id = f"ToS01-U{num:03d}"
+            self.label = label
+
+    units = [
+        Unit(n, runner.NPA if n <= 16 else runner.PA)
+        for n in range(1, 21)
+    ] + [Unit(21, "not_applicable")]
+    dataset = type("Dataset", (), {"fingerprint": "d" * 64})()
+    task = {"task_id": "ET01-R1", "model": "fake-A", "repetition": 1}
+    monkeypatch.setattr(
+        runner, "_task_and_dataset", lambda _root: (dataset, task, units)
+    )
+    old_results = []
+    new_results = []
+    for n, unit in enumerate(units, start=1):
+        old_prediction = (
+            "not_applicable" if n == 21 else
+            runner.NPA if n <= 7 else runner.PA
+        )
+        new_prediction = (
+            "not_applicable" if n == 21 else
+            runner.NPA if n <= 11 else runner.PA
+        )
+        old_results.append({"id": unit.technical_id, "prediction": old_prediction})
+        new_results.append({"id": unit.technical_id, "prediction": new_prediction})
+    original = {"execution_id": "old", "status": "success",
+                "unit_results": old_results}
+    candidate = {"execution_id": "candidate", "status": "success",
+                 "unit_results": new_results}
+    monkeypatch.setattr(runner, "_baseline_completed",
+                        lambda *_args: original)
+    monkeypatch.setattr(
+        runner, "read_jsonl", lambda path: (
+            [candidate] if path.name == runner.CANDIDATE_RUN_FILENAME else []
+        )
+    )
+    monkeypatch.setattr(
+        runner, "completed_document_run",
+        lambda row, _task, _ids, _fp: row.get("status") == "success",
+    )
+
+    def score(_dataset, records):
+        improved = records[0]["execution_id"] == "candidate"
+        return [{
+            "task_id": "ET01-R1",
+            "accuracy_evaluable_observed": 0.75 if improved else 0.55,
+            "f1_macro_evaluable_observed": 0.70 if improved else 0.5396,
+            "binary_confusion_matrix_on_observed": {
+                runner.NPA: {runner.NPA: 11 if improved else 7,
+                             runner.PA: 5 if improved else 9},
+                runner.PA: {runner.NPA: 0, runner.PA: 4},
+            },
+            "binary_per_class_on_observed": {
+                runner.NPA: {"f1": 0.8 if improved else 0.6087},
+                runner.PA: {
+                    "precision": 4 / (9 if improved else 13),
+                    "recall": 1.0,
+                },
+            },
+            "cost_usd_reported": 0.016 if improved else 0.0137,
+            "duration_ms_reported": 250000 if improved else 303000,
+            "cost_reporting_incomplete_attempts": 0,
+            "predictions_valid": 21,
+        }]
+    monkeypatch.setattr(runner, "score_campaign_documents", score)
+    report = runner._compare_one(root)
+    assert report["candidate_passes_exploratory_gate"] is True
+    assert report["delta"]["false_positives"] == -4
+    assert report["delta"]["false_negatives"] == 0
+    assert len(report["changed_unit_predictions"]) == 4
+    assert (runner.candidate_directory(root) / "comparison.json").exists()
+    assert not (root / runner.OLD_RUN_FILENAME).exists()
