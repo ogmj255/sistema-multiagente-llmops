@@ -69,7 +69,7 @@ def create_decision_payload() -> dict[str, object]:
             "El usuario podría asumir daños "
             "que el proveedor excluye."
         ),
-        "classification": "strong_indications_of_abusiveness",
+        "classification": "potentially_abusive",
         "analysis_status": "classified",
         "justification": (
             "La cláusula presenta indicios claros "
@@ -138,7 +138,7 @@ def test_classify_clause_returns_valid_decision(
     )
 
     assert execution.decision.classification == (
-        "strong_indications_of_abusiveness"
+        "potentially_abusive"
     )
     assert execution.decision.category == "Responsabilidad contractual"
     assert execution.decision.target == "Proveedor"
