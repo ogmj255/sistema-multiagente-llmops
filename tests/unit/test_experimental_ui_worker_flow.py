@@ -270,3 +270,89 @@ def test_worker_rejects_wrong_dataset_fingerprint(
     assert result["status"] == "invalid"
     assert calls == []
     assert not worker.RESULTS.exists()
+
+
+
+def test_checkpoint_progress_ignores_other_models_and_labels(
+    isolated_environment,
+):
+    """La API solo muestra contadores del tratamiento V2 correspondiente."""
+    folder, dataset = isolated_environment
+    task = make_experimental_plan(dataset)["tasks"][0]
+    path = folder / "v2_binary_unit_checkpoints.jsonl"
+    base = {
+        "task_id": task["task_id"],
+        "model": task["model"],
+        "repetition": task["repetition"],
+        "dataset_fingerprint": dataset.fingerprint,
+        "text_sha256": "a" * 64,
+    }
+    records = [
+        {
+            **base,
+            "id": "ToS01-U001",
+            "status": "success",
+            "response": {"status": "success"},
+        },
+        {
+            **base,
+            "id": "ToS01-U002",
+            "status": "error",
+            "response": {"status": "error"},
+        },
+        # Debe ignorarse: proviene de otro modelo.
+        {
+            **base,
+            "model": "modelo-ajeno",
+            "id": "ToS01-U003",
+            "status": "success",
+            "response": {"status": "success"},
+        },
+        # Debe ignorarse: huella de otro dataset.
+        {
+            **base,
+            "dataset_fingerprint": "f" * 64,
+            "id": "ToS01-U004",
+            "status": "success",
+            "response": {"status": "success"},
+        },
+        # Debe ignorarse: misma tarea pero fragmento de otro documento.
+        {
+            **base,
+            "id": "ToS02-U001",
+            "status": "success",
+            "response": {"status": "success"},
+        },
+    ]
+    path.write_text(
+        "".join(
+            json.dumps(row, ensure_ascii=False) + "\n"
+            for row in records
+        ),
+        encoding="utf-8",
+    )
+
+    response = CLIENT.get(
+        "/experimental/overview", headers=HEADERS
+    )
+    assert response.status_code == 200
+    data = response.json()
+    selected = data["tasks"][0]
+    assert selected["task_id"] == "ET01-R1"
+    assert selected["unit_progress"] == {
+        "total": 21,
+        "checkpoint_successful": 1,
+        "checkpoint_failed": 1,
+        "remaining": 20,
+    }
+    # Los checkpoints no equivalen a tareas documentales completas.
+    assert data["progress"]["counts"] == {
+        "completed": 0, "failed": 0, "pending": 90,
+    }
+    assert data["tasks"][1]["unit_progress"][
+        "checkpoint_successful"
+    ] == 0
+    # Los resultados de referencia no se exponen por el endpoint de control.
+    assert "original_text" not in response.text
+    assert "label" not in selected["unit_progress"]
+    assert "classification_labels" in data["manifest"]
