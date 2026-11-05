@@ -165,3 +165,38 @@ def test_rejects_duplicate_or_foreign_unit_ids():
     second["status"] = "error"
     with pytest.raises(ValueError, match="ajena"):
         score_campaign_repetitions(data, [second])
+
+
+def test_one_document_completed_526_missing_means_pending_not_errors():
+    data = sample_groundtruth()
+    task = make_experimental_plan(data)["tasks"][0]
+    result = score_campaign_repetitions(
+        data, [completed_task(task, data)]
+    )
+    row = result["by_treatment_repetition"][0]
+    assert row["documents_completed"] == 1
+    assert row["documents_pending"] == 9
+    assert row["predictions_valid"] == 21
+    assert row["missing_or_invalid"] == 526
+    assert row["pending_document_units"] == 526
+    assert row["unavailable_in_started_documents"] == 0
+    assert row["explicit_unit_errors"] == 0
+    assert row["unavailable_prediction_rate"] == round(526 / 547, 6)
+
+
+def test_observed_provider_failure_not_confused_with_pending_documents():
+    data = sample_groundtruth()
+    task = make_experimental_plan(data)["tasks"][0]
+    fail = completed_task(task, data)
+    fail["status"] = "error"
+    fail["unit_results"] = [
+        {"id": "ToS01-U001", "status": "error", "prediction": None}
+    ]
+    fail["report"] = None
+    row = score_campaign_repetitions(
+        data, [fail]
+    )["by_treatment_repetition"][0]
+    assert row["pending_document_units"] == 526
+    assert row["unavailable_in_started_documents"] == 21
+    assert row["explicit_unit_errors"] == 1
+    assert row["missing_or_invalid"] == 547
