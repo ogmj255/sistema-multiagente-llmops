@@ -100,7 +100,6 @@ services:
     container_name: clausulas-frontend
     environment:
       EXPERIMENT_ADMIN_TOKEN: ${EXPERIMENT_ADMIN_TOKEN:-}
-      EXPERIMENT_OPERATOR_PASSWORD: ${EXPERIMENT_OPERATOR_PASSWORD:-}
       API_EXPERIMENT_URL: http://traefik/api/experimental
     expose:
       - "8501"
