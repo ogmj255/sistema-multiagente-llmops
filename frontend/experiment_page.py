@@ -138,6 +138,28 @@ def render_experiment_page() -> None:
             "Cada combinación tiene una tarea independiente y "
             "no reutiliza predicciones de otros modelos o repeticiones."
         )
+        unit_progress = selected.get("unit_progress") or {
+            "total": selected["unit_count"],
+            "checkpoint_successful": 0,
+            "checkpoint_failed": 0,
+            "remaining": selected["unit_count"],
+        }
+        recorded = unit_progress["checkpoint_successful"]
+        total = unit_progress["total"]
+        st.progress(
+            recorded / max(total, 1),
+            text=f"Cláusulas verificadas por checkpoint: {recorded}/{total}",
+        )
+        p1, p2, p3 = st.columns(3)
+        p1.metric("Guardadas", recorded)
+        p2.metric("Pendientes", unit_progress["remaining"])
+        p3.metric("Errores registrados", unit_progress["checkpoint_failed"])
+        job_status = selected.get("job_status")
+        if job_status in {"queued", "running", "failed", "completed"}:
+            st.caption(f"Estado del worker: {job_status}")
+        else:
+            st.caption("No hay una tarea del worker en curso.")
+
         enabled = overview.get("execution_enabled", False)
         if not enabled:
             st.info(
@@ -152,12 +174,21 @@ def render_experiment_page() -> None:
                 "las cláusulas y los posibles reintentos."
             )
 
-        authorized = st.checkbox(
-            "Autorizo expresamente el procesamiento completo "
-            "de esta tarea y sus costos de OpenRouter.",
-            key="experiment_paid_authorization",
-            value=False,
-        )
+        # No solicitar consentimiento a un pago cuando el módulo
+        # está expresamente deshabilitado por configuración.
+        authorized = False
+        if enabled:
+            authorized = st.checkbox(
+                "Autorizo expresamente el procesamiento completo "
+                "de esta tarea y sus costos de OpenRouter.",
+                key="experiment_paid_authorization",
+                value=False,
+            )
+        else:
+            st.caption(
+                "Modo de consulta: no se solicitan autorizaciones "
+                "ni se permiten inferencias con costo."
+            )
         if st.button(
             "Iniciar tarea experimental",
             disabled=not enabled or not authorized
