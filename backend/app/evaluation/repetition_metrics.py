@@ -71,7 +71,11 @@ def _unit_predictions(
             )
         seen.add(technical_id)
         label = item.get("prediction")
-        if item.get("status") == "success" and label in VALID:
+        if (
+            item.get("status") == "success"
+            and isinstance(label, str)
+            and label in VALID
+        ):
             predictions[technical_id] = label
     return predictions
 
