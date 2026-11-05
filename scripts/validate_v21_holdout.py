@@ -260,6 +260,28 @@ async def execute_candidate(data_dir: Path, budget: float) -> dict[str, Any]:
         lock.unlink(missing_ok=True)
 
 
+def _rag_snapshot_map(path: Path) -> dict[str, str]:
+    """Audita la igualdad de las evidencias RAG, no sus textos."""
+    rows = read_jsonl(path)
+    hashes: dict[str, str] = {}
+    for row in rows:
+        config = row.get("configuration")
+        response = row.get("response")
+        recorded_sha = row.get("response_sha256")
+        if (
+            not isinstance(config, dict)
+            or not isinstance(response, dict)
+            or not isinstance(recorded_sha, str)
+            or recorded_sha != canonical_sha256(response)
+        ):
+            raise ValueError(f"Instantánea RAG no verificable: {path}")
+        key = canonical_sha256(config)
+        if key in hashes:
+            raise ValueError(f"Instantánea RAG duplicada: {path}")
+        hashes[key] = recorded_sha
+    return hashes
+
+
 def _exact_mcnemar(discordant_a: int, discordant_b: int) -> float:
     """Valor p bilateral exacto para resultados binarios correctos/erróneos."""
     n = discordant_a + discordant_b
@@ -327,11 +349,20 @@ def compare_holdout(data_dir: Path) -> dict[str, Any]:
         and old_pred[u.technical_id] != u.label
         for u in elig
     )
+    baseline_rag = _rag_snapshot_map(
+        folder / "v2_baseline/legal_context_snapshots.jsonl"
+    )
+    candidate_rag = _rag_snapshot_map(folder / CANDIDATE_RAG)
+    rag_equal = (
+        len(baseline_rag) == len(candidate_rag) == len(units)
+        and baseline_rag == candidate_rag
+    )
     delta_f1 = round(new["f1_macro"] - old["f1_macro"], 6)
     passes = (
         delta_f1 >= PREDEFINED_GATE["f1_macro_minimum_delta"]
         and new["false_negatives"] <= old["false_negatives"]
         and new_na >= old_na
+        and rag_equal
     )
     result = {
         "comparison": "PREREGISTERED_SINGLE_DOCUMENT_HOLDOUT",
@@ -377,6 +408,15 @@ def compare_holdout(data_dir: Path) -> dict[str, Any]:
             for u in units
             if old_pred[u.technical_id] != new_pred[u.technical_id]
         ],
+        "rag_context_control": {
+            "baseline_distinct_queries": len(baseline_rag),
+            "v21_distinct_queries": len(candidate_rag),
+            "exact_response_sha_equivalent": rag_equal,
+            "mismatched_query_hashes": sorted(
+                key for key in set(baseline_rag) | set(candidate_rag)
+                if baseline_rag.get(key) != candidate_rag.get(key)
+            ),
+        },
         "passes_preregistered_gate": passes,
         "limitations": [
             "40 units from one previously unevaluated SaaS ToS; not ten documents.",
