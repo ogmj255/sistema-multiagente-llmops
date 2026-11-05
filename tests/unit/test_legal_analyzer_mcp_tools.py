@@ -74,7 +74,7 @@ def create_assessment(
         consequence=(
             "El precio del servicio puede cambiar para el usuario."
         ),
-        classification="strong_indications_of_abusiveness",
+        classification="potentially_abusive",
         analysis_status="classified",
         relevant_fragment=(
             "El proveedor podrá modificar "
@@ -151,7 +151,7 @@ async def test_analyze_legal_clause_tool(
     assert analysis["error"] is None
     assert analysis["result"] is not None
     assert analysis["result"]["classification"] == (
-        "strong_indications_of_abusiveness"
+        "potentially_abusive"
     )
     assert analysis["result"]["category"] == (
         "Modificación de condiciones"
@@ -217,7 +217,7 @@ async def test_analyzer_tool_accepts_empty_legal_context(
     assert analysis["error"] is None
     assert analysis["result"] is not None
     assert analysis["result"]["classification"] == (
-        "strong_indications_of_abusiveness"
+        "potentially_abusive"
     )
     assert (
         analysis["result"]["evidence_sufficiency"]
