@@ -49,7 +49,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--context-cache", type=Path,
-        default=Path("data/evaluation/mcp_legal_context_snapshots.jsonl"),
+        default=Path("data/evaluation/formal_legal_context_snapshots.jsonl"),
     )
     args = parser.parse_args()
     if not 1 <= args.max_tasks <= 5:
