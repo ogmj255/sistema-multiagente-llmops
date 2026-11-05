@@ -3,7 +3,8 @@
 import pytest
 
 from app.evaluation.design import DOCUMENTS, make_experimental_plan
-from app.evaluation.groundtruth import GroundTruth, GroundTruthUnit, LABELS
+from app.evaluation.groundtruth import GroundTruth, GroundTruthUnit
+from app.evaluation.binary_groundtruth import BINARY_LABELS as LABELS
 from app.evaluation.repetition_metrics import score_campaign_repetitions
 
 
@@ -12,7 +13,7 @@ def sample_groundtruth() -> GroundTruth:
     n = 0
     for document, platform, count in DOCUMENTS:
         for i in range(1, count + 1):
-            label = LABELS[n % 4]
+            label = LABELS[n % 3]
             items.append(GroundTruthUnit(
                 technical_id=f"{document}-U{i:03d}",
                 platform=platform,
