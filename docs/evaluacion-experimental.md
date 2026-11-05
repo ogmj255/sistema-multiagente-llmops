@@ -3,7 +3,9 @@
 Esta rama contiene validación del ground truth, métricas, plan experimental,
 un piloto aislado y un **piloto multiagente vía LangGraph + MCP**. El flujo integrado ya se verificó en el equipo del investigador mediante
 LangGraph/MCP/OpenRouter/Langfuse con T1, T2 y T3 (unidad ToS01-U001).
-El nuevo ejecutor de campaña documental todavía requiere sus pruebas locales.
+El nuevo ejecutor de campaña documental superó 17 pruebas en VS Code
+(el 04/11/2026); el checkpoint por unidad y el evaluador por repetición
+se añadieron posteriormente y todavía requieren pruebas.
 
 ## Referencia humana
 
@@ -254,29 +256,68 @@ La última orden solo debe mostrar el estado y la vista previa de ET01-R2;
 no ejecutar con `--execute` hasta verificar los resultados y
 acordar una política de costos y manejo de ejecuciones incompletas.
 
-**Limitación importante:** el checkpoint actual es **por documento**.
-Si una tarea de 91 unidades se interrumpe a mitad de ejecución, el
-registro completo podría no existir y repetirla generaría nuevos costos.
-Antes de una campaña de 4.923 clasificaciones debe implementarse un
-checkpoint durable **por unidad** dentro del grafo, sin alterar el
-significado de las 90 tareas documentales, y auditar la versión del corpus
-jurídico RAG. Las métricas formales por repetición tampoco se han
-implementado todavía.
+## Checkpoint por unidad y métricas por repetición (nuevo, pendiente de pruebas)
 
-## Etapas pendientes
+El ejecutor formal ahora entrega `--unit-checkpoints` a
+`run_orchestrated_trial`. El procesamiento se mantiene en **LangGraph**
+con los servidores **MCP de conocimiento, análisis, informes y
+observabilidad**. Cada nodo de cláusula guarda su resultado y telemetría
+inmediatamente en `data/evaluation/formal_unit_checkpoints.jsonl`
+mediante `flush` + `fsync`, sin incluir ninguna etiqueta humana.
 
-1. Verificar los tres IDs exactos y sus restricciones de salida estructurada.
-2. Crear el ejecutor integrado con el analizador jurídico existente y
-   las trazas Langfuse, conservando las **tres repeticiones por unidad**
-   identificadas por tarea, modelo y run independiente.
-3. Prevenir reutilización de reportes previos y filtración de etiquetas
-   humanas. Congelar o reproducir contexto RAG entre tratamientos.
-4. Realizar piloto técnico sin optimizar prompts sobre el conjunto final,
-   y después ejecutar las 90 tareas.
-5. Agregar resultados operativos y comparaciones estadísticas; el
-   evaluador actual para predicciones JSONL sirve como base, pero
-   **todavía no calcula métricas agrupadas por repetición**.
+Al reanudar la misma tarea, se verifica estrictamente el ID, huella
+del dataset, SHA del texto, modelo, repetición y huella de configuración
+(prompt, esquema, temperatura, embeddings y colección). Solo se omiten
+las unidades **exitosas**; los fallos siguen pendientes. La reanudación
+reconstruye el informe del documento por el agente generador MCP. El
+informe identifica los resultados reutilizados y los nuevos. El costo
+reportado de las unidades recuperadas está disponible por separado en
+`checkpoint.cumulative_success_usage`: no debe sumarse dos veces al
+costo de la nueva ejecución. No existe garantía de "exactly once" si
+se interrumpe una solicitud antes del guardado; podría haberse facturado.
 
-Los 10 ToS de esta investigación son los que constan en el alcance,
-la muestra y la Tabla 8 de la tesis. No existe en esta versión
-un requisito de 15 documentos.
+El script `scripts/score_groundtruth_campaign.py` evalúa los resultados
+**después** del procesamiento, sin invocar OpenRouter. Produce JSON con
+matrices de confusión y métricas de las **cuatro clases** (incluida N/A)
+y de las **tres categorías evaluables**, separadas por T1/T2/T3 y
+R1/R2/R3; genera un CSV con nueve filas resumen. Conserva 547 como
+denominador por modelo/repetición y muestra cobertura, unidades sin
+predicción y errores operativos sin atribuirles una categoría jurídica.
+El promedio de F1 de un tratamiento solo se presenta cuando sus tres
+repeticiones están completas.
+
+### Validación sin consumo de créditos
+
+```powershell
+git pull --ff-only origin experiment/groundtruth-evaluation
+$env:PYTHONPATH = (Resolve-Path ".\backend").Path
+python -m pytest tests/unit/test_experimental_campaign.py tests/unit/test_unit_checkpoint.py tests/unit/test_orchestrated_experiment.py tests/unit/test_repetition_metrics.py -q
+python scripts/run_groundtruth_campaign.py --csv data/evaluation/ground_truth_547.csv --task-id ET01-R2
+python scripts/score_groundtruth_campaign.py --csv data/evaluation/ground_truth_547.csv
+```
+
+El último comando produce métricas **provisionales con cobertura cero**
+mientras no existan tareas formales. No representa un resultado
+de clasificación y no consume créditos.
+
+**Condiciones pendientes antes de lanzar el corpus completo:** confirmar
+checkpoint en VS Code mediante pytest; auditar huella/versionado de la
+base jurídica ChromaDB y versiones del código y modelos; comprobar
+presupuesto y límites; ejecutar un documento completo como piloto formal
+con gasto controlado; revisar trazabilidad por unidad y validez de los
+denominadores. **No ejecutar las 90 tareas todavía.**
+
+
+
+## Trabajos restantes antes de la evaluación del capítulo IV
+
+- Verificar en VS Code el checkpoint de cláusulas y el evaluador por repetición.
+- Auditar el corpus jurídico de ChromaDB y congelar configuración, modelos
+  y revisión exacta del código antes de la campaña.
+- Probar **una tarea documental completa** y validar su costo, informe,
+  predicciones y trazas de Langfuse.
+- Evaluar riesgos de facturación no reportada y controles de concurrencia.
+- Completar las tareas formales con seguimiento, después realizar la
+  comparación estadística y estudiar amenazas a la validez.
+
+Los 10 ToS corresponden al alcance y a la Tabla 8 de la tesis.
