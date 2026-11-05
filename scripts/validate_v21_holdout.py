@@ -353,8 +353,13 @@ def compare_holdout(data_dir: Path) -> dict[str, Any]:
         folder / "v2_baseline/legal_context_snapshots.jsonl"
     )
     candidate_rag = _rag_snapshot_map(folder / CANDIDATE_RAG)
+    # El caché RAG unifica fragmentos textualmente idénticos; dos
+    # cláusulas iguales producen una sola búsqueda sin perder cobertura.
+    expected_unique_queries = len({unit.original_text for unit in units})
     rag_equal = (
-        len(baseline_rag) == len(candidate_rag) == len(units)
+        len(baseline_rag)
+        == len(candidate_rag)
+        == expected_unique_queries
         and baseline_rag == candidate_rag
     )
     delta_f1 = round(new["f1_macro"] - old["f1_macro"], 6)
@@ -409,6 +414,7 @@ def compare_holdout(data_dir: Path) -> dict[str, Any]:
             if old_pred[u.technical_id] != new_pred[u.technical_id]
         ],
         "rag_context_control": {
+            "expected_distinct_queries": expected_unique_queries,
             "baseline_distinct_queries": len(baseline_rag),
             "v21_distinct_queries": len(candidate_rag),
             "exact_response_sha_equivalent": rag_equal,
