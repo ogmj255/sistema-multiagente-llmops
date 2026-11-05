@@ -488,3 +488,36 @@ def test_worker_refuses_to_call_model_if_preflight_invalid(
     assert "Preflight" in payload["error"]
     assert called == []
     assert not worker.RESULTS.exists()
+
+
+def test_worker_blocks_next_document_when_soft_budget_used(
+    isolated_environment, monkeypatch,
+):
+    folder, dataset = isolated_environment
+    monkeypatch.setenv("EXPERIMENT_MAX_REPORTED_COST_USD", "0.05")
+    worker.RESULTS.write_text(
+        json.dumps({
+            "task_id": "ET02-R1",
+            "dataset_fingerprint": dataset.fingerprint,
+            "llm_metrics": [{"cost_usd": 0.07}],
+        }) + "\n",
+        encoding="utf-8",
+    )
+    called = []
+
+    async def forbidden(*_args, **_kwargs):
+        called.append(True)
+        raise AssertionError("No se debe invocar OpenRouter.")
+
+    monkeypatch.setattr(worker, "run_orchestrated_trial", forbidden)
+    job_file = folder / "ET01-R1.json"
+    job_file.write_text(json.dumps({
+        "task_id": "ET01-R1",
+        "dataset_fingerprint": dataset.fingerprint,
+        "status": "queued",
+    }), encoding="utf-8")
+    worker.execute_job(job_file)
+    job = json.loads(job_file.read_text(encoding="utf-8"))
+    assert job["status"] == "invalid"
+    assert "límite blando" in job["error"]
+    assert called == []
