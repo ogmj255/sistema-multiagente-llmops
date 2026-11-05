@@ -211,8 +211,10 @@ async def execute_candidate(data_dir: Path, budget: float) -> dict[str, Any]:
 
     lock = folder / "holdout_v21.lock"
     fd = None
+    acquired = False
     try:
         fd = os.open(lock, os.O_WRONLY | os.O_CREAT | os.O_EXCL)
+        acquired = True
         os.write(fd, str(os.getpid()).encode("ascii"))
         os.close(fd)
         fd = None
@@ -257,7 +259,9 @@ async def execute_candidate(data_dir: Path, budget: float) -> dict[str, Any]:
     finally:
         if fd is not None:
             os.close(fd)
-        lock.unlink(missing_ok=True)
+        # No retirar el bloqueo de otro proceso si O_EXCL falló.
+        if acquired:
+            lock.unlink(missing_ok=True)
 
 
 def _rag_snapshot_map(path: Path) -> dict[str, str]:
