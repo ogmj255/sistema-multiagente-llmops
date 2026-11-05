@@ -91,9 +91,14 @@ def test_holded_21_predictions_produce_document_accuracy_not_547_accuracy():
     assert completed["confusion_matrix_on_observed"][
         "potencialmente abusiva"
     ]["potencialmente abusiva"] == 4
+    # U002–U017 son 16 NPA reales; U002–U007 aciertan (6),
+    # U008–U017 son 10 falsos positivos PA en este fixture.
     assert completed["confusion_matrix_on_observed"][
         "no potencialmente abusiva"
-    ]["potencialmente abusiva"] == 7
+    ]["no potencialmente abusiva"] == 6
+    assert completed["confusion_matrix_on_observed"][
+        "no potencialmente abusiva"
+    ]["potencialmente abusiva"] == 10
     assert completed["cost_usd_reported"] == 0.0215251
 
     not_run = results[1]
