@@ -398,12 +398,85 @@ def _results(overview: dict, quality: dict | None) -> None:
             key="exp_result_detail",
         )
         current = next(row for row in completed if row["task_id"] == id_)
+        binary_classes = (
+            "no potencialmente abusiva",
+            "potencialmente abusiva",
+        )
+        per_class = current.get("binary_per_class_on_observed") or {}
+        evaluated = sum(
+            int(per_class.get(label, {}).get("support", 0))
+            for label in binary_classes
+        )
+        not_applicable = current["unit_count"] - evaluated
+        c1, c2, c3 = st.columns(3)
+        c1.metric("Unidades procesadas", current["predictions_valid"])
+        c2.metric("Evaluables NPA/PA", evaluated)
+        c3.metric("No aplicables (referencia)", not_applicable)
+        st.caption(
+            "La exactitud y el F1 macro principales se calculan únicamente "
+            "sobre las cláusulas evaluables; las no aplicables se revisan "
+            "en un diagnóstico independiente."
+        )
+
         matrix = current.get("binary_confusion_matrix_on_observed")
         if matrix:
+            st.markdown("##### Matriz principal NPA/PA")
             st.dataframe(
-                pd.DataFrame.from_dict(matrix, orient="index"),
+                pd.DataFrame([
+                    {
+                        "Etiqueta humana": label,
+                        "Predicha NPA": matrix.get(label, {}).get(
+                            binary_classes[0], 0
+                        ),
+                        "Predicha PA": matrix.get(label, {}).get(
+                            binary_classes[1], 0
+                        ),
+                    }
+                    for label in binary_classes
+                ]),
+                hide_index=True,
                 use_container_width=True,
             )
+            other_predictions = sum(
+                int(matrix.get(label, {}).get(other, 0))
+                for label in binary_classes
+                for other in ("not_applicable", "__invalid__")
+            )
+            if other_predictions:
+                st.warning(
+                    f"{other_predictions} unidad(es) evaluable(s) se "
+                    "predijeron no aplicables o inválidas. "
+                    "Revisar el diagnóstico completo."
+                )
+        if per_class:
+            st.markdown("##### Métricas por clase")
+            st.dataframe(
+                pd.DataFrame([
+                    {
+                        "Clase": "NPA" if label == binary_classes[0] else "PA",
+                        "Soporte": metrics["support"],
+                        "Precisión": metrics["precision"],
+                        "Recall": metrics["recall"],
+                        "F1": metrics["f1"],
+                    }
+                    for label, metrics in per_class.items()
+                ]),
+                hide_index=True,
+                use_container_width=True,
+            )
+        diagnostic = current.get("confusion_matrix_on_observed")
+        if diagnostic:
+            with st.expander(
+                "Diagnóstico de aplicabilidad (incluye no aplicables)"
+            ):
+                st.caption(
+                    "Matriz de tres estados para auditar aplicabilidad y "
+                    "clasificación; no sustituye la matriz binaria NPA/PA."
+                )
+                st.dataframe(
+                    pd.DataFrame.from_dict(diagnostic, orient="index"),
+                    use_container_width=True,
+                )
         try:
             predictions = _request(
                 "GET", f"tasks/{id_}/predictions"
