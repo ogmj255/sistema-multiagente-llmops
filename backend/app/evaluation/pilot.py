@@ -37,7 +37,6 @@ from app.services.analysis import (
 MODEL_LABELS = {
     "not_potentially_abusive": "no potencialmente abusiva",
     "potentially_abusive": "potencialmente abusiva",
-    "strong_indications_of_abusiveness": "indicios fuertes de abusividad",
 }
 
 
