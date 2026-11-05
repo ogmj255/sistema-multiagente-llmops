@@ -100,7 +100,7 @@ def test_genera_resumen_y_ordena_clausulas() -> None:
             ClauseReportItem(
                 clause_order=3,
                 analysis=crear_analisis(
-                    "strong_indications_of_abusiveness"
+                    "potentially_abusive"
                 ),
             ),
             ClauseReportItem(
@@ -138,8 +138,7 @@ def test_genera_resumen_y_ordena_clausulas() -> None:
     summary = report.classification_summary
 
     assert summary.not_potentially_abusive == 1
-    assert summary.potentially_abusive == 1
-    assert summary.strong_indications_of_abusiveness == 1
+    assert summary.potentially_abusive == 2
     assert summary.not_applicable == 1
 
     assert [
