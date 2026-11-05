@@ -73,6 +73,10 @@ def test_chroma_inventory_is_read_only_and_has_consistent_digest(monkeypatch):
                 "ids": [row[0] for row in rows],
                 "documents": [row[1] for row in rows],
                 "metadatas": [row[2] for row in rows],
+                "embeddings": [
+                    [float(i+1), float(i+2), float(i+3), float(i+4)]
+                    for i, row in enumerate(rows)
+                ],
             }
 
     class FakeClient:
@@ -97,7 +101,7 @@ def test_chroma_inventory_is_read_only_and_has_consistent_digest(monkeypatch):
     result = readiness._collection_inventory()
     assert result["chunks"] == 2
     assert len(result["collection_sha256"]) == 64
-    assert seen == [(2, 0, ["documents", "metadatas"])]
+    assert seen == [(2, 0, ["documents", "metadatas", "embeddings"])]
 
     FakeCollection.metadata = {
         "embedding_model": "another-embedding",
