@@ -2463,8 +2463,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Reserva ancho suficiente para las tres opciones sin que
+# «Evaluación experimental» salte a una segunda fila.
 brand_column, navigation_column = st.columns(
-    [1.6, 1]
+    [1.1, 1.6]
 )
 
 with brand_column:
@@ -2499,9 +2501,6 @@ with navigation_column:
         key="main_navigation",
         label_visibility="collapsed",
     )
-
-    if view is None:
-        view = "Análisis"
 
     if view is None:
         view = "Análisis"
