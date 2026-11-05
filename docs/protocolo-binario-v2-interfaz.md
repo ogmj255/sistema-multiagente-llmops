@@ -364,3 +364,26 @@ Si el preflight, las pruebas o el estado de un contenedor falla,
 **no activar la facturación**. Solucionar primero la inconsistencia,
 sin modificar el ground truth histórico ni inferir predicciones nuevas.
 
+
+
+## Primera ejecución documental V2 — revisión visual de resultados
+
+La vista aportada por el investigador el 05/11/2026 muestra
+\`ET01-R1\` (Holded, DeepSeek, R1) como completada,
+con 1/90 tareas globales, costo reportado USD 0,01370,
+exactitud de evaluables 0,55 y F1 macro binario 0,5396.
+La matriz visible de las 20 unidades evaluables contiene 7 NPA
+correctamente clasificadas, 9 NPA predichas como PA y 4 PA
+correctamente clasificadas. El documento tiene 21 unidades
+en total; por diferencia queda una no aplicable, cuyo diagnóstico
+debe inspeccionarse en la matriz completa antes de interpretar
+la clasificación de aplicabilidad.
+
+En la interfaz se separó la matriz **2×2 de riesgo NPA/PA**
+del diagnóstico de tres estados (incluidas unidades no aplicables)
+y se añadieron precisión, recall, F1 por clase y denominadores.
+Es una mejora de presentación; **no modifica los resultados,
+la referencia humana, el RAG ni el manifiesto congelado**.
+La captura no sustituye la revisión de los JSONL de ejecución
+y las trazas de Langfuse; no se generalizan métricas a
+documentos, modelos o repeticiones todavía no ejecutados.
