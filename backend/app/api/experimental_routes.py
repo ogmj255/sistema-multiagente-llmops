@@ -32,12 +32,17 @@ TASK_PATTERN = re.compile(r"ET\d{2}-R[1-3]\Z")
 
 def require_operator(
     token: Annotated[str | None, Header(alias="X-Experiment-Token")] = None,
+    operator_password: Annotated[str | None, Header(alias="X-Experiment-Operator")] = None,
 ) -> None:
     configured = os.getenv("EXPERIMENT_ADMIN_TOKEN", "").strip()
+    expected_password = os.getenv("EXPERIMENT_OPERATOR_PASSWORD", "").strip()
     if (
         not configured
+        or not expected_password
         or token is None
+        or operator_password is None
         or not hmac.compare_digest(token, configured)
+        or not hmac.compare_digest(operator_password, expected_password)
     ):
         raise HTTPException(status_code=403, detail="Acceso experimental no autorizado.")
 
@@ -120,7 +125,7 @@ def _unit_checkpoint_progress(groundtruth, tasks: list[dict]) -> dict:
     }
 
 
-@router.get("/overview", dependencies=[Depends(require_operator)])
+@router.get("/overview")
 def experimental_overview() -> dict:
     groundtruth, plan = _load()
     tasks = plan["tasks"]
@@ -235,7 +240,7 @@ def enqueue_experiment(request: TaskOrder) -> dict[str, str]:
     }
 
 
-@router.get("/results", dependencies=[Depends(require_operator)])
+@router.get("/results")
 def experimental_results() -> dict:
     """Resúmenes y métricas SOLO para el investigador.
 
@@ -262,3 +267,49 @@ def experimental_results() -> dict:
             "exactitud de un documento completado."
         ),
     }
+
+@router.get("/tasks/{task_id}/units")
+def experimental_task_units(task_id: str) -> dict:
+    """Seguimiento por ID técnico; sin texto, etiquetas ni predicciones."""
+    dataset, plan = _load()
+    task = next(
+        (item for item in plan["tasks"] if item["task_id"] == task_id),
+        None,
+    )
+    if task is None:
+        raise HTTPException(status_code=404, detail="Tarea desconocida.")
+    units = document_units(dataset, task)
+    statuses = {unit.technical_id: "pending" for unit in units}
+    hashes = {unit.technical_id: unit.text_sha256 for unit in units}
+    for row in read_jsonl(DATA_DIR / "v2_binary_unit_checkpoints.jsonl"):
+        unit_id = row.get("id")
+        if (
+            row.get("task_id") != task_id
+            or unit_id not in statuses
+            or row.get("model") != task["model"]
+            or row.get("repetition") != task["repetition"]
+            or row.get("dataset_fingerprint") != dataset.fingerprint
+            or row.get("text_sha256") != hashes.get(unit_id)
+        ):
+            continue
+        if (
+            row.get("status") == "success"
+            and isinstance(row.get("response"), dict)
+            and row["response"].get("status") == "success"
+        ):
+            statuses[unit_id] = "completed"
+        elif row.get("status") == "error" and statuses[unit_id] != "completed":
+            statuses[unit_id] = "failed"
+
+    return {
+        "task_id": task_id,
+        "document_id": task["document_id"],
+        "model": task["model"],
+        "repetition": task["repetition"],
+        "units": [
+            {"id": unit.technical_id, "status": statuses[unit.technical_id]}
+            for unit in units
+        ],
+        "note": "Estados derivados exclusivamente de checkpoints V2.",
+    }
+
