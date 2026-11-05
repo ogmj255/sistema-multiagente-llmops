@@ -120,6 +120,10 @@ def test_access_control_and_disabled_billing(isolated_environment):
     assert value["execution_enabled"] is False
     assert value["worker_online"] is False
     assert len(value["tasks"]) == 90
+    incomplete = CLIENT.get("/experimental/tasks/ET01-R1/predictions")
+    assert incomplete.status_code == 200
+    assert incomplete.json()["status"] == "not_completed"
+    assert incomplete.json()["predictions"] == []
 
     result = CLIENT.post(
         "/experimental/jobs",
@@ -263,6 +267,18 @@ def test_api_queue_worker_and_results_end_to_end_simulated(
     assert first["status"] == "completed"
     assert first["predictions_valid"] == 21
     assert first["quality_is_final_for_document"] is True
+    predictions = CLIENT.get("/experimental/tasks/ET01-R1/predictions")
+    assert predictions.status_code == 200
+    detail = predictions.json()
+    assert detail["status"] == "completed"
+    assert len(detail["predictions"]) == 21
+    assert detail["predictions"][0]["unit_id"] == "ToS01-U001"
+    assert set(detail["predictions"][0]) == {
+        "unit_id", "status", "prediction"
+    }
+    assert "Texto sintético" not in predictions.text
+    assert "original_text" not in predictions.text
+    assert detail["cost_usd_reported"] == 0.0025
 
     repeated = CLIENT.post(
         "/experimental/jobs",
