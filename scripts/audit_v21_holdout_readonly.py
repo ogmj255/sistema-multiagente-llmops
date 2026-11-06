@@ -160,17 +160,32 @@ def audit(data_dir: Path) -> dict[str, Any]:
             continue
         matches1 = one["response"].get("matches", [])
         matches2 = two["response"].get("matches", [])
-        structure_equal = _match_signature(one) == _match_signature(two)
+        structure1 = _match_signature(one)
+        structure2 = _match_signature(two)
+        structure_equal = structure1 == structure2
         same_ordered_ids = (
             [m.get("chunk_id") for m in matches1] ==
             [m.get("chunk_id") for m in matches2]
+        )
+        same_unordered_ids = sorted(
+            str(m.get("chunk_id")) for m in matches1
+        ) == sorted(
+            str(m.get("chunk_id")) for m in matches2
+        )
+        same_unordered_content = sorted(
+            canonical_sha256(m) for m in structure1
+        ) == sorted(
+            canonical_sha256(m) for m in structure2
         )
         differences.append({
             "technical_id": id_by_query.get(query_sha),
             "query_sha256": query_sha,
             "issue": "rag_response_sha_diff",
             "same_ordered_legal_chunks": same_ordered_ids,
+            "same_unordered_legal_chunks": same_unordered_ids,
             "same_source_and_content_excluding_distance": structure_equal,
+            "same_unordered_source_content_excluding_distance":
+                same_unordered_content,
             "v2_distance": [
                 round(m.get("distance", 0), 6) for m in matches1
             ],
