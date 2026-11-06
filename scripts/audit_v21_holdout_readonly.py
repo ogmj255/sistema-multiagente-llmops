@@ -1,6 +1,7 @@
 """Auditoría post-ejecución, SOLO LECTURA, ET04-R1 (V2 frente a V2.1).
 
-No llama LLM, RAG, MCP ni redes; no modifica prompts, manifiestos,
+No llama a OpenRouter ni genera inferencias. El preflight puede consultar
+Chroma y Ollama en modo lectura; no modifica prompts, manifiestos,
 resultados ni checkpoints. Reporta desvíos de aplicabilidad y diferencias
 RAG por cláusula sin revelar el texto contractual o jurídico en consola.
 
