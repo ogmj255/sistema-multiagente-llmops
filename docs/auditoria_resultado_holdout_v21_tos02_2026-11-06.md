@@ -154,3 +154,74 @@ discrepancias, sin modificar los snapshots originales.
 Los cuatro errores de aplicabilidad merecen inspección textual
 humana antes de proponer cambios. No iniciar la campaña de 90
 tareas V2.1 ni denominar independientes las pruebas ya observadas.
+
+## Inspección textual recibida: 6 de noviembre de 2026
+
+El investigador compartió el resultado completo del lector de cuatro
+unidades y la segunda auditoría estructural. Se ejecutaron **2 pruebas
+unitarias, todas aprobadas**. Se conserva toda la evidencia original;
+este apartado es un registro *posterior a la ejecución* y no cambia
+el resultado pre-registrado.
+
+### Revisión manual pendiente de la referencia humana
+
+| ID | GT original | Predicción V2 / V2.1 | Evidencia textual y cuestión a adjudicar |
+| --- | --- | --- | --- |
+| ToS02-U001 | not_applicable | NPA / NPA | Introducción y aceptación de condiciones por uso: comprobar si la rúbrica considera la aceptación contractual como disposición evaluable |
+| ToS02-U002 | not_applicable | NPA / NPA | Delimitación geográfica, remisión a términos de negocio y privacidad: comprobar criterio para textos de ámbito y remisión |
+| ToS02-U011 | NPA | not_applicable / not_applicable | Fragmento original: «Nuestro uso de contenido.»; es solo un encabezado, sin regla sustantiva autónoma: posible inconsistencia de anotación o de segmentación |
+| ToS02-U023 | not_applicable | NPA / NPA | «Si lo hacemos, te notificaremos con antelación.»; contiene obligación de aviso pero el antecedente de «lo» no está incluido: comprobar política sobre fragmentos dependientes/truncados |
+
+Ambos modelos dieron justificaciones compatibles entre sí en estos
+cuatro casos. **No se puede calificar retrospectivamente al modelo de
+correcto o incorrecto en sentido jurídico sin adjudicación contra la
+rúbrica original**. Los resultados de exactitud computados permanecen
+válidos **respecto al GT congelado**, aunque pueden no reflejar por
+completo el acuerdo jurídico si se confirma algún error de etiquetado.
+
+Estas observaciones sugieren separar explícitamente tres decisiones:
+(1) unidad documental autónoma o residual/encabezado, (2) evaluabilidad
+según la rúbrica y (3) riesgo NPA/PA para las evaluables. No cambiar
+el esquema ni reetiquetar automáticamente en la misma versión del GT.
+
+### Auditoría RAG ampliada: diferencia material acotada
+
+| ID | Mismos cinco chunks, mismo orden y contenido (ignorando distancia) | Mismo conjunto de chunks ignorando orden | Conclusión |
+| --- | --- | --- | --- |
+| ToS02-U037 | Sí | Sí | Solo cambian distancias |
+| ToS02-U039 | Sí | Sí | Solo cambian distancias |
+| ToS02-U040 | Sí | Sí | Solo cambian distancias |
+| ToS02-U038 | No | **No** | Cambió al menos un segmento recuperado; no es solo reordenamiento |
+
+Las cuatro consultas conservan el mismo hash de consulta entre
+condiciones y cinco resultados cada una. En tres, las fuentes y
+contenido coinciden pese a pequeñas diferencias de distancia.
+En U038 los conjuntos de fuentes jurídicas recuperadas difieren
+incluso ignorando orden: **no hubo control estricto de todas las
+entradas al clasificador**. No obstante, U038 no está entre los nueve
+IDs que cambiaron de etiqueta NPA/PA entre V2 y V2.1. Eso limita el
+impacto observable en las clasificaciones de esta muestra, no elimina
+el problema metodológico de control.
+
+### Acción académica propuesta
+
+1. Adjudicar manualmente U001, U002, U011 y U023 con la rúbrica
+   preexistente, dejando firma/fecha/criterio de la decisión humana.
+   Priorizar revisión de segmentación en U011 y dependencia de
+   contexto en U023.
+2. Auditar el conjunto completo del GT buscando otros títulos
+   aislados, remisiones, introducciones y segmentos truncados. No
+   deducir que estos cuatro errores representan a todas las 547
+   unidades.
+3. Conservar el GT original intacto como versión histórica. Si
+   procede corregir decisiones, elaborar una versión nueva con un
+   registro por unidad: etiqueta previa, nueva, justificación,
+   evaluador, fecha y nueva huella. No recalcular silenciosamente los
+   pilotos existentes como si hubieran usado esa nueva versión.
+4. Para futuras comparaciones de prompts, congelar las *mismas*
+   respuestas RAG y solo variar el prompt; registrar esta variación
+   como un nuevo diseño experimental, no una reparación retroactiva
+   del holdout ya consumido.
+5. Mantener sin aprobar el lanzamiento de 90 tareas V2.1: el F1
+   macro cayó en el conjunto holdout y el criterio pre-registrado
+   de igualdad de contexto no se cumplió.
