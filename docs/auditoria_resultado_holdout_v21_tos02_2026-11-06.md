@@ -98,3 +98,59 @@ Chroma y Ollama en modo lectura al verificar los manifiestos.
 Imprime la matriz de tres estados, IDs con errores de aplicabilidad
 y, por cada discrepancia RAG, el ID técnico, identidad de fuentes y
 diferencias de distancias sin revelar contenido contractual.
+
+## Auditoría de solo lectura completada
+
+El investigador ejecutó las pruebas de la auditoría original y obtuvo
+**4 passed in 10.18s**. La ejecución de auditoría posterior mantuvo
+las huellas congeladas y concretó cuatro discordancias de aplicabilidad,
+idénticas en V2 y V2.1:
+
+| Unidad | Referencia | Predicción V2 | Predicción V2.1 |
+| --- | --- | --- | --- |
+| ToS02-U001 | not_applicable | NPA | NPA |
+| ToS02-U002 | not_applicable | NPA | NPA |
+| ToS02-U011 | NPA | not_applicable | not_applicable |
+| ToS02-U023 | not_applicable | NPA | NPA |
+
+La exactitud de aplicabilidad binaria es 36/40 = 90 % para ambas
+versiones, pero recall no aplicable = 0/3 = 0 %. La unidad U011
+explica que las cuatro celdas de riesgo sumen 36 en vez de 37,
+pues una NPA se predijo como no aplicable.
+
+Las cuatro diferencias RAG fueron U037, U038, U039 y U040.
+En U037/U039/U040 coinciden los cinco segmentos, el orden y
+su contenido; difieren únicamente las distancias registradas.
+En U038 el orden o la identidad del material recuperado difiere:
+la primera auditoría no distingue todavía orden cambiado de
+segmentos sustituidos. La auditoría de lectura se amplió para
+comparar los mismos segmentos ignorando el orden.
+
+Ninguno de los cuatro IDs U037–U040 aparece entre los nueve IDs
+cuya predicción cambió entre V2 y V2.1 (U004, U006, U010, U012,
+U018, U020, U024, U032, U036). Por ello las divergencias RAG
+no explican directamente los cambios de etiqueta en este ensayo,
+aunque el criterio de equivalencia exacta RAG sigue sin cumplirse.
+
+### Inspección siguiente, sin facturación
+
+Se añadió un lector del texto original completo y las
+justificaciones V2 y V2.1 únicamente para cuatro discordancias
+de aplicabilidad. No modifica etiquetas ni resultados:
+
+    python -m pytest tests/unit/test_v21_inspect_disagreements_readonly.py -q
+    docker compose --profile experiment run --rm --no-deps evaluation-worker python -m scripts.inspect_v21_disagreements_readonly
+
+Para distinguir reordenamiento de sustitución de segmentos en U038:
+
+    python -m pytest tests/unit/test_v21_holdout_audit_readonly.py -q
+    docker compose --profile experiment run --rm --no-deps evaluation-worker python -m scripts.audit_v21_holdout_readonly
+
+El informe ampliado añade same_unordered_legal_chunks y
+same_unordered_source_content_excluding_distance para todas las
+discrepancias, sin modificar los snapshots originales.
+
+**Decisión científica:** la candidata V2.1 no superó el holdout.
+Los cuatro errores de aplicabilidad merecen inspección textual
+humana antes de proponer cambios. No iniciar la campaña de 90
+tareas V2.1 ni denominar independientes las pruebas ya observadas.
