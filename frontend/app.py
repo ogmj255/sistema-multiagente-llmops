@@ -8,6 +8,8 @@ import httpx
 import pandas as pd
 import streamlit as st
 
+from experiment_page import render_experiment_page
+
 API_ANALYSIS_URL = os.getenv(
     "API_ANALYSIS_URL",
     "http://traefik/api/analisis",
@@ -21,9 +23,6 @@ API_LLMOPS_URL = f"{API_BASE_URL}/llmops"
 CLASSIFICATION_LABELS = {
     "not_potentially_abusive": "No potencialmente abusiva",
     "potentially_abusive": "Potencialmente abusiva",
-    "strong_indications_of_abusiveness": (
-        "Indicios fuertes de abusividad"
-    ),
 }
 
 EVIDENCE_LABELS = {
@@ -199,11 +198,6 @@ def render_clause(
             "#FFF6E5",
             "#E9D29B",
             "#7A5A12",
-        ),
-        "strong_indications_of_abusiveness": (
-            "#FDECEC",
-            "#E5B6B6",
-            "#8A3D3D",
         ),
         "not_applicable": (
             "#F1F3F5",
@@ -685,7 +679,7 @@ def render_analysis_results(
             )
             st.markdown("### Resumen de clasificaciones")
 
-            classification_columns = st.columns(4)
+            classification_columns = st.columns(3)
 
             classification_cards = [
                 (
@@ -701,13 +695,6 @@ def render_analysis_results(
                     "#FFF6E5",
                     "#E9D29B",
                     "#7A5A12",
-                ),
-                (
-                    "strong_indications_of_abusiveness",
-                    "Indicios fuertes de abusividad",
-                    "#FDECEC",
-                    "#E5B6B6",
-                    "#8A3D3D",
                 ),
                 (
                     "not_applicable",
@@ -2476,8 +2463,10 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# Reserva ancho suficiente para las tres opciones sin que
+# «Evaluación experimental» salte a una segunda fila.
 brand_column, navigation_column = st.columns(
-    [1.6, 1]
+    [1.1, 1.6]
 )
 
 with brand_column:
@@ -2507,13 +2496,11 @@ with navigation_column:
         (
             "Análisis",
             "Dashboard LLMOps",
+            "Evaluación experimental",
         ),
         key="main_navigation",
         label_visibility="collapsed",
     )
-
-    if view is None:
-        view = "Análisis"
 
     if view is None:
         view = "Análisis"
@@ -2721,7 +2708,7 @@ if view == "Análisis":
             analysis_result
         )
 
-else:
+elif view == "Dashboard LLMOps":
     st.title("Dashboard LLMOps")
     st.write(
         "Monitoreo de latencia, costos, tokens y errores "
@@ -2740,3 +2727,6 @@ else:
         render_llmops_dashboard(
             dashboard_data
         )
+
+else:
+    render_experiment_page()

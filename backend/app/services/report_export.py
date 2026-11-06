@@ -141,14 +141,6 @@ def export_report_pdf(
             body_style,
         ),
         _paragraph(
-            "Indicios fuertes de abusividad",
-            (
-                report.classification_summary.
-                strong_indications_of_abusiveness
-            ),
-            body_style,
-        ),
-        _paragraph(
             "No aplicables",
             report.classification_summary.not_applicable,
             body_style,

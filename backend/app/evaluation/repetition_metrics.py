@@ -16,8 +16,9 @@ from app.evaluation.campaign import (
     sum_reported_cost,
 )
 from app.evaluation.design import MODELS, REPETITIONS, make_experimental_plan
-from app.evaluation.groundtruth import GroundTruth, LABELS
-from app.evaluation.metrics import _score_subset
+from app.evaluation.groundtruth import GroundTruth
+from app.evaluation.binary_groundtruth import BINARY_LABELS as LABELS
+from app.evaluation.binary_scoring import _score_subset
 
 VALID = set(LABELS)
 
@@ -230,7 +231,7 @@ def score_campaign_repetitions(
         runs = [row for row in detail if row["treatment"] == treatment]
         if len(runs) == REPETITIONS and all(row["is_complete"] for row in runs):
             measures = [
-                float(row["all_units"]["f1_macro"])
+                float(row["evaluable_units"]["f1_macro"])
                 for row in runs
             ]
             mean = sum(measures) / len(measures)
@@ -262,6 +263,9 @@ def score_campaign_repetitions(
         "by_treatment_repetition": detail,
         "model_aggregate": aggregate,
         "notes": (
+            "En el protocolo V2, el F1 principal corresponde solo a NPA/PA "
+            "sobre unidades evaluables. Las métricas globales de estados "
+            "incluyen no aplicable únicamente como diagnóstico. "
             "Las métricas globales sobre 547 fragmentos se deben "
             "interpretar junto con la cobertura. La tasa de predicciones "
             "no disponibles NO es una tasa de error operativo: distingue "

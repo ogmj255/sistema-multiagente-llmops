@@ -70,7 +70,7 @@ def create_execution(
         clause_type="Facultad unilateral del proveedor",
         target="Proveedor",
         consequence="El precio puede cambiar para el usuario.",
-        classification="strong_indications_of_abusiveness",
+        classification="potentially_abusive",
         analysis_status="classified",
         justification=(
             "La cláusula presenta indicios fuertes "
@@ -112,7 +112,7 @@ def test_builds_assessment_with_selected_basis() -> None:
     )
 
     assert assessment.classification == (
-        "strong_indications_of_abusiveness"
+        "potentially_abusive"
     )
     assert assessment.category == "Modificación de condiciones"
     assert assessment.clause_type == (

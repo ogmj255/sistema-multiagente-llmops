@@ -23,6 +23,20 @@ El sistema adopta una arquitectura de monolito modular contenedorizado, separada
 - **Infraestructura:** Docker Compose y Traefik.
 - **Pruebas:** pytest.
 
+## Clasificación binaria y evaluación experimental (V2 en desarrollo)
+
+La versión experimental V2 distingue exclusivamente dos clases de riesgo:
+**NPA** (no potencialmente abusiva) y **PA** (potencialmente abusiva).
+La aplicabilidad se comprueba por separado, y los fragmentos no evaluables
+se registran como `not_applicable`, sin elevarlos a tercera clase jurídica.
+
+La interfaz Streamlit incorpora **Evaluación experimental**, con selección
+de documento, modelo y repetición, una API protegida y un worker MCP
+independiente. La ejecución de pago está deshabilitada por defecto.
+La referencia histórica V1 y los primeros ensayos se conservan aislados.
+
+Consultar: [Protocolo V2 y seguridad](docs/protocolo-binario-v2-interfaz.md).
+
 ## Estructura del repositorio
 
 - `backend/`: API, agentes, servicios e integraciones.

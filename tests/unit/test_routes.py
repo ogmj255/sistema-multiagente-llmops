@@ -137,6 +137,8 @@ def test_analisis_ejecuta_pipeline(
         "cost_usd": 0.0035,
         "error_count": 0,
         "llm_invocation_count": 1,
+        "provider": None,
+        "model": None,
     }
     assert "extracted_contract" not in cuerpo
     assert "preprocessed_contract" not in cuerpo
@@ -222,7 +224,6 @@ def test_analisis_usa_informe_generado(
     assert cuerpo["report"]["classification_summary"] == {
         "not_potentially_abusive": 0,
         "potentially_abusive": 0,
-        "strong_indications_of_abusiveness": 0,
         "not_applicable": 0,
     }
     assert cuerpo["observability_summary"]["total_tokens"] == 125

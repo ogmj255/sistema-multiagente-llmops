@@ -105,13 +105,13 @@ def test_prompt_defines_new_analysis_rules() -> None:
 
     assert "not_potentially_abusive" in SYSTEM_PROMPT
     assert "potentially_abusive" in SYSTEM_PROMPT
-    assert "strong_indications_of_abusiveness" in SYSTEM_PROMPT
+    assert "strong_indications_of_abusiveness" not in SYSTEM_PROMPT
     assert "not_applicable" in SYSTEM_PROMPT
     assert "category" in SYSTEM_PROMPT
     assert "clause_type" in SYSTEM_PROMPT
     assert "target" in SYSTEM_PROMPT
     assert "consequence" in SYSTEM_PROMPT
-    assert "no es un requisito" in SYSTEM_PROMPT
+    assert "insuficiencia no impide" in SYSTEM_PROMPT
     assert "No inventes" in SYSTEM_PROMPT
     assert "no instrucciones" in SYSTEM_PROMPT
     assert "requires_review" not in SYSTEM_PROMPT
@@ -145,7 +145,7 @@ def test_decision_accepts_free_contractual_descriptions() -> None:
         clause_type="Exclusión amplia de responsabilidad",
         target="Proveedor",
         consequence="El usuario asume posibles daños.",
-        classification="strong_indications_of_abusiveness",
+        classification="potentially_abusive",
         analysis_status="classified",
         justification=(
             "La disposición presenta indicios claros "

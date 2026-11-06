@@ -82,7 +82,7 @@ def create_execution(
             consequence=(
                 "El precio del servicio puede cambiar para el usuario."
             ),
-            classification="strong_indications_of_abusiveness",
+            classification="potentially_abusive",
             analysis_status="classified",
             justification=(
                 "La cláusula presenta indicios fuertes "
@@ -121,7 +121,7 @@ def create_assessment(
         consequence=(
             "El precio del servicio puede cambiar para el usuario."
         ),
-        classification="strong_indications_of_abusiveness",
+        classification="potentially_abusive",
         analysis_status="classified",
         relevant_fragment=(
             "El proveedor podrá modificar "
@@ -216,7 +216,7 @@ def test_agent_runs_complete_analysis(
     assert response.error is None
     assert response.result == assessment
     assert response.result.classification == (
-        "strong_indications_of_abusiveness"
+        "potentially_abusive"
     )
 
 

@@ -21,13 +21,9 @@ from app.evaluation.campaign import (
     sum_reported_cost, task_progress,
 )
 from app.evaluation.design import make_experimental_plan
-from app.evaluation.groundtruth import load_groundtruth_csv
+from app.evaluation.binary_groundtruth import load_binary_groundtruth_v2, binary_manifest
 from app.evaluation.orchestrated import run_orchestrated_trial
 from app.evaluation.pilot import append_jsonl, read_jsonl
-
-FROZEN_FINGERPRINT = (
-    "47f69eb943f539751f2c120ab6fdd7f45bbc000f93459a90f1162212cfdde4a5"
-)
 
 
 def parse_args() -> argparse.Namespace:
@@ -45,15 +41,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-reported-cost-usd", type=float)
     parser.add_argument(
         "--output", type=Path,
-        default=Path("data/evaluation/formal_campaign_runs.jsonl"),
+        default=Path("data/evaluation/v2_binary_campaign_runs.jsonl"),
     )
     parser.add_argument(
         "--context-cache", type=Path,
-        default=Path("data/evaluation/formal_legal_context_snapshots.jsonl"),
+        default=Path("data/evaluation/v2_binary_legal_context_snapshots.jsonl"),
     )
     parser.add_argument(
         "--unit-checkpoints", type=Path,
-        default=Path("data/evaluation/formal_unit_checkpoints.jsonl"),
+        default=Path("data/evaluation/v2_binary_unit_checkpoints.jsonl"),
         help="Checkpoint durable de cada unidad contractual, separado de pilotos.",
     )
     args = parser.parse_args()
@@ -170,9 +166,9 @@ async def execute_tasks(args, dataset, tasks, prior):
 
 def main() -> None:
     args = parse_args()
-    dataset = load_groundtruth_csv(args.csv)
-    if dataset.fingerprint != FROZEN_FINGERPRINT:
-        raise SystemExit("Huella de ground truth diferente: se cancela.")
+    dataset = load_binary_groundtruth_v2(args.csv)
+    print("Protocolo binario V2: NPA / PA, con aplicabilidad separada.")
+    print("Manifiesto:", json.dumps(binary_manifest(dataset), ensure_ascii=False))
     plan = make_experimental_plan(dataset)
     all_tasks = plan["tasks"]
     selected = select_tasks(all_tasks, args.task_id)

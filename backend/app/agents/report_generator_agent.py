@@ -39,11 +39,6 @@ def run_report_generator_agent(
             classification_summary.not_potentially_abusive += 1
         elif assessment.classification == "potentially_abusive":
             classification_summary.potentially_abusive += 1
-        elif (
-            assessment.classification
-            == "strong_indications_of_abusiveness"
-        ):
-            classification_summary.strong_indications_of_abusiveness += 1
 
     report = AnalysisReport(
         execution_id=request.execution_id,
