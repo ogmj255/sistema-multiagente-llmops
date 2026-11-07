@@ -196,11 +196,56 @@ def _check_ollama_model() -> dict[str, str]:
     }
 
 
+def _approved_v3_prompt(data_dir: Path) -> dict[str, str]:
+    """Impide congelar/pagar V3 sin selección humana del prompt definitivo."""
+    path = data_dir / "v3_final_prompt_selection.json"
+    if not path.is_file():
+        raise PreflightError(
+            "Falta aprobar el prompt final V3. No crear preflight ni pagar "
+            "con la candidata V2.1 por accidente."
+        )
+    try:
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError) as exc:
+        raise PreflightError("Selección humana del prompt V3 ilegible.") from exc
+    if not isinstance(record, dict):
+        raise PreflightError("Selección del prompt V3 inválida.")
+    version = record.get("prompt_version")
+    approved_by = record.get("approved_by")
+    approved_at = record.get("approved_at")
+    rationale = record.get("selection_rationale")
+    expected_sha = record.get("prompt_source_sha256")
+    if (
+        version not in {"V2", "V2.1"}
+        or not all(isinstance(x, str) and x.strip()
+                   for x in (approved_by, approved_at, rationale, expected_sha))
+    ):
+        raise PreflightError(
+            "La versión, huella, motivo, responsable y fecha del prompt "
+            "deben estar aprobados explícitamente."
+        )
+    code_path = Path(__file__).resolve().parents[1] / "prompts/legal_analysis.py"
+    actual_sha = hashlib.sha256(code_path.read_bytes()).hexdigest()
+    if expected_sha != actual_sha:
+        raise PreflightError(
+            "El prompt real no coincide con la aprobación V3; "
+            "no se congela ni factura."
+        )
+    return {
+        "prompt_version": version,
+        "prompt_source_sha256": expected_sha,
+        "approved_by": approved_by,
+        "approved_at": approved_at,
+        "selection_rationale": rationale,
+    }
+
+
 def create_readiness_manifest(
     data_dir: Path, *, version: str = "v2"
 ) -> dict[str, Any]:
     """Prepara manifiesto versionado SIN inferencia."""
     protocol, _, dataset_filename = _version_config(version)
+    final_prompt = _approved_v3_prompt(data_dir) if version == "v3" else None
     dataset = load_versioned_binary_groundtruth(
         data_dir / dataset_filename, version=version
     )
@@ -229,6 +274,7 @@ def create_readiness_manifest(
     summary = binary_manifest_versioned(dataset, version=version)
     return {
         "protocol": protocol,
+        "final_prompt_approval": final_prompt,
         "dataset_fingerprint": dataset.fingerprint,
         "source_sha256": dataset.source_sha256,
         "labels": summary["classification_labels"],
