@@ -38,6 +38,34 @@ El CSV **no está en Git**; conservarlo exclusivamente en la carpeta local gitig
 
 La rama procede de experiment/v21-holdout-validation y, por tanto, **hereda el prompt candidato V2.1**. V2.1 no superó el holdout ET04-R1. **No confundir «V3» (versión del ground truth) con la versión del prompt.** Antes de congelar el preflight definitivo hay que seleccionar explícitamente el prompt y registrar esa selección; la sugerencia preliminar es emplear V2 como referencia original, conservando los resultados exploratorios previos. No continuar a ejecución pagada por el solo hecho de que se obtenga un preflight técnico V3 válido.
 
+### Bloqueo obligatorio de aprobación de prompt
+
+El preflight V3 **se negará a congelar** hasta que exista el archivo
+privado gitignored data/evaluation/v3_final_prompt_selection.json. Debe
+crearse **solo después** de seleccionar la versión definitiva y verificar
+que el código real coincida con esa versión. Ejemplo de estructura
+(no copiar todavía como si hubiera aprobación):
+
+~~~json
+{
+  "prompt_version": "V2",
+  "prompt_source_sha256": "SHA256_REAL_DEL_ARCHIVO_SELECCIONADO",
+  "approved_by": "investigador responsable",
+  "approved_at": "FECHA_ISO_8601",
+  "selection_rationale": "Justificación metodológica de elección del prompt."
+}
+~~~
+
+El validador coteja SHA-256 y además la identidad Git exacta de los
+prompts históricos **V2** (blob
+591b13b8a663c83891812ea6deebaf1ceb4685bd) y **V2.1**
+(blob 5be7988b570bef4f72365f6c9b2d1f2f8a0ce9fb).
+Por tanto, **no es posible declarar que el código V2.1 es V2** para
+superar el bloqueo. En esta rama el prompt sigue siendo V2.1, por lo
+que la selección V2 requiere restaurar el archivo correspondiente
+desde experiment/binary-classification-ui-v2 ANTES de crear la aprobación
+y de congelar el preflight. No modificar el prompt tras congelarlo.
+
 ## Instalación segura: PowerShell en la raíz del proyecto
 
 1. Respaldar cambios locales y cambiar a la rama V3. No hacer un git reset que descarte trabajo.
