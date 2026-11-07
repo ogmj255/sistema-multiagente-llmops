@@ -71,6 +71,17 @@ class PreflightError(RuntimeError):
     """Impide iniciar una campaña que no es reproducible."""
 
 
+def _find_scripts_dir(backend_root: Path) -> Path:
+    """Resuelve scripts en checkout local (repo/scripts) o Docker (/app/scripts)."""
+    for candidate in (
+        backend_root.parent / "scripts",
+        backend_root / "scripts",
+    ):
+        if (candidate / "evaluation_worker.py").is_file():
+            return candidate
+    raise PreflightError("Falta el script del worker experimental.")
+
+
 def _code_sha256() -> str:
     app_folder = Path(__file__).resolve().parents[1]
     files = []
@@ -89,26 +100,27 @@ def _code_sha256() -> str:
         "path": "requirements.txt",
         "sha256": hashlib.sha256(requirements.read_bytes()).hexdigest(),
     })
-    worker = Path(__file__).resolve().parents[2] / "scripts" / "evaluation_worker.py"
-    if not worker.is_file():
-        raise PreflightError("Falta el script del worker experimental.")
+    # En Windows los scripts están en repo/scripts; en Docker se montan
+    # en /app/scripts, al lado del paquete app y requirements.txt.
+    scripts_dir = _find_scripts_dir(Path(__file__).resolve().parents[2])
+    worker = scripts_dir / "evaluation_worker.py"
     files.append({
         "path": "scripts/evaluation_worker.py",
         "sha256": hashlib.sha256(worker.read_bytes()).hexdigest(),
     })
-    # La versión final también congela los ejecutores y la generación de
-    # métricas; no solo el código productivo del clasificador.
-    root = Path(__file__).resolve().parents[3]
-    for rel in (
-        "scripts/run_groundtruth_campaign.py",
-        "scripts/preflight_binary_worker.py",
-        "scripts/score_groundtruth_campaign.py",
+    # Congelar también los ejecutores y el cálculo de métricas.
+    for name in (
+        "run_groundtruth_campaign.py",
+        "preflight_binary_worker.py",
+        "score_groundtruth_campaign.py",
     ):
-        path = root / rel
+        path = scripts_dir / name
         if not path.is_file():
-            raise PreflightError(f"Falta código del protocolo final: {rel}")
+            raise PreflightError(
+                f"Falta código del protocolo final: scripts/{name}"
+            )
         files.append({
-            "path": rel,
+            "path": f"scripts/{name}",
             "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
         })
     return canonical_sha256(files)
