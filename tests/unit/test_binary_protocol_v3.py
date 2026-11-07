@@ -132,3 +132,42 @@ def test_v3_is_opt_in_and_v2_remains_default():
     }
     with pytest.raises(ValueError, match="no permitida"):
         bg.load_versioned_binary_groundtruth("does-not-matter.csv", version="v4")
+
+
+
+def test_v3_preflight_requires_explicit_prompt_approval(tmp_path):
+    with pytest.raises(readiness.PreflightError, match="Falta aprobar"):
+        readiness._approved_v3_prompt(tmp_path)
+
+
+def test_v3_preflight_rejects_mismatched_prompt_source(tmp_path):
+    selection = {
+        "prompt_version": "V2.1",
+        "prompt_source_sha256": "0" * 64,
+        "approved_by": "Investigador",
+        "approved_at": "2026-11-06",
+        "selection_rationale": "Justificación de selección experimental.",
+    }
+    (tmp_path / "v3_final_prompt_selection.json").write_text(
+        json.dumps(selection), encoding="utf-8"
+    )
+    with pytest.raises(readiness.PreflightError, match="no coincide"):
+        readiness._approved_v3_prompt(tmp_path)
+
+
+def test_v3_approval_fingerprint_must_match_code(tmp_path):
+    prompt = (
+        __import__("pathlib").Path(readiness.__file__).resolve().parents[1]
+        / "prompts" / "legal_analysis.py"
+    )
+    selection = {
+        "prompt_version": "V2.1",
+        "prompt_source_sha256": hashlib.sha256(prompt.read_bytes()).hexdigest(),
+        "approved_by": "Investigador",
+        "approved_at": "2026-11-06",
+        "selection_rationale": "Selección explícita solo para prueba unitaria.",
+    }
+    (tmp_path / "v3_final_prompt_selection.json").write_text(
+        json.dumps(selection), encoding="utf-8"
+    )
+    assert readiness._approved_v3_prompt(tmp_path) == selection
