@@ -156,7 +156,8 @@ def test_v3_preflight_rejects_mismatched_prompt_source(tmp_path):
 
 
 def _actual_prompt_version(prompt):
-    content = prompt.read_bytes()
+    # La identidad Git debe ser estable con checkouts Windows (CRLF).
+    content = prompt.read_bytes().replace(b"\r\n", b"\n")
     blob = hashlib.sha1(
         b"blob " + str(len(content)).encode("ascii") + b"\0" + content
     ).hexdigest()
