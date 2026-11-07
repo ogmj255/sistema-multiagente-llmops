@@ -27,6 +27,10 @@ def main() -> int:
         default=Path("/app/data/evaluation"),
     )
     parser.add_argument(
+        "--protocol", choices=("v2", "v3"), default="v2",
+        help="Versión explícita; V3 no altera el preflight histórico V2.",
+    )
+    parser.add_argument(
         "--freeze", action="store_true",
         help="Crea manifiesto de reproducibilidad si no existe.",
     )
@@ -34,9 +38,9 @@ def main() -> int:
 
     try:
         if args.freeze:
-            manifest = freeze_readiness(args.data_dir)
+            manifest = freeze_readiness(args.data_dir, version=args.protocol)
         else:
-            _current = verify_readiness(args.data_dir)
+            _current = verify_readiness(args.data_dir, version=args.protocol)
             manifest = {
                 "fingerprint": "manifiesto existente validado",
             }
@@ -57,7 +61,7 @@ def main() -> int:
     print("PRE-FLIGHT APROBADO — no se invocó OpenRouter.")
     print(
         "Manifiesto:",
-        args.data_dir / "v2_binary_preflight_manifest.json",
+        args.data_dir / f"{args.protocol}_binary_preflight_manifest.json",
     )
     print("Huella:", manifest["fingerprint"])
     return 0
