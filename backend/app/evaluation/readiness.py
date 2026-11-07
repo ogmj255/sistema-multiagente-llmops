@@ -227,8 +227,8 @@ def _approved_v3_prompt(data_dir: Path) -> dict[str, str]:
     code_path = Path(__file__).resolve().parents[1] / "prompts/legal_analysis.py"
     prompt_bytes = code_path.read_bytes()
     # Git almacena los blobs con LF; checkout en Windows puede usar CRLF.
-    # Normalizar SOLO los saltos de línea para verificar la identidad Git,
-    # manteniendo el SHA-256 de bytes reales para la aprobación del preflight.
+    # Normalizar SOLO saltos de línea para cotejar la identidad Git.
+    # El SHA aprobado puede proceder de Windows (CRLF) o Linux (LF).
     git_prompt_bytes = prompt_bytes.replace(b"\r\n", b"\n")
     # Identidad exacta de los prompts existentes en el repositorio:
     # una aprobación V2 nunca debe autorizar accidentalmente código V2.1.
@@ -246,8 +246,17 @@ def _approved_v3_prompt(data_dir: Path) -> dict[str, str]:
             "La versión del prompt declarada no corresponde al código "
             "oficial V2 o V2.1. No se congela ni factura."
         )
-    actual_sha = hashlib.sha256(prompt_bytes).hexdigest()
-    if expected_sha != actual_sha:
+    # Exigir la huella aprobada: única tolerancia, los finales de línea
+    # LF/CRLF del MISMO blob Git oficial. No se admiten cambios de texto.
+    approved_variants = (
+        prompt_bytes,
+        git_prompt_bytes,
+        git_prompt_bytes.replace(b"\n", b"\r\n"),
+    )
+    approved_hashes = {
+        hashlib.sha256(content).hexdigest() for content in approved_variants
+    }
+    if expected_sha not in approved_hashes:
         raise PreflightError(
             "El prompt real no coincide con la aprobación V3; "
             "no se congela ni factura."
