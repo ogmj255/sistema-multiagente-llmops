@@ -226,6 +226,10 @@ def _approved_v3_prompt(data_dir: Path) -> dict[str, str]:
         )
     code_path = Path(__file__).resolve().parents[1] / "prompts/legal_analysis.py"
     prompt_bytes = code_path.read_bytes()
+    # Git almacena los blobs con LF; checkout en Windows puede usar CRLF.
+    # Normalizar SOLO los saltos de línea para verificar la identidad Git,
+    # manteniendo el SHA-256 de bytes reales para la aprobación del preflight.
+    git_prompt_bytes = prompt_bytes.replace(b"\r\n", b"\n")
     # Identidad exacta de los prompts existentes en el repositorio:
     # una aprobación V2 nunca debe autorizar accidentalmente código V2.1.
     known_git_blobs = {
@@ -233,8 +237,8 @@ def _approved_v3_prompt(data_dir: Path) -> dict[str, str]:
         "V2.1": "5be7988b570bef4f72365f6c9b2d1f2f8a0ce9fb",
     }
     blob_bytes = (
-        b"blob " + str(len(prompt_bytes)).encode("ascii")
-        + b"\0" + prompt_bytes
+        b"blob " + str(len(git_prompt_bytes)).encode("ascii")
+        + b"\0" + git_prompt_bytes
     )
     actual_blob = hashlib.sha1(blob_bytes).hexdigest()
     if actual_blob != known_git_blobs[version]:
