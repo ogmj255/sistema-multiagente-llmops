@@ -1,6 +1,6 @@
 # Preparación del protocolo binario V3 — 547 unidades (6/11/2026)
 
-**Estado:** cambios de código disponibles en rama aislada; **NO ejecutar 90 tareas** hasta completar verificación en el equipo del investigador, decidir el prompt y congelar el preflight V3. No se han ejecutado llamadas a OpenRouter por estos cambios.
+**Estado:** ground truth V3 validado localmente y 23/23 pruebas unitarias aprobadas antes de restaurar el prompt; **V2 seleccionado como prompt definitivo y restaurado en esta rama el 6/11/2026**. Es obligatorio repetir las pruebas después del cambio, registrar la aprobación privada y congelar/verificar el preflight V3 antes de autorizar cualquier inferencia pagada. El cambio de prompt no ejecuta OpenRouter.
 
 ## Procedencia y alcance
 
@@ -34,9 +34,13 @@ El CSV **no está en Git**; conservarlo exclusivamente en la carpeta local gitig
 - scripts/verify_groundtruth_v3.py: validación **local y gratuita**, sin Ollama, OpenRouter ni MCP.
 - tests/unit/test_binary_protocol_v3.py y test_campaign_v3_cli.py: regresión para hashes y aislamiento.
 
-### Bloqueador de decisión: versión del prompt
+### Decisión metodológica: prompt V2 seleccionado (6/11/2026)
 
-La rama procede de experiment/v21-holdout-validation y, por tanto, **hereda el prompt candidato V2.1**. V2.1 no superó el holdout ET04-R1. **No confundir «V3» (versión del ground truth) con la versión del prompt.** Antes de congelar el preflight definitivo hay que seleccionar explícitamente el prompt y registrar esa selección; la sugerencia preliminar es emplear V2 como referencia original, conservando los resultados exploratorios previos. No continuar a ejecución pagada por el solo hecho de que se obtenga un preflight técnico V3 válido.
+El investigador confirmó la selección del **prompt V2** para la campaña definitiva V3. Se restauró el archivo completo `backend/app/prompts/legal_analysis.py` desde la rama histórica `experiment/binary-classification-ui-v2`, con identidad Git exacta `591b13b8a663c83891812ea6deebaf1ceb4685bd`.
+
+**Justificación:** V2.1 fue un ajuste exploratorio que no cumplió el criterio de aceptación preestablecido en el contraste ET04-R1 (OpenAI, 37 unidades evaluables). Frente a V2, V2.1 presentó F1 macro 0,559562 vs. 0,571195 y exactitud 0,567568 vs. 0,594595, aunque mejoró el recall PA. Esta comparación no demuestra superioridad estadística universal de V2. Seleccionar el prompt de referencia anterior al ajuste evita adoptar como definitivo un cambio que no superó su validación. Los ensayos previos se conservan como evidencia exploratoria, sin reetiquetar sus resultados históricos.
+
+**Distinción esencial:** V2 designa el **prompt** y V3 la **versión del ground truth/protocolo**. La decisión metodológica está asentada en la documentación, pero la autorización privada `v3_final_prompt_selection.json`, las nuevas pruebas locales con V2 y el preflight todavía deben realizarse en el equipo del investigador. La referencia del corpus no se modificó.
 
 ### Bloqueo obligatorio de aprobación de prompt
 
@@ -60,11 +64,27 @@ El validador coteja SHA-256 y además la identidad Git exacta de los
 prompts históricos **V2** (blob
 591b13b8a663c83891812ea6deebaf1ceb4685bd) y **V2.1**
 (blob 5be7988b570bef4f72365f6c9b2d1f2f8a0ce9fb).
-Por tanto, **no es posible declarar que el código V2.1 es V2** para
-superar el bloqueo. En esta rama el prompt sigue siendo V2.1, por lo
-que la selección V2 requiere restaurar el archivo correspondiente
-desde experiment/binary-classification-ui-v2 ANTES de crear la aprobación
-y de congelar el preflight. No modificar el prompt tras congelarlo.
+Por tanto, **no es posible declarar que el código V2.1 es V2** para superar el bloqueo. El prompt V2 original **ya está restaurado** en la rama V3; el validador reconoce checkout LF/CRLF para la identidad Git, pero exige el SHA-256 de los bytes exactos del archivo aprobado. No modificar el prompt después de aprobarlo o congelar el preflight.
+
+### Registro local de la aprobación (PowerShell, sin OpenRouter)
+
+Una vez actualizado el repositorio y repetidas las pruebas con el prompt V2, crear el registro privado **en el equipo del investigador**, a partir del archivo real. Este ejemplo evita el BOM UTF-8 de Windows PowerShell 5.1:
+
+~~~powershell
+$promptPath = ".\\backend\\app\\prompts\\legal_analysis.py"
+$approvalPath = Join-Path (Resolve-Path ".\\data\\evaluation").Path "v3_final_prompt_selection.json"
+$approval = [ordered]@{
+    prompt_version = "V2"
+    prompt_source_sha256 = (Get-FileHash $promptPath -Algorithm SHA256).Hash.ToLower()
+    approved_by = "Investigador responsable"
+    approved_at = (Get-Date).ToString("yyyy-MM-ddTHH:mm:sszzz")
+    selection_rationale = "Se adopta V2 como prompt de referencia previo al ajuste V2.1; V2.1 no cumplio el criterio de aceptacion en ET04-R1. La comparacion exploratoria no demuestra superioridad estadistica universal de V2."
+}
+$json = $approval | ConvertTo-Json -Depth 3
+[System.IO.File]::WriteAllText($approvalPath, $json, [System.Text.UTF8Encoding]::new($false))
+~~~
+
+La fecha registrada debe ser la real del acto de aprobación; no atribuir verificaciones aún no ejecutadas. El JSON permanece bajo `data/evaluation/` (gitignored) y **no se sube a GitHub**. El preflight debe reconocer la versión V2 y el SHA-256 de los bytes leídos en su propio entorno. Si la copia en Docker usa otros saltos de línea, diagnosticar la discrepancia y corregir la copia o la generación del registro sin alterar el contenido del prompt aprobado. No desactivar la validación ni sustituir hashes a mano.
 
 ## Instalación segura: PowerShell en la raíz del proyecto
 
