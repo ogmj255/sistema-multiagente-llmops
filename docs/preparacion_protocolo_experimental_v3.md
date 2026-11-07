@@ -86,6 +86,19 @@ $json = $approval | ConvertTo-Json -Depth 3
 
 La fecha registrada debe ser la real del acto de aprobación; no atribuir verificaciones aún no ejecutadas. El JSON permanece bajo `data/evaluation/` (gitignored) y **no se sube a GitHub**. El preflight coteja obligatoriamente la identidad exacta Git del prompt V2/V2.1 y acepta el SHA-256 del mismo contenido en LF o CRLF, para admitir checkouts Windows/Docker sin pedir una nueva aprobación. **No acepta modificaciones textuales, cambios de versión o una huella inventada**. No alterar el prompt aprobado, desactivar la validación ni sustituir hashes a mano.
 
+### Portabilidad del preflight (Windows y Docker)
+
+La aprobación del 6/11/2026 se creó en PowerShell y se verificó con el prompt V2 local. El preflight usa el mismo archivo de aprobación en la carpeta montada `data/evaluation` y admite exclusivamente los saltos LF/CRLF del mismo blob Git oficial. La función de inventario del código también busca `repo/scripts` en un checkout y `/app/scripts` dentro del contenedor. Se añadieron pruebas específicas para ambas condiciones; requieren ejecución local posterior a esta actualización. **No sustituir el JSON existente ni volver a aprobar el prompt por una diferencia de plataforma.**
+
+Antes de congelar el preflight, comprobar la aprobación en el worker Docker, sin ejecutar la cola V2 ni la campaña:
+
+~~~powershell
+docker compose --profile experiment build evaluation-worker
+docker compose --profile experiment run --rm --no-deps evaluation-worker python -c "from pathlib import Path; from app.evaluation.readiness import _approved_v3_prompt; print(_approved_v3_prompt(Path('/app/data/evaluation')))"
+~~~
+
+Esto verifica que el volumen privado está montado y que la misma identidad V2 se valida desde Linux. Solo después de confirmar Docker, Chroma, Ollama y Langfuse realizar el preflight `--freeze` indicado más abajo.
+
 ## Instalación segura: PowerShell en la raíz del proyecto
 
 1. Respaldar cambios locales y cambiar a la rama V3. No hacer un git reset que descarte trabajo.
