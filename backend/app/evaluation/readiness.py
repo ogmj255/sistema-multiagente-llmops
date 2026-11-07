@@ -18,15 +18,29 @@ import numpy as np
 
 from app.core.config import settings
 from app.evaluation.binary_groundtruth import (
-    binary_manifest, load_binary_groundtruth_v2,
+    binary_manifest_versioned, load_versioned_binary_groundtruth,
 )
 from app.evaluation.design import make_experimental_plan
 from app.evaluation.pilot import canonical_sha256
 from app.evaluation.unit_checkpoint import analysis_config_sha256
 from app.services.legal_vector_store import create_chroma_client
 
-PROTOCOL = "NPA-PA-v2.0"
+PROTOCOL = "NPA-PA-v2.0"  # compatibilidad histórica
 MANIFEST_FILENAME = "v2_binary_preflight_manifest.json"
+VERSION_CONFIG = {
+    "v2": ("NPA-PA-v2.0", "v2_binary_preflight_manifest.json",
+           "ground_truth_547.csv"),
+    "v3": ("NPA-PA-v3.0", "v3_binary_preflight_manifest.json",
+           "ground_truth_547_v3.csv"),
+}
+
+
+def _version_config(version: str) -> tuple[str, str, str]:
+    try:
+        return VERSION_CONFIG[version]
+    except KeyError as exc:
+        raise PreflightError(f"Versión experimental no admitida: {version}") from exc
+
 CRITICAL_SOURCES = (
     "prompts/legal_analysis.py",
     "schemas/legal_analysis.py",
@@ -82,6 +96,21 @@ def _code_sha256() -> str:
         "path": "scripts/evaluation_worker.py",
         "sha256": hashlib.sha256(worker.read_bytes()).hexdigest(),
     })
+    # La versión final también congela los ejecutores y la generación de
+    # métricas; no solo el código productivo del clasificador.
+    root = Path(__file__).resolve().parents[3]
+    for rel in (
+        "scripts/run_groundtruth_campaign.py",
+        "scripts/preflight_binary_worker.py",
+        "scripts/score_groundtruth_campaign.py",
+    ):
+        path = root / rel
+        if not path.is_file():
+            raise PreflightError(f"Falta código del protocolo final: {rel}")
+        files.append({
+            "path": rel,
+            "sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        })
     return canonical_sha256(files)
 
 
@@ -167,10 +196,13 @@ def _check_ollama_model() -> dict[str, str]:
     }
 
 
-def create_readiness_manifest(data_dir: Path) -> dict[str, Any]:
-    """Prepara manifest SIN inferencia; exige servicios locales accesibles."""
-    dataset = load_binary_groundtruth_v2(
-        data_dir / "ground_truth_547.csv"
+def create_readiness_manifest(
+    data_dir: Path, *, version: str = "v2"
+) -> dict[str, Any]:
+    """Prepara manifiesto versionado SIN inferencia."""
+    protocol, _, dataset_filename = _version_config(version)
+    dataset = load_versioned_binary_groundtruth(
+        data_dir / dataset_filename, version=version
     )
     plan = make_experimental_plan(dataset)
     if (
@@ -194,9 +226,9 @@ def create_readiness_manifest(data_dir: Path) -> dict[str, Any]:
 
     legal = _collection_inventory()
     ollama = _check_ollama_model()
-    summary = binary_manifest(dataset)
+    summary = binary_manifest_versioned(dataset, version=version)
     return {
-        "protocol": PROTOCOL,
+        "protocol": protocol,
         "dataset_fingerprint": dataset.fingerprint,
         "source_sha256": dataset.source_sha256,
         "labels": summary["classification_labels"],
@@ -214,18 +246,21 @@ def create_readiness_manifest(data_dir: Path) -> dict[str, Any]:
     }
 
 
-def verify_readiness(data_dir: Path) -> dict[str, Any]:
-    """Revalida el entorno ANTES de cada trabajo facturable."""
-    path = data_dir / MANIFEST_FILENAME
+def verify_readiness(
+    data_dir: Path, *, version: str = "v2"
+) -> dict[str, Any]:
+    """Revalida referencia, código y RAG antes de cualquier gasto."""
+    _, manifest_filename, _ = _version_config(version)
+    path = data_dir / manifest_filename
     if not path.is_file():
         raise PreflightError(
-            "Falta el manifiesto del preflight V2; no se ejecuta OpenRouter."
+            f"Falta el manifiesto preflight {version}; no se ejecuta OpenRouter."
         )
     try:
         frozen = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, ValueError) as exc:
-        raise PreflightError("El manifiesto V2 no es válido.") from exc
-    current = create_readiness_manifest(data_dir)
+        raise PreflightError(f"El manifiesto {version} no es válido.") from exc
+    current = create_readiness_manifest(data_dir, version=version)
     if not isinstance(frozen, dict) or frozen.get("fingerprint") != canonical_sha256(current):
         raise PreflightError(
             "La referencia, el código, el prompt o la base RAG cambió "
@@ -234,18 +269,21 @@ def verify_readiness(data_dir: Path) -> dict[str, Any]:
     return current
 
 
-def freeze_readiness(data_dir: Path) -> dict[str, Any]:
-    """Congela una única vez y nunca sobrescribe un entorno distinto."""
-    result = create_readiness_manifest(data_dir)
+def freeze_readiness(
+    data_dir: Path, *, version: str = "v2"
+) -> dict[str, Any]:
+    """Congela una única vez; V2 y V3 usan archivos separados."""
+    _, manifest_filename, _ = _version_config(version)
+    result = create_readiness_manifest(data_dir, version=version)
     data_dir.mkdir(parents=True, exist_ok=True)
-    target = data_dir / MANIFEST_FILENAME
+    target = data_dir / manifest_filename
     manifest = {
         "fingerprint": canonical_sha256(result),
         "created_at": datetime.now(UTC).isoformat(),
         "environment": result,
     }
     if target.exists():
-        verify_readiness(data_dir)
+        verify_readiness(data_dir, version=version)
         return json.loads(target.read_text(encoding="utf-8"))
     temporary = target.with_suffix(".tmp")
     temporary.write_text(
