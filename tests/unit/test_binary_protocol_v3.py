@@ -171,3 +171,24 @@ def test_v3_approval_fingerprint_must_match_code(tmp_path):
         json.dumps(selection), encoding="utf-8"
     )
     assert readiness._approved_v3_prompt(tmp_path) == selection
+
+
+
+def test_prompt_version_cannot_be_mislabelled_as_v2(tmp_path):
+    prompt = (
+        __import__("pathlib").Path(readiness.__file__).resolve().parents[1]
+        / "prompts" / "legal_analysis.py"
+    )
+    selection = {
+        "prompt_version": "V2",
+        "prompt_source_sha256": hashlib.sha256(prompt.read_bytes()).hexdigest(),
+        "approved_by": "Investigador",
+        "approved_at": "2026-11-06",
+        "selection_rationale": "Test que detecta identidad incorrecta.",
+    }
+    (tmp_path / "v3_final_prompt_selection.json").write_text(
+        json.dumps(selection), encoding="utf-8"
+    )
+    # La candidata V2.1 no puede validarse declarando falsamente V2.
+    with pytest.raises(readiness.PreflightError, match="no corresponde"):
+        readiness._approved_v3_prompt(tmp_path)
