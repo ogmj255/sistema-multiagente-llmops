@@ -225,7 +225,24 @@ def _approved_v3_prompt(data_dir: Path) -> dict[str, str]:
             "deben estar aprobados explícitamente."
         )
     code_path = Path(__file__).resolve().parents[1] / "prompts/legal_analysis.py"
-    actual_sha = hashlib.sha256(code_path.read_bytes()).hexdigest()
+    prompt_bytes = code_path.read_bytes()
+    # Identidad exacta de los prompts existentes en el repositorio:
+    # una aprobación V2 nunca debe autorizar accidentalmente código V2.1.
+    known_git_blobs = {
+        "V2": "591b13b8a663c83891812ea6deebaf1ceb4685bd",
+        "V2.1": "5be7988b570bef4f72365f6c9b2d1f2f8a0ce9fb",
+    }
+    blob_bytes = (
+        b"blob " + str(len(prompt_bytes)).encode("ascii")
+        + b"\0" + prompt_bytes
+    )
+    actual_blob = hashlib.sha1(blob_bytes).hexdigest()
+    if actual_blob != known_git_blobs[version]:
+        raise PreflightError(
+            "La versión del prompt declarada no corresponde al código "
+            "oficial V2 o V2.1. No se congela ni factura."
+        )
+    actual_sha = hashlib.sha256(prompt_bytes).hexdigest()
     if expected_sha != actual_sha:
         raise PreflightError(
             "El prompt real no coincide con la aprobación V3; "
