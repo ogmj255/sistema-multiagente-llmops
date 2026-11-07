@@ -7,7 +7,7 @@ import csv
 import json
 from pathlib import Path
 
-from app.evaluation.binary_groundtruth import load_binary_groundtruth_v2
+from app.evaluation.binary_groundtruth import load_versioned_binary_groundtruth
 from app.evaluation.document_metrics import score_campaign_documents
 from app.evaluation.pilot import read_jsonl
 from app.evaluation.repetition_metrics import score_campaign_repetitions
@@ -19,16 +19,31 @@ def main() -> None:
     )
     parser.add_argument("--csv", type=Path, required=True)
     parser.add_argument(
+        "--protocol", choices=("v2", "v3"), default="v2",
+    )
+    parser.add_argument(
         "--results", type=Path,
-        default=Path("data/evaluation/v2_binary_campaign_runs.jsonl"),
+        default=None,
     )
     parser.add_argument(
         "--output", type=Path,
-        default=Path("data/evaluation/v2_binary_metrics_by_repetition.json"),
+        default=None,
     )
     args = parser.parse_args()
-
-    dataset = load_binary_groundtruth_v2(args.csv)
+    prefix = "v3_binary" if args.protocol == "v3" else "v2_binary"
+    if args.protocol == "v3" and args.csv.name != "ground_truth_547_v3.csv":
+        parser.error("V3 exige ground_truth_547_v3.csv.")
+    if args.results is None:
+        args.results = args.csv.parent / f"{prefix}_campaign_runs.jsonl"
+    if args.output is None:
+        args.output = args.csv.parent / f"{prefix}_metrics_by_repetition.json"
+    if args.protocol == "v3" and (
+        "v2_binary" in str(args.results) or "v2_binary" in str(args.output)
+    ):
+        parser.error("No mezclar resultados o métricas V2 con V3.")
+    dataset = load_versioned_binary_groundtruth(
+        args.csv, version=args.protocol
+    )
     records = read_jsonl(args.results)
     result = score_campaign_repetitions(dataset, records)
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -90,7 +105,7 @@ def main() -> None:
     # analizadas. Nunca presentar como 0 una tarea no ejecutada.
     documents = score_campaign_documents(dataset, records)
     document_table = args.output.with_name(
-        "v2_binary_metrics_by_document.csv"
+        f"{prefix}_metrics_by_document.csv"
     )
     document_fields = [
         "task_id", "document_id", "platform", "treatment", "model",
@@ -109,7 +124,7 @@ def main() -> None:
             writer.writerow({key: row.get(key) for key in document_fields})
 
     document_details = args.output.with_name(
-        "v2_binary_metrics_by_document.json"
+        f"{prefix}_metrics_by_document.json"
     )
     document_details.write_text(
         json.dumps({
