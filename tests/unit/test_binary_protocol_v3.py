@@ -158,7 +158,7 @@ def test_v3_preflight_rejects_mismatched_prompt_source(tmp_path):
 def _actual_prompt_version(prompt):
     content = prompt.read_bytes()
     blob = hashlib.sha1(
-        b"blob " + str(len(content)).encode("ascii") + b"\\0" + content
+        b"blob " + str(len(content)).encode("ascii") + b"\0" + content
     ).hexdigest()
     versions = {
         "591b13b8a663c83891812ea6deebaf1ceb4685bd": "V2",
