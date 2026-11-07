@@ -192,6 +192,33 @@ def test_v3_approval_fingerprint_must_match_code(tmp_path):
 
 
 
+def test_v3_approval_accepts_equivalent_lf_crlf_checkout(tmp_path):
+    # Una aprobación emitida en Windows debe validarse también en Linux,
+    # sin aceptar alteraciones del contenido ni de la identidad Git.
+    prompt = (
+        __import__("pathlib").Path(readiness.__file__).resolve().parents[1]
+        / "prompts" / "legal_analysis.py"
+    )
+    original = prompt.read_bytes()
+    canonical_lf = original.replace(b"\r\n", b"\n")
+    alternate = (
+        canonical_lf if original != canonical_lf
+        else canonical_lf.replace(b"\n", b"\r\n")
+    )
+    assert alternate != original
+    selection = {
+        "prompt_version": _actual_prompt_version(prompt),
+        "prompt_source_sha256": hashlib.sha256(alternate).hexdigest(),
+        "approved_by": "Investigador",
+        "approved_at": "2026-11-06",
+        "selection_rationale": "Prueba de equivalencia de checkout LF/CRLF.",
+    }
+    (tmp_path / "v3_final_prompt_selection.json").write_text(
+        json.dumps(selection), encoding="utf-8"
+    )
+    assert readiness._approved_v3_prompt(tmp_path) == selection
+
+
 def test_prompt_version_cannot_be_mislabelled(tmp_path):
     prompt = (
         __import__("pathlib").Path(readiness.__file__).resolve().parents[1]
