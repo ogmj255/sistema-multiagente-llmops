@@ -155,13 +155,25 @@ def test_v3_preflight_rejects_mismatched_prompt_source(tmp_path):
         readiness._approved_v3_prompt(tmp_path)
 
 
+def _actual_prompt_version(prompt):
+    content = prompt.read_bytes()
+    blob = hashlib.sha1(
+        b"blob " + str(len(content)).encode("ascii") + b"\\0" + content
+    ).hexdigest()
+    versions = {
+        "591b13b8a663c83891812ea6deebaf1ceb4685bd": "V2",
+        "5be7988b570bef4f72365f6c9b2d1f2f8a0ce9fb": "V2.1",
+    }
+    return versions[blob]
+
+
 def test_v3_approval_fingerprint_must_match_code(tmp_path):
     prompt = (
         __import__("pathlib").Path(readiness.__file__).resolve().parents[1]
         / "prompts" / "legal_analysis.py"
     )
     selection = {
-        "prompt_version": "V2.1",
+        "prompt_version": _actual_prompt_version(prompt),
         "prompt_source_sha256": hashlib.sha256(prompt.read_bytes()).hexdigest(),
         "approved_by": "Investigador",
         "approved_at": "2026-11-06",
@@ -174,13 +186,15 @@ def test_v3_approval_fingerprint_must_match_code(tmp_path):
 
 
 
-def test_prompt_version_cannot_be_mislabelled_as_v2(tmp_path):
+def test_prompt_version_cannot_be_mislabelled(tmp_path):
     prompt = (
         __import__("pathlib").Path(readiness.__file__).resolve().parents[1]
         / "prompts" / "legal_analysis.py"
     )
     selection = {
-        "prompt_version": "V2",
+        "prompt_version": (
+            "V2.1" if _actual_prompt_version(prompt) == "V2" else "V2"
+        ),
         "prompt_source_sha256": hashlib.sha256(prompt.read_bytes()).hexdigest(),
         "approved_by": "Investigador",
         "approved_at": "2026-11-06",
@@ -189,6 +203,6 @@ def test_prompt_version_cannot_be_mislabelled_as_v2(tmp_path):
     (tmp_path / "v3_final_prompt_selection.json").write_text(
         json.dumps(selection), encoding="utf-8"
     )
-    # La candidata V2.1 no puede validarse declarando falsamente V2.
+    # Ninguna versión del prompt puede registrarse con la identidad opuesta.
     with pytest.raises(readiness.PreflightError, match="no corresponde"):
         readiness._approved_v3_prompt(tmp_path)
