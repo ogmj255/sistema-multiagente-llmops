@@ -192,6 +192,25 @@ def test_v3_approval_fingerprint_must_match_code(tmp_path):
 
 
 
+def test_v3_preflight_finds_scripts_in_repo_and_docker_layouts(tmp_path):
+    repo = tmp_path / "repo"
+    checkout_backend = repo / "backend"
+    checkout_scripts = repo / "scripts"
+    checkout_backend.mkdir(parents=True)
+    checkout_scripts.mkdir()
+    (checkout_scripts / "evaluation_worker.py").write_text("worker")
+    assert readiness._find_scripts_dir(checkout_backend) == checkout_scripts
+
+    docker_backend = tmp_path / "isolated" / "app"
+    docker_scripts = docker_backend / "scripts"
+    docker_scripts.mkdir(parents=True)
+    (docker_scripts / "evaluation_worker.py").write_text("worker")
+    assert readiness._find_scripts_dir(docker_backend) == docker_scripts
+
+    with pytest.raises(readiness.PreflightError, match="worker experimental"):
+        readiness._find_scripts_dir(tmp_path / "missing")
+
+
 def test_v3_approval_accepts_equivalent_lf_crlf_checkout(tmp_path):
     # Una aprobación emitida en Windows debe validarse también en Linux,
     # sin aceptar alteraciones del contenido ni de la identidad Git.
