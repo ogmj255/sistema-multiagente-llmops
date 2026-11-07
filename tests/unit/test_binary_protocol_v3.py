@@ -141,8 +141,13 @@ def test_v3_preflight_requires_explicit_prompt_approval(tmp_path):
 
 
 def test_v3_preflight_rejects_mismatched_prompt_source(tmp_path):
+    # Probar el rechazo por SHA, no por una versión ajena al prompt activo.
+    prompt = (
+        __import__("pathlib").Path(readiness.__file__).resolve().parents[1]
+        / "prompts" / "legal_analysis.py"
+    )
     selection = {
-        "prompt_version": "V2.1",
+        "prompt_version": _actual_prompt_version(prompt),
         "prompt_source_sha256": "0" * 64,
         "approved_by": "Investigador",
         "approved_at": "2026-11-06",
