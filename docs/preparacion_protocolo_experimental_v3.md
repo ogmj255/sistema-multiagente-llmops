@@ -1,6 +1,6 @@
 # Preparación del protocolo binario V3 — 547 unidades (6/11/2026)
 
-**Estado:** ground truth V3 validado localmente y 23/23 pruebas unitarias aprobadas antes de restaurar el prompt; **V2 seleccionado como prompt definitivo y restaurado en esta rama el 6/11/2026**. Es obligatorio repetir las pruebas después del cambio, registrar la aprobación privada y congelar/verificar el preflight V3 antes de autorizar cualquier inferencia pagada. El cambio de prompt no ejecuta OpenRouter.
+**Estado actualizado:** ground truth V3 validado localmente; **V2 seleccionado como prompt definitivo**, restaurado en esta rama y aprobado por el investigador el 6/11/2026 a las 21:19:50 -05:00. Las 23 pruebas unitarias disponibles aprobaron tras seleccionar el prompt V2. Se agregó posteriormente una regresión de portabilidad SHA LF/CRLF, cuya ejecución local aún debe verificarse. Falta congelar y revalidar el preflight de infraestructura. **No ejecutar la campaña formal ni inferencias pagadas antes de completar los controles.**
 
 ## Procedencia y alcance
 
@@ -40,7 +40,7 @@ El investigador confirmó la selección del **prompt V2** para la campaña defin
 
 **Justificación:** V2.1 fue un ajuste exploratorio que no cumplió el criterio de aceptación preestablecido en el contraste ET04-R1 (OpenAI, 37 unidades evaluables). Frente a V2, V2.1 presentó F1 macro 0,559562 vs. 0,571195 y exactitud 0,567568 vs. 0,594595, aunque mejoró el recall PA. Esta comparación no demuestra superioridad estadística universal de V2. Seleccionar el prompt de referencia anterior al ajuste evita adoptar como definitivo un cambio que no superó su validación. Los ensayos previos se conservan como evidencia exploratoria, sin reetiquetar sus resultados históricos.
 
-**Distinción esencial:** V2 designa el **prompt** y V3 la **versión del ground truth/protocolo**. La decisión metodológica está asentada en la documentación, pero la autorización privada `v3_final_prompt_selection.json`, las nuevas pruebas locales con V2 y el preflight todavía deben realizarse en el equipo del investigador. La referencia del corpus no se modificó.
+**Distinción esencial:** V2 designa el **prompt** y V3 la **versión del ground truth/protocolo**. La selección se aprobó en el entorno Windows del investigador y la comprobación `_approved_v3_prompt` retornó la huella SHA-256 `f2176fa6d56de490395a21fd8fd82448e3a7d8697bfe405885508c56bb094bdd`. El registro privado `v3_final_prompt_selection.json` permanece en el equipo del investigador. La referencia del corpus no se modificó. Pendiente: verificación del mismo registro dentro de Docker y preflight.
 
 ### Bloqueo obligatorio de aprobación de prompt
 
@@ -84,7 +84,7 @@ $json = $approval | ConvertTo-Json -Depth 3
 [System.IO.File]::WriteAllText($approvalPath, $json, [System.Text.UTF8Encoding]::new($false))
 ~~~
 
-La fecha registrada debe ser la real del acto de aprobación; no atribuir verificaciones aún no ejecutadas. El JSON permanece bajo `data/evaluation/` (gitignored) y **no se sube a GitHub**. El preflight debe reconocer la versión V2 y el SHA-256 de los bytes leídos en su propio entorno. Si la copia en Docker usa otros saltos de línea, diagnosticar la discrepancia y corregir la copia o la generación del registro sin alterar el contenido del prompt aprobado. No desactivar la validación ni sustituir hashes a mano.
+La fecha registrada debe ser la real del acto de aprobación; no atribuir verificaciones aún no ejecutadas. El JSON permanece bajo `data/evaluation/` (gitignored) y **no se sube a GitHub**. El preflight coteja obligatoriamente la identidad exacta Git del prompt V2/V2.1 y acepta el SHA-256 del mismo contenido en LF o CRLF, para admitir checkouts Windows/Docker sin pedir una nueva aprobación. **No acepta modificaciones textuales, cambios de versión o una huella inventada**. No alterar el prompt aprobado, desactivar la validación ni sustituir hashes a mano.
 
 ## Instalación segura: PowerShell en la raíz del proyecto
 
