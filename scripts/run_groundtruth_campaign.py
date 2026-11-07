@@ -21,7 +21,10 @@ from app.evaluation.campaign import (
     sum_reported_cost, task_progress,
 )
 from app.evaluation.design import make_experimental_plan
-from app.evaluation.binary_groundtruth import load_binary_groundtruth_v2, binary_manifest
+from app.evaluation.binary_groundtruth import (
+    load_versioned_binary_groundtruth, binary_manifest_versioned,
+)
+from app.evaluation.readiness import verify_readiness
 from app.evaluation.orchestrated import run_orchestrated_trial
 from app.evaluation.pilot import append_jsonl, read_jsonl
 
@@ -31,6 +34,10 @@ def parse_args() -> argparse.Namespace:
         description="Planifica o ejecuta tareas documentales por LangGraph/MCP."
     )
     parser.add_argument("--csv", type=Path, required=True)
+    parser.add_argument(
+        "--protocol", choices=("v2", "v3"), default="v2",
+        help="V3 utiliza ground_truth_547_v3.csv y artefactos aislados.",
+    )
     selection = parser.add_mutually_exclusive_group(required=True)
     selection.add_argument("--task-id", help="Ej. ET01-R2")
     selection.add_argument("--all", action="store_true")
@@ -41,18 +48,37 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-reported-cost-usd", type=float)
     parser.add_argument(
         "--output", type=Path,
-        default=Path("data/evaluation/v2_binary_campaign_runs.jsonl"),
+        default=None,
     )
     parser.add_argument(
         "--context-cache", type=Path,
-        default=Path("data/evaluation/v2_binary_legal_context_snapshots.jsonl"),
+        default=None,
     )
     parser.add_argument(
         "--unit-checkpoints", type=Path,
-        default=Path("data/evaluation/v2_binary_unit_checkpoints.jsonl"),
+        default=None,
         help="Checkpoint durable de cada unidad contractual, separado de pilotos.",
     )
     args = parser.parse_args()
+    prefix = "v3_binary" if args.protocol == "v3" else "v2_binary"
+    base_dir = args.csv.parent
+    if args.protocol == "v3" and args.csv.name != "ground_truth_547_v3.csv":
+        parser.error("V3 requiere explícitamente ground_truth_547_v3.csv.")
+    if args.output is None:
+        args.output = base_dir / f"{prefix}_campaign_runs.jsonl"
+    if args.context_cache is None:
+        args.context_cache = base_dir / f"{prefix}_legal_context_snapshots.jsonl"
+    if args.unit_checkpoints is None:
+        args.unit_checkpoints = base_dir / f"{prefix}_unit_checkpoints.jsonl"
+    for path in (args.output, args.context_cache, args.unit_checkpoints):
+        if args.protocol == "v3" and "v2_binary" in str(path):
+            parser.error("V3 no puede utilizar los archivos históricos V2.")
+    selected_paths = (
+        args.csv.resolve(), args.output.resolve(),
+        args.context_cache.resolve(), args.unit_checkpoints.resolve()
+    )
+    if len(set(selected_paths)) != len(selected_paths):
+        parser.error("CSV, resultados, caché y checkpoints deben ser distintos.")
     if not 1 <= args.max_tasks <= 5:
         parser.error("--max-tasks debe estar entre 1 y 5.")
     if args.max_reported_cost_usd is not None and (
@@ -166,9 +192,17 @@ async def execute_tasks(args, dataset, tasks, prior):
 
 def main() -> None:
     args = parse_args()
-    dataset = load_binary_groundtruth_v2(args.csv)
-    print("Protocolo binario V2: NPA / PA, con aplicabilidad separada.")
-    print("Manifiesto:", json.dumps(binary_manifest(dataset), ensure_ascii=False))
+    dataset = load_versioned_binary_groundtruth(
+        args.csv, version=args.protocol
+    )
+    print(
+        f"Protocolo binario {args.protocol.upper()}: "
+        "NPA / PA, con aplicabilidad separada."
+    )
+    print("Manifiesto:", json.dumps(
+        binary_manifest_versioned(dataset, version=args.protocol),
+        ensure_ascii=False,
+    ))
     plan = make_experimental_plan(dataset)
     all_tasks = plan["tasks"]
     selected = select_tasks(all_tasks, args.task_id)
@@ -201,6 +235,10 @@ def main() -> None:
 
     if not settings.openrouter_api_key.get_secret_value().strip():
         raise SystemExit("Falta OPENROUTER_API_KEY.")
+    # Antes del primer intento pagado, cotejar la referencia, el prompt,
+    # los tres modelos, Chroma y el código con el manifiesto congelado.
+    # El preflight de V3 es independiente del histórico V2.
+    verify_readiness(args.csv.parent, version=args.protocol)
     if not pending:
         print("No hay tareas pendientes.")
         return
